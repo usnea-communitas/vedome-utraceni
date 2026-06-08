@@ -238,6 +238,22 @@ body {
 }
 
 /* ════════════════════════ APP LAYOUT ════════════════════════ */
+/* bare mode: app fills the whole viewport (real phone / installed PWA) */
+.fa-bare {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
+  overflow: hidden; background: #0B0F22;
+}
+body:has(.fa-root[data-bare="true"]) { padding: 0; display: block; }
+body:has(.fa-root[data-bare="true"]) .caption { display: none; }
+/* content padding: clears the real status bar (safe-area) + bottom nav */
+.fa-content { padding: 54px 17px 132px; }
+.fa-root[data-bare="true"] .fa-content {
+  padding-top: calc(22px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+}
+.fa-root[data-bare="true"] .fa-nav {
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
 .fa-screen { display: flex; flex-direction: column; }
 .fa-scroll { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .fa-scroll::-webkit-scrollbar { display: none; }
@@ -536,7 +552,11 @@ body {
   border-radius: 11px; transition: background .28s ease;
 }
 .fa-tab[data-on="true"] .fa-tab-ico { background: var(--brand-soft); }
-.fa-tab-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.1px; }
+.fa-tab-label { font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.1px; }
+.fa-tab:not([data-on="true"]) .fa-tab-label { color: var(--ink-soft); }
+/* wizard nav labels: legible warm parchment, active in gold */
+.fa-root[data-theme="wizard"] .fa-tab .fa-tab-label { color: #C9BFA6; }
+.fa-root[data-theme="wizard"] .fa-tab[data-on="true"] .fa-tab-label { color: #E8C879; }
 
 /* ════════════════════════ FOREST MOTION ════════════════════════ */
 @keyframes faDrift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(46px,34px) scale(1.12); } }

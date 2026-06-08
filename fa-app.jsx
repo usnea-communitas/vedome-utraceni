@@ -31,6 +31,21 @@ function App() {
   const [entered, setEntered] = useA(false);
   const scrollRef = useAR(null);
 
+  // On a real phone (or installed to home screen) drop the device bezel and
+  // fill the viewport natively — avoids a double status bar and a clipped nav.
+  const [bare, setBare] = useA(false);
+  useAE(() => {
+    const check = () => {
+      const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+      const iosStandalone = window.navigator.standalone === true;
+      const touchPhone = window.matchMedia && window.matchMedia('(max-width: 620px) and (pointer: coarse)').matches;
+      setBare(standalone || iosStandalone || touchPhone);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   // entrance: resting DOM is visible; we briefly start hidden then release.
   // setTimeout (not rAF) so it fires even if the iframe is backgrounded.
   useAE(() => {
@@ -54,27 +69,31 @@ function App() {
 
   const Screen = { prehled: Prehled, plan: Plan, cile: Cile, tipy: Tipy, reflexe: Reflexe, vice: Vice }[screen];
 
-  return (
-    <div className="fa-root" {...rootAttrs}>
-      <IOSDevice dark={isWizard}>
-        <div style={{ position: 'absolute', inset: 0 }}>
-          {isWizard
-            ? <WizardBackground motion={t.motion} videoSrc={WIZARD_VIDEO} />
-            : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
-            {/* scrollable content */}
-            <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-              <div style={{ padding: '54px 17px 132px' }}>
-                <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-                  <Screen go={go} lang={lang} setLang={setLang} />
-                </div>
-              </div>
+  const inner = (
+    <div style={{ position: 'absolute', inset: 0 }}>
+      {isWizard
+        ? <WizardBackground motion={t.motion} videoSrc={WIZARD_VIDEO} />
+        : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
+        {/* scrollable content */}
+        <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div className="fa-content">
+            <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
+              <Screen go={go} lang={lang} setLang={setLang} />
             </div>
-            {/* bottom nav */}
-            <BottomNav active={screen} go={go} lang={lang} />
           </div>
         </div>
-      </IOSDevice>
+        {/* bottom nav */}
+        <BottomNav active={screen} go={go} lang={lang} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fa-root" data-bare={bare ? 'true' : 'false'} {...rootAttrs}>
+      {bare
+        ? <div className="fa-bare">{inner}</div>
+        : <IOSDevice dark={isWizard}>{inner}</IOSDevice>}
 
       <TweaksPanel>
         <TweakSection label="Téma" />
