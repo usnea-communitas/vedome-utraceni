@@ -1,81 +1,306 @@
-// fa-tree.jsx — animated "goal tree": one branch per goal, each grows (foliage
-// fills + sways) with that goal's progress. Large hero on Cíle; a small
-// clickable version on Přehled that links to Cíle.
+// fa-screens.jsx — Cíle, Plán, Tipy, Reflexe, Více screens.
 
-const { useState: useTr, useEffect: useTrE } = React;
+const { useState: useS2 } = React;
 
-// branch geometry (base→tip path + foliage centre). First N used for N goals.
-const TR_BRANCHES = [
-  { d: 'M108 150 C 92 147 76 141 60 129', fx: 52, fy: 122 },
-  { d: 'M112 143 C 130 139 148 133 164 121', fx: 172, fy: 114 },
-  { d: 'M108 133 C 93 121 81 105 71 87',   fx: 63, fy: 79 },
-  { d: 'M112 129 C 129 117 141 99 149 81', fx: 157, fy: 73 },
-  { d: 'M110 126 C 110 106 110 94 110 75', fx: 110, fy: 62 },
-];
-
-function Foliage({ cx, cy, pct, accent, grown, delay, mini }) {
-  const base = accentVar(accent);
-  const s = 0.42 + 0.58 * Math.min(pct, 1);          // grown size by progress
-  const blobs = [
-    { dx: 0, dy: 0, r: 15 }, { dx: -11, dy: 3, r: 11 }, { dx: 11, dy: 3, r: 11 },
-    { dx: -5, dy: -10, r: 10 }, { dx: 6, dy: -9, r: 10 },
-  ];
+// ════════════════════════════════════════════════════════════════════
+// CÍLE — reserves & savings goals, each a "growing plant"
+// ════════════════════════════════════════════════════════════════════
+function Cile({ go }) {
+  const r = APP.reserves;
+  const totalPct = Math.round(r.total / r.goalTotal * 100);
   return (
-    <g style={{
-      transformBox: 'fill-box', transformOrigin: 'center',
-      transform: `translate(${cx}px,${cy}px) scale(${grown ? s : 0.0001})`,
-      opacity: grown ? 1 : 0,
-      transition: `transform 1s cubic-bezier(.2,.8,.2,1) ${delay}s, opacity .6s ease ${delay}s`,
-    }}>
-      {blobs.map((b, i) => (
-        <circle key={i} cx={b.dx} cy={b.dy} r={b.r}
-          fill={`color-mix(in oklab, ${base}, #fff ${(i % 3) * 10}%)`}
-          opacity={0.92} />
-      ))}
-      {/* soft highlight */}
-      <circle cx={-4} cy={-6} r={5} fill="rgba(255,255,255,0.25)" />
-      {!mini && (
-        <text x="0" y="4" textAnchor="middle"
-          style={{ fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700, fill: '#fff' }}>
-          {Math.round(pct * 100)}%
-        </text>
-      )}
-    </g>
-  );
-}
+    <div className="fa-screen">
+      <ScreenHeader eyebrow={L('Rezervy a cíle')} title={L('Cíle')} right={<MonthPill month={APP.month} />} />
 
-function GoalTree({ goals, size = 230, mini = false, onClick }) {
-  const [grown, setGrown] = useTr(false);
-  useTrE(() => { const t = setTimeout(() => setGrown(true), 80); return () => clearTimeout(t); }, []);
-  const list = goals.slice(0, 5);
+      <Card pad={0} style={{ overflow: 'hidden', marginBottom: 20 }}>
+        <div style={{ position: 'relative', padding: '22px 20px 20px', textAlign: 'center' }}>
+          <div className="fa-hero-glow" />
+          <div style={{ position: 'relative' }}>
+            <GoalTree goals={r.goals} size={232} />
+            <div style={{ fontFamily: 'var(--title)', fontSize: 40, color: 'var(--ink)', fontWeight: 600, lineHeight: 1, marginTop: 6 }}>{fmt(r.total)}<span style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 600, color: 'var(--ink-soft)' }}> Kč</span></div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 6 }}>{Lf('z cíle {v}', { v: kc(r.goalTotal) })}</div>
+            <div style={{ marginTop: 15 }}><Bar pct={totalPct} color="var(--brand)" h={11} /></div>
+          </div>
+        </div>
+        <div style={{ height: 1, margin: '0 20px', background: 'linear-gradient(90deg, transparent, var(--card-line) 18%, var(--card-line) 82%, transparent)' }} />
+        <div style={{ display: 'flex', padding: '14px 8px' }}>
+          <HeroStat label={L('Aktivní cíle')} value={r.goals.length} />
+          <div style={{ width: 1, background: 'var(--card-line)' }} />
+          <HeroStat label={L('Investováno')} value={r.investPct + '\u00A0%'} accent="honey" />
+          <div style={{ width: 1, background: 'var(--card-line)' }} />
+          <HeroStat label={L('Zbývá splnit')} value={kc(r.remainingToGoal)} />
+        </div>
+      </Card>
 
-  return (
-    <div onClick={onClick} className={'fa-tree' + (mini ? ' mini' : '')}
-      style={{ width: size, margin: '0 auto', cursor: onClick ? 'pointer' : 'default' }}>
-      <svg viewBox="0 0 220 205" width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
-        {/* ground mound */}
-        <ellipse cx="110" cy="197" rx="64" ry="9" fill="var(--tree-ground)" opacity="0.5" />
-        {/* trunk */}
-        <path d="M104 198 C 102 172 103 152 108 132 C 110 124 110 124 112 132 C 117 152 118 172 116 198 Z"
-          fill="var(--tree-bark)" />
-        <path d="M110 150 L110 196" stroke="color-mix(in oklab, var(--tree-bark), #000 18%)" strokeWidth="1.4" opacity="0.5" />
-        {/* branches grow in */}
-        {list.map((g, i) => (
-          <path key={'b' + i} d={TR_BRANCHES[i].d} fill="none"
-            stroke="var(--tree-bark)" strokeWidth={mini ? 4.2 : 5} strokeLinecap="round"
-            pathLength="100" strokeDasharray="100"
-            strokeDashoffset={grown ? 0 : 100}
-            style={{ transition: `stroke-dashoffset .8s cubic-bezier(.3,.7,.3,1) ${0.1 + i * 0.12}s` }} />
-        ))}
-        {/* foliage per goal */}
-        {list.map((g, i) => (
-          <Foliage key={'f' + i} cx={TR_BRANCHES[i].fx} cy={TR_BRANCHES[i].fy}
-            pct={Math.min(g.saved / g.target, 1)} accent={g.accent} grown={grown}
-            delay={0.4 + i * 0.12} mini={mini} />
-        ))}
-      </svg>
+      <SectionLabel action={L('Přidat cíl')}>{faLabel(L('Tvůj malý les'), L('Tvé malé trezory'))}</SectionLabel>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+        {r.goals.map((g, i) => <GoalCard key={g.name} g={g} i={i} />)}
+      </div>
+
+      <SectionLabel>{L('Mimořádné příjmy')}</SectionLabel>
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <Medallion icon="sun" accent="honey" />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: 24, color: 'var(--ink)', fontWeight: 500 }}>{kc(APP.extra.total)}</div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{L(APP.extra.note)}</div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
 
-Object.assign(window, { GoalTree });
+function GoalCard({ g, i }) {
+  const pct = Math.round(g.saved / g.target * 100);
+  return (
+    <Card pad={16} interactive>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+        <PlantStage pct={pct} accent={g.accent} icon={g.icon} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{L(g.name)}</h3>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 20, color: accentVar(g.accent), lineHeight: 1 }}>{pct} %</div>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 4, whiteSpace: 'nowrap' }}>{Lf('zbývá {v}', { v: kc(Math.max(g.target - g.saved, 0)) })}</div>
+        </div>
+      </div>
+      <Bar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
+    </Card>
+  );
+}
+
+// 3-up stat inside a hero card footer
+function HeroStat({ label, value, accent }) {
+  return (
+    <div style={{ flex: 1, textAlign: 'center', padding: '0 6px', minWidth: 0 }}>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 10.5, letterSpacing: 0.3, color: 'var(--ink-soft)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+      <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: accent === 'honey' ? 'var(--honey-deep)' : 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap' }}>{value}</div>
+    </div>
+  );
+}
+
+// little plant in a soft pot — stage grows with progress
+function PlantStage({ pct, accent, icon }) {
+  return (
+    <div style={{
+      width: 46, height: 46, borderRadius: '38%', flexShrink: 0, position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      background: accentSoft(accent),
+      boxShadow: 'inset 0 0 0 1px color-mix(in oklab, ' + accentVar(accent) + ', transparent 80%)',
+    }}>
+      <div style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0,
+        height: `${30 + pct * 0.5}%`,
+        background: 'color-mix(in oklab, ' + accentVar(accent) + ', transparent 80%)',
+        transition: 'height 1s cubic-bezier(.2,.8,.2,1)',
+      }} />
+      <div style={{ position: 'relative', marginBottom: 6 }}>
+        <Icon name={icon} size={24} stroke={1.7} color={accentVar(accent)} />
+      </div>
+    </div>
+  );
+}
+
+// big centerpiece: stylised growing tree (rings) for the reserves hero
+function GrowthScene({ pct }) {
+  const rings = [
+    { r: 46, c: 'var(--grow-ring-outer)' },
+    { r: 34, c: 'var(--grow-ring-mid)' },
+    { r: 22, c: 'var(--grow-ring-in)' },
+  ];
+  const show = Math.ceil(pct / 100 * rings.length) || 1;
+  return (
+    <div style={{ width: 116, height: 116, margin: '0 auto', position: 'relative' }}>
+      <svg width="116" height="116" viewBox="0 0 116 116">
+        {rings.map((ring, i) => (
+          <circle key={i} cx="58" cy="58" r={ring.r} fill="none" stroke={ring.c}
+            strokeWidth={i === rings.length - 1 ? 0 : 8}
+            opacity={i < show ? 1 : 0.25}
+            style={{ transition: `opacity .8s ease ${i*0.15}s` }} />
+        ))}
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="sprout" size={46} stroke={1.5} color="var(--grow-mark)" />
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// PLÁN lives in fa-plan.jsx (interactive: expandable income + categories,
+// add/delete items, recurring, descriptions, structure graphics).
+// ════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════
+// TIPY — gentle conscious-spending tips
+// ════════════════════════════════════════════════════════════════════
+// deeper category explanations (Tipy) — keyed by category key
+const CAT_EXPLAIN = {
+  nutne: 'Pevný základ života. Patří sem nájem, energie, jídlo, doprava — výdaje, které se opakují a drží tě v bezpečí. Cíl 50 % příjmu je zdravá hranice: když je nutné výrazně vyšší, je čas hledat, kde uvolnit tlak.',
+  budouci: 'Tvoje budoucí svoboda. Spoření, rezerva a investice, které dnes odkládáš pro sebe zítra. I 20 % dělá s časem a složeným úročením zázraky — důležitější než kolik je, že to děláš pravidelně.',
+  radost: 'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost — utrácení bez viny tě udrží u rozpočtu mnohem déle než odříkání.',
+};
+
+function Tipy() {
+  return (
+    <div className="fa-screen">
+      <ScreenHeader eyebrow={L('Laskavé rady')} title={L('Tipy')} />
+      <p className="fa-lede">{L('Malé návyky, které dělají velký klid. Klepni na kartu a otoč ji — čeká tě malá zajímavost.')}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
+        {APP.tipy.map((t, i) => <TipFlip key={i} t={t} />)}
+      </div>
+
+      {/* ── Tři kategorie, tři role — hlubší vysvětlení ── */}
+      <div style={{ marginTop: 22 }}>
+        <SectionLabel>{L('Tři kategorie, tři role')}</SectionLabel>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {APP.categories.map(c => (
+            <Card key={c.key} pad={18} interactive>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 11 }}>
+                <Medallion icon={c.icon} accent={c.accent} size={40} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontFamily: 'var(--serif)', fontSize: 19, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{L(c.name)}</h3>
+                  <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 1 }}>{L('cíl')} {c.targetPct} % {L('z příjmu')}</div>
+                </div>
+              </div>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13.5, lineHeight: 1.55, color: 'var(--ink-soft)', margin: 0 }}>{L(CAT_EXPLAIN[c.key])}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 22 }}>
+        <SectionLabel>{faLabel('Síla složeného úročení', 'Kouzlo složeného úročení')}</SectionLabel>
+        <InvestSim />
+      </div>
+    </div>
+  );
+}
+
+// flip card: front = tip, back = playful fact / financial literacy
+function TipFlip({ t }) {
+  const [flipped, setFlipped] = useS2(false);
+  const faceBase = { padding: 18 };
+  return (
+    <div className="fa-flip" data-flipped={flipped} onClick={() => setFlipped(f => !f)} style={{ height: 172 }}>
+      <div className="fa-flip-inner" style={{ transform: `rotateY(${flipped ? 180 : 0}deg)` }}>
+        {/* front */}
+        <div className="fa-flip-face fa-flip-front" style={{ ...faceBase, justifyContent: 'center', gap: 15, opacity: flipped ? 0 : 1, background: 'var(--card)', border: '1px solid var(--card-line)', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ display: 'flex', gap: 14 }}>
+            <Medallion icon={t.icon} accent={t.accent} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--ink)', fontWeight: 500, margin: '2px 0 6px' }}>{L(t.t)}</h3>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-soft)', margin: 0 }}>{L(t.d)}</p>
+            </div>
+          </div>
+          <div className="fa-flip-hint"><Icon name="arrow" size={15} stroke={1.9} /> {L('Otoč pro zajímavost')}</div>
+        </div>
+        {/* back */}
+        <div className="fa-flip-face fa-flip-back" style={{ ...faceBase, justifyContent: 'space-between', opacity: flipped ? 1 : 0, background: accentSoft(t.accent), border: '1px solid color-mix(in oklab, ' + accentVar(t.accent) + ', transparent 72%)', boxShadow: 'var(--shadow-card)' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
+              <Icon name="bulb" size={19} stroke={1.7} color={accentVar(t.accent)} />
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', color: accentVar(t.accent) }}>{L(t.factTitle)}</span>
+            </div>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 16.5, lineHeight: 1.5, color: 'var(--ink)', margin: 0 }}>{L(t.fact)}</p>
+          </div>
+          <div className="fa-flip-hint" style={{ color: accentVar(t.accent) }}><Icon name="leaf" size={15} stroke={1.8} /> {L('Zpět na tip')}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// REFLEXE — a soft monthly journal
+// ════════════════════════════════════════════════════════════════════
+function Reflexe() {
+  const [mood, setMood] = useS2(1);
+  const moods = ['Stísněně', 'V rovnováze', 'S radostí'];
+  return (
+    <div className="fa-screen">
+      <ScreenHeader eyebrow={L('Konec měsíce')} title={L('Reflexe')} />
+      <Card pad={20} style={{ marginBottom: 18 }}>
+        <h3 className="fa-cardtitle" style={{ marginBottom: 14 }}>{L('Jak ti bylo s penězi?')}</h3>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {moods.map((m, i) => (
+            <button key={i} onClick={() => setMood(i)} className="fa-mood" data-on={mood === i}>
+              <span style={{ width: 12, height: 12, borderRadius: 999, background: ['var(--clay)','var(--honey)','var(--moss)'][i] }} />
+              {L(m)}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <SectionLabel>{L('Otázky měsíce')}</SectionLabel>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {APP.reflexe.prompts.map((p, i) => (
+          <Card key={i} pad={18} interactive>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13, marginBottom: 13 }}>
+              <Medallion icon={p.icon} accent={p.accent} size={38} />
+              <p style={{ fontFamily: 'var(--serif)', fontSize: 17.5, fontStyle: 'italic', lineHeight: 1.42, color: 'var(--ink)', margin: '3px 0 0' }}>„{L(p.q)}"</p>
+            </div>
+            <div className="fa-note">{L('Napiš pár vět jen pro sebe…')}</div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// VÍCE — settings, warmly restyled
+// ════════════════════════════════════════════════════════════════════
+function Vice({ lang, setLang }) {
+  const groups = [
+    { h: 'Účet', rows: [ {i:'sprout', t:'Anička', d:'Osobní profil'}, {i:'sun', t:'Měsíční příjem', d:'2 600 Kč'}, {i:'shield', t:'Zabezpečení', d:'Face ID'} ] },
+    { h: 'Vědomé utrácení', rows: [ {i:'plan', t:'Pravidlo 50 / 30 / 20', d:'Upravit poměry'}, {i:'bell', t:'Jemné připomínky', d:'Zapnuto'}, {i:'leaf', t:'Vzhled', d:faLabel('Lesní klid', 'Kouzelnický')} ] },
+  ];
+  return (
+    <div className="fa-screen">
+      <ScreenHeader eyebrow={L('Nastavení')} title={L('Více')} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {groups.map((grp, gi) => (
+          <div key={gi}>
+            <SectionLabel>{L(grp.h)}</SectionLabel>
+            <Card pad={0} style={{ overflow: 'hidden' }}>
+              {grp.rows.map((row, ri) => (
+                <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none' }}>
+                  <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(row.t)}</div>
+                  </div>
+                  <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', whiteSpace: 'nowrap', flexShrink: 0 }}>{L(row.d)}</span>
+                  <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
+                </div>
+              ))}
+            </Card>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Jazyk')}</SectionLabel>
+        <Card pad={14}>
+          <div className="fa-lang">
+            {FA_LANGS.map(l => (
+              <button key={l.code} data-on={lang === l.code} onClick={() => setLang(l.code)}>{l.name}</button>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: 26, opacity: 0.7 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'var(--brand)', whiteSpace: 'nowrap' }}>
+          <Icon name="leaf" size={15} stroke={1.7} />
+          <span className="fa-footer-name" style={{ fontFamily: 'var(--serif)', fontSize: 15, color: 'var(--ink-soft)', fontStyle: 'italic' }}>Vědomé utrácení</span>
+        </div>
+        <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {L('verze 1.0')}</div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { Cile, Tipy, Reflexe, Vice, PlantStage, GrowthScene });

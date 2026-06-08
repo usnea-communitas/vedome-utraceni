@@ -1,161 +1,142 @@
-// fa-wizard.jsx — "Kouzelnický" night-academy backdrop.
-// Layers (back → front): night gradient · indigo light pools · twinkling
-// stars · moon glow · castle silhouette with flickering windows · drifting
-// mist · floating candle embers · grain · edge vignette.
-// Mirrors ForestBackground's API (motion levels + optional videoSrc for a
-// real castle loop later). Honors prefers-reduced-motion.
+// fa-ui.jsx — shared forest-calm UI primitives with microinteractions.
 
-function WizardCastle({ animate, dur }) {
-  // warm windows — a few flicker (class wz-win), staggered via inline delay
-  const win = (x, y, w, h, flicker, delay) => (
-    <rect x={x} y={y} width={w} height={h} rx={Math.min(w, h) * 0.3}
-      fill="#F4C45A" className={flicker ? 'wz-win' : undefined}
-      style={flicker ? { animationDelay: `${delay}s` } : undefined} />
-  );
+const { useState, useEffect, useRef } = React;
+
+// ── Card — rounded, layered, with tactile tap state ────────────────────
+function Card({ children, onClick, style = {}, pad = 18, tone = 'surface', interactive }) {
+  const [press, setPress] = useState(false);
+  const clickable = !!onClick || interactive;
   return (
-    <div style={{ position: 'absolute', left: '-3%', right: '-3%', bottom: 0, height: '52%' }}>
-      <svg viewBox="0 0 400 230" preserveAspectRatio="xMidYMax meet" width="100%" height="100%"
-        style={{ position: 'absolute', bottom: 0, display: 'block' }}>
-        {/* silhouette */}
-        <g fill="#070A18">
-          {/* base wall */}
-          <rect x="0" y="150" width="400" height="80" />
-          {/* left tower (conical) */}
-          <rect x="34" y="104" width="30" height="80" />
-          <polygon points="30,106 49,70 68,106" />
-          {/* small crenellated tower */}
-          <path d="M78 184 V120 h4 v-5 h4 v5 h4 v-5 h4 v5 h4 v64 Z" />
-          {/* central keep */}
-          <rect x="170" y="58" width="60" height="126" />
-          <polygon points="166,60 200,12 234,60" />
-          <rect x="199" y="2" width="2" height="14" />
-          <polygon points="194,6 194,1 201,4" fill="#9B7327" />
-          {/* mid tower */}
-          <rect x="120" y="116" width="26" height="68" />
-          <polygon points="116,118 133,90 150,118" />
-          {/* right big tower */}
-          <rect x="252" y="92" width="36" height="92" />
-          <polygon points="248,94 270,56 292,94" />
-          {/* right conical */}
-          <rect x="300" y="110" width="28" height="74" />
-          <polygon points="296,112 314,80 332,112" />
-          {/* far-right crenellated */}
-          <path d="M340 184 V128 h4 v-5 h4 v5 h4 v-5 h4 v5 h4 v56 Z" />
-        </g>
-        {/* cool rim light on roof edges */}
-        <g stroke="rgba(150,170,220,0.32)" strokeWidth="1.1" fill="none" strokeLinejoin="round">
-          <polyline points="30,106 49,70 68,106" />
-          <polyline points="166,60 200,12 234,60" />
-          <polyline points="116,118 133,90 150,118" />
-          <polyline points="248,94 270,56 292,94" />
-          <polyline points="296,112 314,80 332,112" />
-        </g>
-        {/* warm windows */}
-        <g>
-          {win(193, 74, 14, 22, true, 0)}
-          {win(178, 104, 8, 12, true, 1.4)}
-          {win(214, 104, 8, 12, false)}
-          {win(195, 126, 10, 14, true, 0.6)}
-          {win(45, 128, 8, 12, true, 2.1)}
-          {win(46, 150, 8, 12, false)}
-          {win(264, 116, 9, 13, true, 1.1)}
-          {win(264, 140, 9, 13, false)}
-          {win(309, 132, 7, 11, true, 2.6)}
-          {win(127, 134, 7, 11, false)}
-          {win(96, 168, 7, 12, true, 1.8)}
-          {win(356, 150, 7, 12, false)}
-          {win(150, 176, 8, 14, true, 0.9)}
-          {win(238, 178, 8, 14, false)}
-          {win(300, 178, 8, 14, true, 3.1)}
-        </g>
-      </svg>
+    <div
+      onClick={onClick}
+      onPointerDown={() => clickable && setPress(true)}
+      onPointerUp={() => setPress(false)}
+      onPointerLeave={() => setPress(false)}
+      className="fa-card"
+      data-tone={tone}
+      style={{
+        position: 'relative', borderRadius: 26, padding: pad,
+        background: 'var(--card)',
+        border: '1px solid var(--card-line)',
+        boxShadow: press ? 'var(--shadow-press)' : 'var(--shadow-card)',
+        transform: press ? 'scale(0.984)' : 'scale(1)',
+        transition: 'transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease',
+        cursor: clickable ? 'pointer' : 'default',
+        WebkitTapHighlightColor: 'transparent',
+        ...style,
+      }}
+    >
+      {children}
     </div>
   );
 }
 
-function WizardBackground({ motion = 'gentle', videoSrc = null }) {
-  const animate = motion !== 'off';
-  const lvl = { off: 0, barely: 1, gentle: 2, living: 3 }[motion] ?? 2;
-  const mul = motion === 'barely' ? 1.5 : motion === 'living' ? 0.82 : 1;
-  const dur = (s) => `${(s * mul).toFixed(1)}s`;
+// ── Status chip ────────────────────────────────────────────────────────
+function Chip({ tone = 'ok', children }) {
+  const map = {
+    ok:   { bg: 'var(--moss-soft)',  fg: 'var(--moss-deep)' },
+    over: { bg: 'var(--clay-soft)',  fg: 'var(--clay)' },
+    under:{ bg: 'var(--honey-soft)', fg: 'var(--honey-deep)' },
+    calm: { bg: 'var(--beige)',      fg: 'var(--ink-soft)' },
+  };
+  const c = map[tone] || map.ok;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '4px 11px', borderRadius: 999, fontSize: 12.5, fontWeight: 600,
+      letterSpacing: 0.1, background: c.bg, color: c.fg,
+      fontFamily: 'var(--sans)', whiteSpace: 'nowrap',
+    }}>{children}</span>
+  );
+}
 
-  // deterministic stars in the upper ~58% (above the castle)
-  const stars = lvl >= 1
-    ? Array.from({ length: lvl >= 3 ? 48 : 34 }).map((_, i) => {
-        const x = (i * 53 + 11) % 100;
-        const y = (i * 27 + 6) % 56;
-        const sz = i % 7 === 0 ? 2.6 : i % 3 === 0 ? 1.7 : 1.1;
-        return <span key={i} className="wz-star" style={{
-          left: `${x}%`, top: `${y}%`, width: sz, height: sz,
-          animationDuration: dur(2.6 + (i % 5)),
-          animationDelay: `${-(i % 7) * 0.6}s`,
-        }} />;
-      })
-    : null;
-
-  const embers = lvl >= 3
-    ? Array.from({ length: 7 }).map((_, i) => (
-        <span key={'e' + i} className="wz-ember" style={{
-          left: `${9 + i * 12.5}%`, bottom: `${10 + (i % 3) * 7}%`,
-          width: 4 + (i % 3) * 2, height: 4 + (i % 3) * 2,
-          animationDuration: dur(11 + i * 2),
-          animationDelay: `${-i * 2.4}s`,
+// ── Progress bar — animates to value on mount, overflow shown in clay ──
+function Bar({ pct, color, track = 'var(--bar-track)', h = 9, delay = 120 }) {
+  const [w, setW] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setW(Math.min(pct, 100)), delay); return () => clearTimeout(t); }, [pct, delay]);
+  const over = pct > 100;
+  return (
+    <div style={{ position: 'relative', height: h, borderRadius: 999, background: track, overflow: 'hidden' }}>
+      <div style={{
+        position: 'absolute', inset: 0, width: `${w}%`, borderRadius: 999,
+        background: color,
+        transition: 'width 1s cubic-bezier(.2,.8,.2,1)',
+      }} />
+      {over && (
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, right: 0,
+          width: w >= 100 ? '14%' : 0,
+          background: 'repeating-linear-gradient(115deg, var(--clay) 0 6px, color-mix(in oklab, var(--clay), #fff 22%) 6px 12px)',
+          borderRadius: 999, transition: 'width 1s ease',
+          opacity: 0.92,
         }} />
-      ))
-    : null;
-
-  const CF = window.CrossfadeVideo;
-
-  return (
-    <div aria-hidden="true" style={{
-      position: 'absolute', inset: 0, overflow: 'hidden',
-      background: '#0B0F22', zIndex: 0,
-    }}>
-      {/* night gradient */}
-      <div style={{ position: 'absolute', inset: -40,
-        background: 'radial-gradient(120% 82% at 70% -6%, #1E2750 0%, #131B38 44%, #0A0E20 100%)' }} />
-      {/* indigo light pools (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', top: '-12%', left: '-16%', width: 300, height: 300,
-        borderRadius: '50%', background: 'radial-gradient(circle,#2C3C82,transparent 68%)', filter: 'blur(52px)',
-        opacity: 0.5, animation: animate ? `wzDrift1 ${dur(50)} ease-in-out infinite alternate` : 'none' }} />}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', top: '26%', right: '-18%', width: 260, height: 260,
-        borderRadius: '50%', background: 'radial-gradient(circle,#3C2A6A,transparent 68%)', filter: 'blur(52px)',
-        opacity: 0.46, animation: animate ? `wzDrift2 ${dur(58)} ease-in-out infinite alternate` : 'none' }} />}
-      {/* stars (CSS scene only) */}
-      {!videoSrc && stars}
-      {/* moon glow (CSS scene only) */}
-      {!videoSrc && (
-      <div style={{ position: 'absolute', top: '6%', right: '13%', width: 78, height: 78, borderRadius: '50%',
-        background: 'radial-gradient(circle at 38% 36%, #FBF3D6 0%, #ECDBA4 44%, rgba(236,219,164,0) 72%)',
-        boxShadow: '0 0 48px 16px rgba(243,230,184,0.22)',
-        animation: animate ? `wzMoon ${dur(26)} ease-in-out infinite alternate` : 'none' }} />
       )}
-      {/* optional real castle loop + grading so parchment cards pop */}
-      {videoSrc && CF && (
-        <React.Fragment>
-          <CF src={videoSrc} fade={0.85} endTrim={0.5} filter="saturate(1.2) contrast(1.08) brightness(1.12)" style={{ opacity: 1, transform: 'scale(1.3) translateY(-17%)' }} />
-          {/* darken status-bar strip (top) and nav + hide watermark (bottom) */}
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'linear-gradient(180deg, rgba(7,9,22,0.34) 0%, rgba(7,9,22,0.06) 8%, rgba(7,9,22,0) 17%, rgba(7,9,22,0) 68%, rgba(7,9,22,0.4) 86%, rgba(7,9,22,0.72) 100%)' }} />
-        </React.Fragment>
-      )}
-      {/* castle silhouette (CSS scene only) */}
-      {!videoSrc && <WizardCastle animate={animate} dur={dur} />}
-      {/* drifting mist near the base (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', left: 0, right: 0, bottom: '6%', height: '32%',
-        background: 'linear-gradient(0deg, rgba(150,170,214,0.16), transparent)', filter: 'blur(9px)',
-        animation: animate ? `wzMist ${dur(30)} ease-in-out infinite alternate` : 'none' }} />}
-      {/* candle embers (CSS scene only) */}
-      {!videoSrc && embers}
-      {/* fine grain */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 'var(--grain-opacity)',
-        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        mixBlendMode: 'overlay' }} />
-      {/* edge vignette for focus */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-        boxShadow: 'inset 0 0 120px 26px rgba(4,6,16,0.55)' }} />
     </div>
   );
 }
 
-Object.assign(window, { WizardBackground });
+// ── Donut / "Lesní koláč" — animated arcs ──────────────────────────────
+function Donut({ segments, size = 168, thickness = 22, centerTop, centerMain, centerSub }) {
+  const r = (size - thickness) / 2;
+  const c = 2 * Math.PI * r;
+  const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+  const [grow, setGrow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGrow(true), 160); return () => clearTimeout(t); }, []);
+  let offset = 0;
+  const gap = 0.012 * c; // small gap between arcs
+  return (
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bar-track)" strokeWidth={thickness} />
+        {segments.map((s, i) => {
+          const frac = s.value / total;
+          const len = Math.max(frac * c - gap, 0);
+          const dash = `${grow ? len : 0} ${c}`;
+          const el = (
+            <circle key={i} cx={size/2} cy={size/2} r={r} fill="none"
+              stroke={s.color} strokeWidth={thickness} strokeLinecap="round"
+              strokeDasharray={dash}
+              strokeDashoffset={-offset}
+              style={{ transition: `stroke-dasharray 1.1s cubic-bezier(.2,.8,.2,1) ${i*0.12}s` }} />
+          );
+          offset += frac * c;
+          return el;
+        })}
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+      }}>
+        {centerTop && <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: 2 }}>{centerTop}</div>}
+        <div style={{ fontFamily: 'var(--serif)', fontSize: 34, lineHeight: 1, color: 'var(--ink)', fontWeight: 500 }}>{centerMain}</div>
+        {centerSub && <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{centerSub}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── Section label (eyebrow above a group) ──────────────────────────────
+function SectionLabel({ children, action, onAction }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '2px 4px 10px' }}>
+      <div className="fa-seclabel" style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{children}</div>
+      {action && <button className="fa-textbtn" onClick={onAction}>{action}</button>}
+    </div>
+  );
+}
+
+// ── Icon medallion — soft tinted circle holding a nature glyph ─────────
+function Medallion({ icon, accent = 'moss', size = 42 }) {
+  return (
+    <div className="fa-medallion" style={{
+      width: size, height: size, borderRadius: '38%', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: accentSoft(accent), color: accentVar(accent),
+      boxShadow: 'inset 0 0 0 1px color-mix(in oklab, ' + accentVar(accent) + ', transparent 78%)',
+    }}>
+      <Icon name={icon} size={size * 0.5} stroke={1.7} />
+    </div>
+  );
+}
+
+Object.assign(window, { Card, Chip, Bar, Donut, SectionLabel, Medallion });

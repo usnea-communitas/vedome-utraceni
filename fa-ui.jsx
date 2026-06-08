@@ -1,142 +1,81 @@
-// fa-ui.jsx — shared forest-calm UI primitives with microinteractions.
+// fa-tree.jsx — animated "goal tree": one branch per goal, each grows (foliage
+// fills + sways) with that goal's progress. Large hero on Cíle; a small
+// clickable version on Přehled that links to Cíle.
 
-const { useState, useEffect, useRef } = React;
+const { useState: useTr, useEffect: useTrE } = React;
 
-// ── Card — rounded, layered, with tactile tap state ────────────────────
-function Card({ children, onClick, style = {}, pad = 18, tone = 'surface', interactive }) {
-  const [press, setPress] = useState(false);
-  const clickable = !!onClick || interactive;
+// branch geometry (base→tip path + foliage centre). First N used for N goals.
+const TR_BRANCHES = [
+  { d: 'M108 150 C 92 147 76 141 60 129', fx: 52, fy: 122 },
+  { d: 'M112 143 C 130 139 148 133 164 121', fx: 172, fy: 114 },
+  { d: 'M108 133 C 93 121 81 105 71 87',   fx: 63, fy: 79 },
+  { d: 'M112 129 C 129 117 141 99 149 81', fx: 157, fy: 73 },
+  { d: 'M110 126 C 110 106 110 94 110 75', fx: 110, fy: 62 },
+];
+
+function Foliage({ cx, cy, pct, accent, grown, delay, mini }) {
+  const base = accentVar(accent);
+  const s = 0.42 + 0.58 * Math.min(pct, 1);          // grown size by progress
+  const blobs = [
+    { dx: 0, dy: 0, r: 15 }, { dx: -11, dy: 3, r: 11 }, { dx: 11, dy: 3, r: 11 },
+    { dx: -5, dy: -10, r: 10 }, { dx: 6, dy: -9, r: 10 },
+  ];
   return (
-    <div
-      onClick={onClick}
-      onPointerDown={() => clickable && setPress(true)}
-      onPointerUp={() => setPress(false)}
-      onPointerLeave={() => setPress(false)}
-      className="fa-card"
-      data-tone={tone}
-      style={{
-        position: 'relative', borderRadius: 26, padding: pad,
-        background: 'var(--card)',
-        border: '1px solid var(--card-line)',
-        boxShadow: press ? 'var(--shadow-press)' : 'var(--shadow-card)',
-        transform: press ? 'scale(0.984)' : 'scale(1)',
-        transition: 'transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease',
-        cursor: clickable ? 'pointer' : 'default',
-        WebkitTapHighlightColor: 'transparent',
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ── Status chip ────────────────────────────────────────────────────────
-function Chip({ tone = 'ok', children }) {
-  const map = {
-    ok:   { bg: 'var(--moss-soft)',  fg: 'var(--moss-deep)' },
-    over: { bg: 'var(--clay-soft)',  fg: 'var(--clay)' },
-    under:{ bg: 'var(--honey-soft)', fg: 'var(--honey-deep)' },
-    calm: { bg: 'var(--beige)',      fg: 'var(--ink-soft)' },
-  };
-  const c = map[tone] || map.ok;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 11px', borderRadius: 999, fontSize: 12.5, fontWeight: 600,
-      letterSpacing: 0.1, background: c.bg, color: c.fg,
-      fontFamily: 'var(--sans)', whiteSpace: 'nowrap',
-    }}>{children}</span>
-  );
-}
-
-// ── Progress bar — animates to value on mount, overflow shown in clay ──
-function Bar({ pct, color, track = 'var(--bar-track)', h = 9, delay = 120 }) {
-  const [w, setW] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setW(Math.min(pct, 100)), delay); return () => clearTimeout(t); }, [pct, delay]);
-  const over = pct > 100;
-  return (
-    <div style={{ position: 'relative', height: h, borderRadius: 999, background: track, overflow: 'hidden' }}>
-      <div style={{
-        position: 'absolute', inset: 0, width: `${w}%`, borderRadius: 999,
-        background: color,
-        transition: 'width 1s cubic-bezier(.2,.8,.2,1)',
-      }} />
-      {over && (
-        <div style={{
-          position: 'absolute', top: 0, bottom: 0, right: 0,
-          width: w >= 100 ? '14%' : 0,
-          background: 'repeating-linear-gradient(115deg, var(--clay) 0 6px, color-mix(in oklab, var(--clay), #fff 22%) 6px 12px)',
-          borderRadius: 999, transition: 'width 1s ease',
-          opacity: 0.92,
-        }} />
-      )}
-    </div>
-  );
-}
-
-// ── Donut / "Lesní koláč" — animated arcs ──────────────────────────────
-function Donut({ segments, size = 168, thickness = 22, centerTop, centerMain, centerSub }) {
-  const r = (size - thickness) / 2;
-  const c = 2 * Math.PI * r;
-  const total = segments.reduce((s, x) => s + x.value, 0) || 1;
-  const [grow, setGrow] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setGrow(true), 160); return () => clearTimeout(t); }, []);
-  let offset = 0;
-  const gap = 0.012 * c; // small gap between arcs
-  return (
-    <div style={{ position: 'relative', width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bar-track)" strokeWidth={thickness} />
-        {segments.map((s, i) => {
-          const frac = s.value / total;
-          const len = Math.max(frac * c - gap, 0);
-          const dash = `${grow ? len : 0} ${c}`;
-          const el = (
-            <circle key={i} cx={size/2} cy={size/2} r={r} fill="none"
-              stroke={s.color} strokeWidth={thickness} strokeLinecap="round"
-              strokeDasharray={dash}
-              strokeDashoffset={-offset}
-              style={{ transition: `stroke-dasharray 1.1s cubic-bezier(.2,.8,.2,1) ${i*0.12}s` }} />
-          );
-          offset += frac * c;
-          return el;
-        })}
-      </svg>
-      <div style={{
-        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-      }}>
-        {centerTop && <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: 2 }}>{centerTop}</div>}
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 34, lineHeight: 1, color: 'var(--ink)', fontWeight: 500 }}>{centerMain}</div>
-        {centerSub && <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{centerSub}</div>}
-      </div>
-    </div>
-  );
-}
-
-// ── Section label (eyebrow above a group) ──────────────────────────────
-function SectionLabel({ children, action, onAction }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '2px 4px 10px' }}>
-      <div className="fa-seclabel" style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{children}</div>
-      {action && <button className="fa-textbtn" onClick={onAction}>{action}</button>}
-    </div>
-  );
-}
-
-// ── Icon medallion — soft tinted circle holding a nature glyph ─────────
-function Medallion({ icon, accent = 'moss', size = 42 }) {
-  return (
-    <div className="fa-medallion" style={{
-      width: size, height: size, borderRadius: '38%', flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: accentSoft(accent), color: accentVar(accent),
-      boxShadow: 'inset 0 0 0 1px color-mix(in oklab, ' + accentVar(accent) + ', transparent 78%)',
+    <g style={{
+      transformBox: 'fill-box', transformOrigin: 'center',
+      transform: `translate(${cx}px,${cy}px) scale(${grown ? s : 0.0001})`,
+      opacity: grown ? 1 : 0,
+      transition: `transform 1s cubic-bezier(.2,.8,.2,1) ${delay}s, opacity .6s ease ${delay}s`,
     }}>
-      <Icon name={icon} size={size * 0.5} stroke={1.7} />
+      {blobs.map((b, i) => (
+        <circle key={i} cx={b.dx} cy={b.dy} r={b.r}
+          fill={`color-mix(in oklab, ${base}, #fff ${(i % 3) * 10}%)`}
+          opacity={0.92} />
+      ))}
+      {/* soft highlight */}
+      <circle cx={-4} cy={-6} r={5} fill="rgba(255,255,255,0.25)" />
+      {!mini && (
+        <text x="0" y="4" textAnchor="middle"
+          style={{ fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 700, fill: '#fff' }}>
+          {Math.round(pct * 100)}%
+        </text>
+      )}
+    </g>
+  );
+}
+
+function GoalTree({ goals, size = 230, mini = false, onClick }) {
+  const [grown, setGrown] = useTr(false);
+  useTrE(() => { const t = setTimeout(() => setGrown(true), 80); return () => clearTimeout(t); }, []);
+  const list = goals.slice(0, 5);
+
+  return (
+    <div onClick={onClick} className={'fa-tree' + (mini ? ' mini' : '')}
+      style={{ width: size, margin: '0 auto', cursor: onClick ? 'pointer' : 'default' }}>
+      <svg viewBox="0 0 220 205" width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
+        {/* ground mound */}
+        <ellipse cx="110" cy="197" rx="64" ry="9" fill="var(--tree-ground)" opacity="0.5" />
+        {/* trunk */}
+        <path d="M104 198 C 102 172 103 152 108 132 C 110 124 110 124 112 132 C 117 152 118 172 116 198 Z"
+          fill="var(--tree-bark)" />
+        <path d="M110 150 L110 196" stroke="color-mix(in oklab, var(--tree-bark), #000 18%)" strokeWidth="1.4" opacity="0.5" />
+        {/* branches grow in */}
+        {list.map((g, i) => (
+          <path key={'b' + i} d={TR_BRANCHES[i].d} fill="none"
+            stroke="var(--tree-bark)" strokeWidth={mini ? 4.2 : 5} strokeLinecap="round"
+            pathLength="100" strokeDasharray="100"
+            strokeDashoffset={grown ? 0 : 100}
+            style={{ transition: `stroke-dashoffset .8s cubic-bezier(.3,.7,.3,1) ${0.1 + i * 0.12}s` }} />
+        ))}
+        {/* foliage per goal */}
+        {list.map((g, i) => (
+          <Foliage key={'f' + i} cx={TR_BRANCHES[i].fx} cy={TR_BRANCHES[i].fy}
+            pct={Math.min(g.saved / g.target, 1)} accent={g.accent} grown={grown}
+            delay={0.4 + i * 0.12} mini={mini} />
+        ))}
+      </svg>
     </div>
   );
 }
 
-Object.assign(window, { Card, Chip, Bar, Donut, SectionLabel, Medallion });
+Object.assign(window, { GoalTree });
