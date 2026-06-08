@@ -1,654 +1,349 @@
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Vědomé utrácení</title>
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Vědomé utrácení" />
-<meta name="theme-color" content="#0B0F22" />
-<link rel="apple-touch-icon" href="icon.png" />
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=Hanken+Grotesk:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet" />
-<style>
-/* ════════════════════════ FOREST-CALM TOKENS ════════════════════════ */
-:root {
-  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --sans: 'Hanken Grotesk', -apple-system, system-ui, sans-serif;
-  --display: var(--serif);
-  --title: var(--display);
+// @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
 
-  /* surfaces — warm cream & beige */
-  --cream: #F1EADC;
-  --card: #FBF7EE;
-  --card-line: rgba(74,86,58,0.11);
-  --beige: #EADFCC;
+/* BEGIN USAGE */
+// iOS.jsx — Simplified iOS 26 (Liquid Glass) device frame
+// Based on the iOS 26 UI Kit + Figma status bar spec. No assets, no deps.
+// Exports (to window): IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
+//
+// Usage — wrap your screen content in <IOSDevice> to get the bezel, status bar
+// and home indicator (props: title, dark, keyboard):
+//
+//   <IOSDevice title="Settings">
+//     ...your screen content...
+//   </IOSDevice>
+//   <IOSDevice dark title="Search" keyboard>…</IOSDevice>
+/* END USAGE */
 
-  /* ink — deep forest */
-  --ink: #2C3826;
-  --ink-soft: #6A7360;
-  --ink-faint: #9DA28D;
-
-  /* botanical accents */
-  --moss: #5E7A4F;  --moss-deep: #3D5235;  --moss-soft: #E1EAD4;
-  --honey: #C29A3D; --honey-deep: #927019; --honey-soft: #F0E7C7;
-  --blush: #C2807D; --blush-deep: #9C5C5A; --blush-soft: #F1DEDA;
-  --sage: #8AA17E;  --sage-soft: #DCE6D0;
-  --clay: #BC6A45;  --clay-soft: #F2DCCE;
-
-  --unalloc: #D8CFBB;
-  --bar-track: rgba(74,86,58,0.13);
-
-  /* GrowthScene rings (Cíle hero) — forest defaults */
-  --grow-ring-outer: var(--sage-soft);
-  --grow-ring-mid: color-mix(in oklab, var(--moss), transparent 55%);
-  --grow-ring-in: color-mix(in oklab, var(--moss), transparent 25%);
-  --grow-mark: var(--moss-deep);
-
-  /* invest simulator chart */
-  --invest-contrib: color-mix(in oklab, var(--ink-soft), transparent 74%);
-  --invest-contrib-solid: color-mix(in oklab, var(--ink-soft), transparent 38%);
-  --invest-gains: color-mix(in oklab, var(--brand), transparent 70%);
-
-  /* income-sources pie — deeper, non-pastel palette (distinct from category pie) */
-  --src-1: #2C7D63; --src-2: #CC7A3B; --src-3: #A6486F; --src-4: #45708F;
-
-  /* goal tree */
-  --tree-bark: #7A5E36; --tree-ground: #B9A77E;
-
-  /* brand accent (re-tintable via Tweaks) */
-  --brand: #5E7A4F; --brand-soft: var(--moss-soft);
-
-  /* forest backdrop */
-  --canopy-base: #E7E0D0;
-  --canopy-wash: radial-gradient(125% 80% at 50% -8%, #EFE9D8 0%, #DCE1C4 46%, #C3D0A6 100%);
-  --canopy-1: #7E9A63; --canopy-2: #A9BB8C; --canopy-3: #5E7A4F;
-  --canopy-shaft: linear-gradient(160deg, rgba(255,249,224,0.85), rgba(255,249,224,0));
-  --dapple: radial-gradient(circle, rgba(255,250,222,0.9), rgba(255,250,222,0) 70%);
-  --veil: rgba(244,239,228,0.44);
-  --grain-opacity: 0.05;
-  --nav-bg: rgba(251,247,238,0.82);
-
-  /* shadows */
-  --shadow-card: 0 1px 2px rgba(58,70,40,0.05), 0 8px 22px rgba(58,70,40,0.07);
-  --shadow-press: 0 1px 3px rgba(58,70,40,0.10), 0 2px 8px rgba(58,70,40,0.06);
-  --shadow-chip: 0 1px 3px rgba(58,70,40,0.06);
-  --shadow-nav: 0 4px 16px rgba(40,52,30,0.10), 0 1px 3px rgba(40,52,30,0.06);
+// ─────────────────────────────────────────────────────────────
+// Status bar
+// ─────────────────────────────────────────────────────────────
+function IOSStatusBar({ dark = false, time = '9:41' }) {
+  const c = dark ? '#fff' : '#000';
+  return (
+    <div style={{
+      display: 'flex', gap: 154, alignItems: 'center', justifyContent: 'center',
+      padding: '21px 24px 19px', boxSizing: 'border-box',
+      position: 'relative', zIndex: 20, width: '100%',
+    }}>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 1.5 }}>
+        <span style={{
+          fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 590,
+          fontSize: 17, lineHeight: '22px', color: c,
+        }}>{time}</span>
+      </div>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, paddingTop: 1, paddingRight: 1 }}>
+        <svg width="19" height="12" viewBox="0 0 19 12">
+          <rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7" fill={c}/>
+          <rect x="4.8" y="5" width="3.2" height="7" rx="0.7" fill={c}/>
+          <rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7" fill={c}/>
+          <rect x="14.4" y="0" width="3.2" height="12" rx="0.7" fill={c}/>
+        </svg>
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z" fill={c}/>
+          <path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z" fill={c}/>
+          <circle cx="8.5" cy="10.5" r="1.5" fill={c}/>
+        </svg>
+        <svg width="27" height="13" viewBox="0 0 27 13">
+          <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke={c} strokeOpacity="0.35" fill="none"/>
+          <rect x="2" y="2" width="20" height="9" rx="2" fill={c}/>
+          <path d="M25 4.5V8.5C25.8 8.2 26.5 7.2 26.5 6.5C26.5 5.8 25.8 4.8 25 4.5Z" fill={c} fillOpacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
 }
 
-/* depth = moss → bring the forest forward */
-.fa-root[data-depth="moss"] {
-  --canopy-base: #D8DAB9;
-  --canopy-wash: radial-gradient(125% 88% at 50% -6%, #DEE2BD 0%, #BFCD9E 46%, #9CB082 100%);
-  --veil: rgba(238,236,222,0.30);
-  --grain-opacity: 0.075;
-  --nav-bg: rgba(250,247,236,0.78);
+// ─────────────────────────────────────────────────────────────
+// Liquid glass pill — blur + tint + shine
+// ─────────────────────────────────────────────────────────────
+function IOSGlassPill({ children, dark = false, style = {} }) {
+  return (
+    <div style={{
+      height: 44, minWidth: 44, borderRadius: 9999,
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: dark
+        ? '0 2px 6px rgba(0,0,0,0.35), 0 6px 16px rgba(0,0,0,0.2)'
+        : '0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.06)',
+      ...style,
+    }}>
+      {/* blur + tint */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.28)' : 'rgba(255,255,255,0.5)',
+      }} />
+      {/* shine */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15), inset -1px -1px 1px rgba(255,255,255,0.08)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+        {children}
+      </div>
+    </div>
+  );
 }
 
-/* card = soft → flatter, gentler */
-.fa-root[data-card="soft"] {
-  --shadow-card: 0 1px 1px rgba(58,70,40,0.035), 0 3px 10px rgba(58,70,40,0.045);
-  --card-line: rgba(74,86,58,0.08);
+// ─────────────────────────────────────────────────────────────
+// Navigation bar — glass pills + large title
+// ─────────────────────────────────────────────────────────────
+function IOSNavBar({ title = 'Title', dark = false, trailingIcon = true }) {
+  const muted = dark ? 'rgba(255,255,255,0.6)' : '#404040';
+  const text = dark ? '#fff' : '#000';
+  const pillIcon = (content) => (
+    <IOSGlassPill dark={dark}>
+      <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {content}
+      </div>
+    </IOSGlassPill>
+  );
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 10,
+      paddingTop: 62, paddingBottom: 10, position: 'relative', zIndex: 5,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px',
+      }}>
+        {/* back chevron */}
+        {pillIcon(
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none" style={{ marginLeft: -1 }}>
+            <path d="M10 2L2 10l8 8" stroke={muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {/* trailing ellipsis */}
+        {trailingIcon && pillIcon(
+          <svg width="22" height="6" viewBox="0 0 22 6">
+            <circle cx="3" cy="3" r="2.5" fill={muted}/>
+            <circle cx="11" cy="3" r="2.5" fill={muted}/>
+            <circle cx="19" cy="3" r="2.5" fill={muted}/>
+          </svg>
+        )}
+      </div>
+      {/* large title */}
+      <div style={{
+        padding: '0 16px',
+        fontFamily: '-apple-system, system-ui',
+        fontSize: 34, fontWeight: 700, lineHeight: '41px',
+        color: text, letterSpacing: 0.4,
+      }}>{title}</div>
+    </div>
+  );
 }
 
-/* brand accent variants */
-.fa-root[data-accent="blossom"] { --brand: #B06E6B; --brand-soft: var(--blush-soft); }
-.fa-root[data-accent="amber"]   { --brand: #A8832B; --brand-soft: var(--honey-soft); }
-
-/* ════════════════ KOUZELNICKÝ (Wizard) THEME ════════════════ */
-.fa-root[data-theme="wizard"] {
-  --serif: 'EB Garamond', Georgia, serif;
-  --display: 'Cormorant Garamond', Georgia, serif;
-  --title: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
-
-  /* aged-parchment surfaces (kept light so finance stays readable) */
-  --cream: #ECE0C4;
-  --card: #F4EAD2;
-  --card-line: rgba(74,54,20,0.17);
-  --beige: #E3D4B2;
-
-  /* sepia ink */
-  --ink: #2C2412;
-  --ink-soft: #6A5A3C;
-  --ink-faint: #9C8A64;
-
-  /* jewel & metal accents */
-  --moss: #2C7A5B;  --moss-deep: #1C5740;  --moss-soft: #CFE2D6;   /* emerald  */
-  --honey: #B0851F; --honey-deep: #84610F; --honey-soft: #EFE2BA;  /* gold     */
-  --blush: #8E5A86; --blush-deep: #6B3E64; --blush-soft: #E6D2E3;  /* amethyst */
-  --sage: #3C6E9A;  --sage-soft: #CFDDEC;                          /* sapphire */
-  --clay: #B5462E;  --clay-soft: #F2D8CC;                          /* ember    */
-
-  --unalloc: #CFC0A0;
-  --bar-track: rgba(74,54,20,0.15);
-
-  /* GrowthScene rings — gilded treasure in wizard */
-  --grow-ring-outer: color-mix(in oklab, var(--honey), transparent 72%);
-  --grow-ring-mid: color-mix(in oklab, var(--honey), transparent 45%);
-  --grow-ring-in: var(--honey);
-  --grow-mark: var(--honey-deep);
-  --invest-contrib: color-mix(in oklab, #6A5A3C, transparent 68%);
-  --invest-contrib-solid: color-mix(in oklab, #6A5A3C, transparent 30%);
-  --invest-gains: color-mix(in oklab, var(--brand), transparent 64%);
-
-  /* income-sources pie — rich jewel tones for wizard */
-  --src-1: #1E8A5B; --src-2: #CF9A22; --src-3: #8C4080; --src-4: #2D6FA3;
-  --tree-bark: #6B5026; --tree-ground: #2E2A1A;
-
-  --brand: #A8801E; --brand-soft: var(--honey-soft);
-
-  --veil: rgba(10,14,30,0);
-  --grain-opacity: 0.05;
-  --nav-bg: rgba(238,224,193,0.97);
-
-  --shadow-card: 0 1px 2px rgba(6,9,22,0.22), 0 12px 28px rgba(6,9,22,0.34);
-  --shadow-press: 0 1px 3px rgba(6,9,22,0.32), 0 2px 8px rgba(6,9,22,0.22);
-  --shadow-chip: 0 1px 3px rgba(6,9,22,0.18);
-  --shadow-nav: 0 8px 26px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.35);
-}
-.fa-root[data-theme="wizard"][data-card="soft"] {
-  --shadow-card: 0 1px 2px rgba(6,9,22,0.16), 0 5px 14px rgba(6,9,22,0.2);
-  --card-line: rgba(74,54,20,0.11);
-}
-.fa-root[data-theme="wizard"] .fa-hint svg { color: var(--honey-deep); }
-/* on-the-night-sky text: gold/light so it stays legible off-card (inline colors → !important) */
-.fa-root[data-theme="wizard"] .fa-title { color: #E8C879 !important; letter-spacing: 1.2px; text-shadow: 0 1px 16px rgba(0,0,0,0.55), 0 0 1px rgba(232,200,121,0.4); }
-.fa-root[data-theme="wizard"] .fa-title::after { content: " ✦"; font-size: 0.5em; vertical-align: 0.5em; color: rgba(232,200,121,0.9); letter-spacing: 0; }
-.fa-root[data-theme="wizard"] .fa-eyebrow { color: rgba(216,186,114,0.92) !important; }
-.fa-root[data-theme="wizard"] .fa-seclabel { color: rgba(216,186,114,0.92) !important; }
-.fa-root[data-theme="wizard"] .fa-seclabel::before { content: "✦  "; color: rgba(232,200,121,0.95); }
-.fa-root[data-theme="wizard"] .fa-hint { color: rgba(214,208,230,0.9) !important; }
-.fa-root[data-theme="wizard"] .fa-hint strong { color: #F1E7CC !important; }
-.fa-root[data-theme="wizard"] .fa-lede { color: rgba(216,210,232,0.9) !important; }
-.fa-root[data-theme="wizard"] .fa-footer-name { color: rgba(228,219,240,0.92) !important; text-shadow: 0 1px 10px rgba(4,6,16,0.85); }
-.fa-root[data-theme="wizard"] .fa-footer-sub { color: rgba(168,176,205,0.72) !important; text-shadow: 0 1px 10px rgba(4,6,16,0.85); }
-
-/* ── ornate parchment cards: aged wash + gilded corner frame ── */
-.fa-root[data-theme="wizard"] .fa-card {
-  background-image:
-    radial-gradient(150% 120% at 0% 0%, rgba(120,90,40,0.06), transparent 38%),
-    radial-gradient(150% 120% at 100% 100%, rgba(120,90,40,0.07), transparent 40%) !important;
-}
-.fa-root[data-theme="wizard"] .fa-card::before {
-  content: ""; position: absolute; inset: 6px; pointer-events: none; z-index: 2;
-  background-repeat: no-repeat; background-size: 18px 18px;
-  background-position: top left, top right, bottom left, bottom right;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M3 11 V5 a2 2 0 0 1 2-2 h6' fill='none' stroke='%23A8801E' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='5.2' cy='5.2' r='1.1' fill='%23A8801E'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M21 11 V5 a2 2 0 0 0-2-2 h-6' fill='none' stroke='%23A8801E' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='18.8' cy='5.2' r='1.1' fill='%23A8801E'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M3 13 V19 a2 2 0 0 0 2 2 h6' fill='none' stroke='%23A8801E' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='5.2' cy='18.8' r='1.1' fill='%23A8801E'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M21 13 V19 a2 2 0 0 1-2 2 h-6' fill='none' stroke='%23A8801E' stroke-width='1.4' stroke-linecap='round'/%3E%3Ccircle cx='18.8' cy='18.8' r='1.1' fill='%23A8801E'/%3E%3C/svg%3E");
-}
-/* coin / wax-seal medallions */
-.fa-root[data-theme="wizard"] .fa-medallion {
-  border-radius: 50% !important;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.45), inset 0 0 0 1.5px rgba(150,116,46,0.5), 0 1px 3px rgba(0,0,0,0.28) !important;
-}
-/* gold-foil buttons */
-.fa-root[data-theme="wizard"] .fa-cta {
-  background: linear-gradient(180deg, #ECCE86 0%, #CDA250 100%);
-  color: #3B2C0C; border-top: 1px solid rgba(120,90,40,0.35);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.22);
-}
-.fa-root[data-theme="wizard"] .fa-cta:hover { filter: brightness(1.04); }
-.fa-root[data-theme="wizard"] .fa-cta-solid {
-  background: linear-gradient(180deg, #ECCE86, #C99E46); color: #3B2C0C;
-  box-shadow: 0 6px 16px rgba(120,80,20,0.42);
-}
-/* glowing rune on the active nav tab + gilded nav frame */
-.fa-root[data-theme="wizard"] .fa-tab[data-on="true"] { color: #E8C879; }
-.fa-root[data-theme="wizard"] .fa-tab[data-on="true"] .fa-tab-ico {
-  background: radial-gradient(circle, rgba(232,200,121,0.32), rgba(232,200,121,0.08));
-  box-shadow: 0 0 10px rgba(232,200,121,0.4), inset 0 0 0 1px rgba(232,200,121,0.45);
-}
-.fa-root[data-theme="wizard"] .fa-nav-inner {
-  box-shadow: var(--shadow-nav), inset 0 0 0 1px rgba(150,116,46,0.28);
-}
-/* gold ratio pill (50/30/20) instead of mint */
-.fa-root[data-theme="wizard"] .fa-ratio-pill {
-  color: var(--honey-deep) !important;
-  background: linear-gradient(180deg, #F0E3B8, #E4D199) !important;
-  box-shadow: inset 0 0 0 1px rgba(150,116,46,0.4);
-}
-/* darken the page around the phone + lighten caption in wizard */
-body:has(.fa-root[data-theme="wizard"]) {
-  background: radial-gradient(140% 120% at 50% -10%, #1A2138 0%, #0E1326 55%, #080B18 100%);
-}
-body:has(.fa-root[data-theme="wizard"]) .caption { color: #95A0C2; }
-
-* { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
-body {
-  background:
-    radial-gradient(140% 120% at 50% -10%, #E7E2D6 0%, #D7D2C4 55%, #CDC8BA 100%);
-  font-family: var(--sans);
-  -webkit-font-smoothing: antialiased;
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh; padding: 28px;
-}
-.stage { position: relative; }
-.caption {
-  position: absolute; top: -2px; left: 50%; transform: translate(-50%,-150%);
-  font-family: var(--sans); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
-  color: #8d8978; white-space: nowrap;
+// ─────────────────────────────────────────────────────────────
+// Grouped list (inset card, r:26) + row (52px)
+// ─────────────────────────────────────────────────────────────
+function IOSListRow({ title, detail, icon, chevron = true, isLast = false, dark = false }) {
+  const text = dark ? '#fff' : '#000';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const ter = dark ? 'rgba(235,235,245,0.3)' : 'rgba(60,60,67,0.3)';
+  const sep = dark ? 'rgba(84,84,88,0.65)' : 'rgba(60,60,67,0.12)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 52,
+      padding: '0 16px', position: 'relative',
+      fontFamily: '-apple-system, system-ui', fontSize: 17,
+      letterSpacing: -0.43,
+    }}>
+      {icon && (
+        <div style={{
+          width: 30, height: 30, borderRadius: 7, background: icon,
+          marginRight: 12, flexShrink: 0,
+        }} />
+      )}
+      <div style={{ flex: 1, color: text }}>{title}</div>
+      {detail && <span style={{ color: sec, marginRight: 6 }}>{detail}</span>}
+      {chevron && (
+        <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0 }}>
+          <path d="M1 1l6 6-6 6" stroke={ter} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          left: icon ? 58 : 16, height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
 }
 
-/* ════════════════════════ APP LAYOUT ════════════════════════ */
-/* bare mode: app fills the whole viewport (real phone / installed PWA) */
-.fa-bare {
-  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
-  overflow: hidden; background: #0B0F22;
-}
-body:has(.fa-root[data-bare="true"]) { padding: 0; display: block; }
-body:has(.fa-root[data-bare="true"]) .caption { display: none; }
-/* content padding: clears the real status bar (safe-area) + bottom nav */
-.fa-content { padding: 54px 17px 132px; }
-.fa-root[data-bare="true"] .fa-content {
-  padding-top: calc(22px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
-}
-.fa-root[data-bare="true"] .fa-nav {
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-}
-.fa-screen { display: flex; flex-direction: column; }
-.fa-scroll { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.fa-scroll::-webkit-scrollbar { display: none; }
-
-/* entrance — resting state is visible; we transition IN from hidden.
-   Driven by the .is-in class (toggled in JS via setTimeout). */
-.fa-stage .fa-screen > * {
-  transition: opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1);
-}
-.fa-stage:not(.is-in) .fa-screen > * { opacity: 0; transform: translateY(12px); }
-.fa-stage .fa-screen > *:nth-child(1){transition-delay:.00s}
-.fa-stage .fa-screen > *:nth-child(2){transition-delay:.05s}
-.fa-stage .fa-screen > *:nth-child(3){transition-delay:.10s}
-.fa-stage .fa-screen > *:nth-child(4){transition-delay:.15s}
-.fa-stage .fa-screen > *:nth-child(5){transition-delay:.20s}
-.fa-stage .fa-screen > *:nth-child(6){transition-delay:.25s}
-.fa-stage .fa-screen > *:nth-child(7){transition-delay:.30s}
-.fa-stage .fa-screen > *:nth-child(n+8){transition-delay:.34s}
-
-/* hero soft glow */
-.fa-hero-glow {
-  position: absolute; inset: 0;
-  background: radial-gradient(120% 140% at 85% -20%, color-mix(in oklab, var(--brand), transparent 86%), transparent 60%);
-  pointer-events: none;
+function IOSList({ header, children, dark = false }) {
+  const hc = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const bg = dark ? '#1C1C1E' : '#fff';
+  return (
+    <div>
+      {header && (
+        <div style={{
+          fontFamily: '-apple-system, system-ui', fontSize: 13,
+          color: hc, textTransform: 'uppercase',
+          padding: '8px 36px 6px', letterSpacing: -0.08,
+        }}>{header}</div>
+      )}
+      <div style={{
+        background: bg, borderRadius: 26,
+        margin: '0 16px', overflow: 'hidden',
+      }}>{children}</div>
+    </div>
+  );
 }
 
-/* CTA bar inside hero */
-.fa-cta {
-  width: 100%; border: none; cursor: pointer;
-  background: var(--brand-soft);
-  color: var(--brand);
-  font-family: var(--sans); font-size: 14px; font-weight: 600;
-  padding: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: filter .2s, background .2s; white-space: nowrap;
-  border-top: 1px solid var(--card-line);
-}
-.fa-cta:hover { filter: brightness(0.98); }
-.fa-cta:active { filter: brightness(0.95); }
-.fa-cta-solid {
-  background: var(--brand); color: #fff; border-radius: 20px; border: none;
-  box-shadow: 0 6px 16px color-mix(in oklab, var(--brand), transparent 62%);
-}
-
-.fa-textbtn {
-  border: none; background: none; cursor: pointer;
-  font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--brand);
-  padding: 2px 4px; border-radius: 8px; transition: background .2s;
-}
-.fa-textbtn:hover { background: var(--brand-soft); }
-
-.fa-ghostbtn {
-  border: 1px solid var(--card-line); background: var(--card); cursor: pointer;
-  font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink);
-  padding: 8px 13px; border-radius: 14px; display: inline-flex; align-items: center; gap: 6px;
-  transition: background .2s, transform .15s;
-}
-.fa-ghostbtn:active { transform: scale(.96); }
-
-.fa-hint {
-  display: flex; align-items: center; gap: 8px; margin: 0 4px 22px;
-  font-family: var(--sans); font-size: 13px; color: var(--ink-soft);
-}
-.fa-hint strong { color: var(--ink); font-weight: 600; }
-.fa-hint svg { color: var(--moss); flex-shrink: 0; }
-
-.fa-cardtitle { font-family: var(--display); font-size: 20px; font-weight: 600; color: var(--ink); margin: 0; }
-.fa-lede { font-family: var(--serif); font-size: 17px; font-style: italic; line-height: 1.5; color: var(--ink-soft); margin: 0 4px 6px; }
-.fa-note {
-  font-family: var(--sans); font-size: 13.5px; color: var(--ink-faint);
-  padding: 14px 16px; border-radius: 16px; background: var(--cream);
-  border: 1px dashed var(--card-line);
+// ─────────────────────────────────────────────────────────────
+// Device frame
+// ─────────────────────────────────────────────────────────────
+function IOSDevice({
+  children, width = 402, height = 874, dark = false,
+  title, keyboard = false,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 48, overflow: 'hidden',
+      position: 'relative', background: dark ? '#000' : '#F2F2F7',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12)',
+      fontFamily: '-apple-system, system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      {/* dynamic island */}
+      <div style={{
+        position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+        width: 126, height: 37, borderRadius: 24, background: '#000', zIndex: 50,
+      }} />
+      {/* status bar (absolute) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <IOSStatusBar dark={dark} />
+      </div>
+      {/* nav + content */}
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {title !== undefined && <IOSNavBar title={title} dark={dark} />}
+        <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+        {keyboard && <IOSKeyboard dark={dark} />}
+      </div>
+      {/* home indicator — always on top */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 60,
+        height: 34, display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+        paddingBottom: 8, pointerEvents: 'none',
+      }}>
+        <div style={{
+          width: 139, height: 5, borderRadius: 100,
+          background: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.25)',
+        }} />
+      </div>
+    </div>
+  );
 }
 
-/* settings row */
-.fa-row { display: flex; align-items: center; gap: 13px; padding: 13px 16px; }
+// ─────────────────────────────────────────────────────────────
+// Keyboard — iOS 26 liquid glass
+// ─────────────────────────────────────────────────────────────
+function IOSKeyboard({ dark = false }) {
+  const glyph = dark ? 'rgba(255,255,255,0.7)' : '#595959';
+  const sugg = dark ? 'rgba(255,255,255,0.6)' : '#333';
+  const keyBg = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
 
-/* interactive list row inside a merged card */
-.fa-listrow {
-  padding: 16px; cursor: pointer; position: relative;
-  transition: background .22s ease, transform .18s cubic-bezier(.2,.8,.2,1);
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-listrow:hover { background: color-mix(in oklab, var(--cream), transparent 40%); }
-.fa-listrow:active { background: var(--cream); transform: scale(.99); }
+  // special-key icons
+  const icons = {
+    shift: <svg width="19" height="17" viewBox="0 0 19 17"><path d="M9.5 1L1 9.5h4.5V16h8V9.5H18L9.5 1z" fill={glyph}/></svg>,
+    del: <svg width="23" height="17" viewBox="0 0 23 17"><path d="M7 1h13a2 2 0 012 2v11a2 2 0 01-2 2H7l-6-7.5L7 1z" fill="none" stroke={glyph} strokeWidth="1.6" strokeLinejoin="round"/><path d="M10 5l7 7M17 5l-7 7" stroke={glyph} strokeWidth="1.6" strokeLinecap="round"/></svg>,
+    ret: <svg width="20" height="14" viewBox="0 0 20 14"><path d="M18 1v6H4m0 0l4-4M4 7l4 4" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
 
-/* ── flip card (Tipy) ── */
-.fa-flip { perspective: 1400px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.fa-flip-inner {
-  position: relative; width: 100%; height: 100%;
-  transition: transform .7s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d;
-}
-.fa-flip[data-flipped="true"] .fa-flip-inner { transform: rotateY(180deg); }
-.fa-flip-face {
-  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-  border-radius: 26px; overflow: hidden;
-  display: flex; flex-direction: column;
-  opacity: 1; transition: opacity .01s linear .34s;
-}
-.fa-flip-back { transform: rotateY(180deg); opacity: 0; }
-.fa-flip[data-flipped="true"] .fa-flip-front { opacity: 0; }
-.fa-flip[data-flipped="true"] .fa-flip-back { opacity: 1; }
-.fa-flip:active .fa-flip-inner { transform: scale(.985) rotateY(0deg); }
-.fa-flip[data-flipped="true"]:active .fa-flip-inner { transform: scale(.985) rotateY(180deg); }
-.fa-flip-hint {
-  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
-  font-family: var(--sans); font-size: 11.5px; font-weight: 600; color: var(--brand);
-}
+  const key = (content, { w, flex, ret, fs = 25, k } = {}) => (
+    <div key={k} style={{
+      height: 42, borderRadius: 8.5,
+      flex: flex ? 1 : undefined, width: w, minWidth: 0,
+      background: ret ? '#08f' : keyBg,
+      boxShadow: '0 1px 0 rgba(0,0,0,0.075)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: '-apple-system, "SF Compact", system-ui',
+      fontSize: fs, fontWeight: 458, color: ret ? '#fff' : glyph,
+    }}>{content}</div>
+  );
 
-/* segmented control (invest sim) */
-.fa-seg { display: flex; gap: 6px; }
-.fa-seg button {
-  flex: 1; border: 1px solid var(--card-line); background: var(--cream);
-  color: var(--ink-soft); font-family: var(--sans); font-size: 12px; font-weight: 600;
-  padding: 8px 4px; border-radius: 13px; cursor: pointer; text-align: center;
-  transition: background .2s, color .2s, transform .15s, box-shadow .2s;
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-seg button:active { transform: scale(.96); }
-.fa-seg button[data-on="true"] {
-  background: var(--brand-soft); color: var(--ink); border-color: transparent;
-  box-shadow: var(--shadow-chip);
-}
-.fa-root[data-theme="wizard"] .fa-seg button[data-on="true"] {
-  background: linear-gradient(180deg, #F0E3B8, #E4D199); color: var(--honey-deep);
-  box-shadow: inset 0 0 0 1px rgba(150,116,46,0.4);
-}
-/* add-goal row (Year goals card) */
-.fa-addgoal {
-  display: flex; align-items: center; gap: 9px; width: 100%;
-  border: none; border-top: 1px dashed var(--card-line); background: transparent;
-  padding: 14px 16px; cursor: pointer;
-  font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--brand);
-  transition: background .2s; -webkit-tap-highlight-color: transparent;
-}
-.fa-addgoal:hover { background: color-mix(in oklab, var(--cream), transparent 40%); }
-.fa-addgoal:active { background: var(--cream); }
-.fa-addgoal-plus {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--brand-soft); color: var(--brand); flex-shrink: 0;
-}
-.fa-root[data-theme="wizard"] .fa-addgoal-plus {
-  background: linear-gradient(180deg, #F0E3B8, #E4D199); color: var(--honey-deep);
-  box-shadow: inset 0 0 0 1px rgba(150,116,46,0.4);
-}
-/* year-goal custom inputs + remove button */
-.fa-input {
-  width: 100%; box-sizing: border-box; border: 1px solid var(--card-line);
-  background: var(--card); color: var(--ink); border-radius: 12px;
-  padding: 10px 13px; font-family: var(--sans); font-size: 14px; outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-.fa-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.fa-input::placeholder { color: var(--ink-faint); }
-.fa-input-btn {
-  border: none; cursor: pointer; border-radius: 12px; padding: 10px 14px;
-  font-family: var(--sans); font-size: 13.5px; font-weight: 600;
-  background: var(--brand); color: #fff; white-space: nowrap;
-  transition: filter .2s, transform .15s;
-}
-.fa-input-btn:active { transform: scale(.96); }
-.fa-input-btn.ghost { background: var(--cream); color: var(--ink-soft); border: 1px solid var(--card-line); }
-.fa-root[data-theme="wizard"] .fa-input-btn { background: linear-gradient(180deg, #ECCE86, #C99E46); color: #3B2C0C; }
-.fa-goal-x {
-  border: none; background: var(--cream); color: var(--ink-faint); cursor: pointer;
-  width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center;
-  justify-content: center; flex-shrink: 0; transition: background .2s, color .2s;
-}
-.fa-goal-x:hover { background: var(--clay-soft); color: var(--clay); }
+  const row = (keys, pad = 0) => (
+    <div style={{ display: 'flex', gap: 6.5, justifyContent: 'center', padding: `0 ${pad}px` }}>
+      {keys.map(l => key(l, { flex: true, k: l }))}
+    </div>
+  );
 
-/* ── interactive Plán ── */
-.fa-planrow {
-  display: flex; align-items: center; gap: 10px; width: 100%;
-  border: none; border-top: 1px solid var(--card-line); background: transparent;
-  padding: 12px 16px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: background .2s;
-}
-.fa-planrow:hover { background: color-mix(in oklab, var(--cream), transparent 45%); }
-.fa-cat-head {
-  display: flex; align-items: center; gap: 12px; width: 100%;
-  border: none; background: transparent; cursor: pointer; padding: 16px 16px 12px;
-  -webkit-tap-highlight-color: transparent; transition: background .2s;
-}
-.fa-cat-head:hover { background: color-mix(in oklab, var(--cream), transparent 50%); }
-.fa-item {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--card); border: 1px solid var(--card-line);
-  border-radius: 13px; padding: 9px 11px;
-}
-.fa-rec {
-  border: 1px solid var(--card-line); background: transparent; cursor: pointer;
-  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--ink-faint); transition: all .2s;
-}
-.fa-rec.on { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
-.fa-item-del {
-  border: none; background: transparent; cursor: pointer; flex-shrink: 0;
-  width: 26px; height: 26px; border-radius: 8px; color: var(--ink-faint);
-  display: inline-flex; align-items: center; justify-content: center; transition: all .2s;
-}
-.fa-item-del:hover { background: var(--clay-soft); color: var(--clay); }
-.fa-chip {
-  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
-  border: 1px dashed var(--card-line); background: var(--card);
-  color: var(--ink-soft); border-radius: 999px; padding: 5px 11px;
-  font-family: var(--sans); font-size: 12px; font-weight: 600; transition: all .18s;
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-chip:hover { border-style: solid; border-color: var(--brand); color: var(--brand); }
-.fa-chip:active { transform: scale(.95); }
+  return (
+    <div style={{
+      position: 'relative', zIndex: 15, borderRadius: 27, overflow: 'hidden',
+      padding: '11px 0 2px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      boxShadow: dark
+        ? '0 -2px 20px rgba(0,0,0,0.09)'
+        : '0 -1px 6px rgba(0,0,0,0.018), 0 -3px 20px rgba(0,0,0,0.012)',
+    }}>
+      {/* liquid glass bg — same recipe as nav pills */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.14)' : 'rgba(255,255,255,0.25)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+        pointerEvents: 'none',
+      }} />
 
-/* income columns + goal tree */
-.fa-col {
-  width: 100%; max-width: 38px; border-radius: 8px 8px 4px 4px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.3);
-  animation: faColRise .8s cubic-bezier(.2,.85,.3,1) both;
-  transform-origin: bottom;
-}
-@keyframes faColRise { from { transform: scaleY(0.02); } to { transform: scaleY(1); } }
-.fa-tree { transition: transform .25s ease; }
-.fa-tree.mini:hover { transform: translateY(-2px) scale(1.02); }
-@media (prefers-reduced-motion: reduce) { .fa-col { animation: none; } }
-.fa-root[data-theme="wizard"] .fa-input-btn { background: linear-gradient(180deg, #ECCE86, #C99E46); color: #3B2C0C; }
+      {/* autocorrect bar */}
+      <div style={{
+        display: 'flex', gap: 20, alignItems: 'center',
+        padding: '8px 22px 13px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {['"The"', 'the', 'to'].map((w, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <div style={{ width: 1, height: 25, background: '#ccc', opacity: 0.3 }} />}
+            <div style={{
+              flex: 1, textAlign: 'center',
+              fontFamily: '-apple-system, system-ui', fontSize: 17,
+              color: sugg, letterSpacing: -0.43, lineHeight: '22px',
+            }}>{w}</div>
+          </React.Fragment>
+        ))}
+      </div>
 
-/* language picker */
-.fa-lang { display: flex; flex-wrap: wrap; gap: 7px; }
-.fa-lang button {
-  border: 1px solid var(--card-line); background: var(--cream);
-  color: var(--ink-soft); font-family: var(--sans); font-size: 13px; font-weight: 600;
-  padding: 8px 13px; border-radius: 12px; cursor: pointer;
-  transition: background .2s, color .2s, transform .15s, box-shadow .2s;
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-lang button:active { transform: scale(.95); }
-.fa-lang button[data-on="true"] {
-  background: var(--brand-soft); color: var(--ink); border-color: transparent;
-  box-shadow: var(--shadow-chip);
-}
-.fa-root[data-theme="wizard"] .fa-lang button[data-on="true"] {
-  background: linear-gradient(180deg, #F0E3B8, #E4D199); color: var(--honey-deep);
-  box-shadow: inset 0 0 0 1px rgba(150,116,46,0.4);
-}
-/* invest sim educational caption */.fa-invest-note {
-  display: flex; gap: 9px; align-items: flex-start; margin-top: 15px;
-  padding: 13px 14px; border-radius: 16px; background: var(--cream);
-  border: 1px dashed var(--card-line);
-}
-.fa-invest-note svg { color: var(--brand); flex-shrink: 0; margin-top: 1px; }
-.fa-invest-note p { font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
-.fa-invest-note strong { color: var(--ink); font-weight: 600; }
+      {/* key layout */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 13,
+        padding: '0 6.5px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {row(['q','w','e','r','t','y','u','i','o','p'])}
+        {row(['a','s','d','f','g','h','j','k','l'], 20)}
+        <div style={{ display: 'flex', gap: 14.25, alignItems: 'center' }}>
+          {key(icons.shift, { w: 45, k: 'shift' })}
+          <div style={{ display: 'flex', gap: 6.5, flex: 1 }}>
+            {['z','x','c','v','b','n','m'].map(l => key(l, { flex: true, k: l }))}
+          </div>
+          {key(icons.del, { w: 45, k: 'del' })}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {key('ABC', { w: 92.25, fs: 18, k: 'abc' })}
+          {key('', { flex: true, k: 'space' })}
+          {key(icons.ret, { w: 92.25, ret: true, k: 'ret' })}
+        </div>
+      </div>
 
-/* mood selector */
-.fa-mood {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px;
-  padding: 13px 6px; border-radius: 16px; cursor: pointer;
-  border: 1px solid var(--card-line); background: var(--cream);
-  font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink-soft);
-  transition: all .22s ease;
-}
-.fa-mood[data-on="true"] { background: var(--brand-soft); color: var(--ink); border-color: transparent; transform: translateY(-2px); box-shadow: var(--shadow-chip); }
-
-/* range slider */
-.fa-range {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 9px;
-  border-radius: 999px; background: var(--bar-track); outline: none; cursor: pointer;
-}
-.fa-range::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
-  background: #fff; border: 5px solid var(--accent, var(--brand));
-  box-shadow: 0 2px 6px rgba(40,52,30,0.2); cursor: grab; transition: transform .15s;
-}
-.fa-range::-webkit-slider-thumb:active { transform: scale(1.12); cursor: grabbing; }
-.fa-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 5px solid var(--accent, var(--brand)); }
-
-/* ════════════════════════ BOTTOM NAV ════════════════════════ */
-.fa-nav { padding: 0 12px 26px; position: relative; z-index: 5; }
-.fa-nav-inner {
-  display: flex; gap: 1px; align-items: stretch;
-  background: var(--nav-bg);
-  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid var(--card-line); border-radius: 24px;
-  padding: 7px 5px; box-shadow: var(--shadow-nav);
-}
-.fa-tab {
-  flex: 1; min-width: 0; border: none; background: none; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 4px 1px 3px; color: var(--ink-faint);
-  transition: color .25s ease, transform .18s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-tab[data-on="true"] { color: var(--brand); }
-.fa-tab:active { transform: scale(.9); }
-.fa-tab-ico {
-  width: 40px; height: 28px; display: flex; align-items: center; justify-content: center;
-  border-radius: 11px; transition: background .28s ease;
-}
-.fa-tab[data-on="true"] .fa-tab-ico { background: var(--brand-soft); }
-.fa-tab-label { font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.1px; }
-.fa-tab:not([data-on="true"]) .fa-tab-label { color: var(--ink-soft); }
-/* wizard nav labels: dark glowing gold, clearly legible */
-.fa-root[data-theme="wizard"] .fa-tab { color: #9A7322; }
-.fa-root[data-theme="wizard"] .fa-tab .fa-tab-label {
-  color: #8A6519; text-shadow: none;
-}
-.fa-root[data-theme="wizard"] .fa-tab[data-on="true"],
-.fa-root[data-theme="wizard"] .fa-tab[data-on="true"] .fa-tab-label {
-  color: #6E4E12; text-shadow: none;
+      {/* bottom spacer (emoji+mic area, icons omitted) */}
+      <div style={{ height: 56, width: '100%', position: 'relative' }} />
+    </div>
+  );
 }
 
-/* ════════════════════════ FOREST MOTION ════════════════════════ */
-@keyframes faDrift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(46px,34px) scale(1.12); } }
-@keyframes faDrift2 { from { transform: translate(0,0) scale(1.05); } to { transform: translate(-40px,28px) scale(0.95); } }
-@keyframes faDrift3 { from { transform: translate(0,0) scale(1); } to { transform: translate(34px,-30px) scale(1.1); } }
-@keyframes faGlow { from { opacity: .5; transform: rotate(8deg) translateY(0); } to { opacity: .8; transform: rotate(10deg) translateY(14px); } }
-/* tree-crown sway — gentle wind */
-@keyframes faSwayA { from { transform: rotate(-1.6deg) translateX(-4px); } to { transform: rotate(2deg) translateX(6px); } }
-@keyframes faSwayB { from { transform: rotate(1.8deg) translateX(5px); } to { transform: rotate(-1.5deg) translateX(-5px); } }
-/* god-rays sweep + breathe */
-@keyframes faGodray { 0% { opacity: .35; transform: rotate(11deg) translateX(-10px); } 100% { opacity: .8; transform: rotate(14deg) translateX(12px); } }
-@keyframes faGodray2 { 0% { opacity: .3; transform: rotate(15deg) translateX(8px); } 100% { opacity: .62; transform: rotate(18deg) translateX(-8px); } }
-/* dappled light flicker through leaves */
-@keyframes faDapple { 0%,100% { opacity: .12; transform: scale(.9); } 45% { opacity: .5; transform: scale(1.08); } 70% { opacity: .26; transform: scale(1); } }
-/* slow falling, drifting, tumbling leaf */
-@keyframes faLeafFall {
-  0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
-  10% { opacity: .3; }
-  50% { transform: translate(30px, 55vh) rotate(180deg); }
-  90% { opacity: .26; }
-  100% { transform: translate(-12px, 115vh) rotate(360deg); opacity: 0; }
-}
-.fa-mote {
-  position: absolute; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,252,232,0.95), rgba(255,250,220,0));
-  animation-name: faMoteRise; animation-timing-function: linear; animation-iteration-count: infinite;
-  pointer-events: none;
-}
-@keyframes faMoteRise {
-  0% { transform: translate(0, 0); opacity: 0; }
-  12% { opacity: 0.7; }
-  88% { opacity: 0.55; }
-  100% { transform: translate(22px, -560px); opacity: 0; }
-}
-
-/* ════════════════════════ WIZARD MOTION ════════════════════════ */
-.wz-star { position: absolute; border-radius: 50%; background: #EAF0FF;
-  box-shadow: 0 0 6px rgba(210,224,255,0.85); pointer-events: none;
-  animation-name: wzTwinkle; animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite; animation-direction: alternate; }
-@keyframes wzTwinkle { from { opacity: .22; transform: scale(.7); } to { opacity: 1; transform: scale(1.12); } }
-.wz-ember { position: absolute; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,224,150,0.95), rgba(255,200,110,0));
-  pointer-events: none; animation-name: wzEmberRise;
-  animation-timing-function: linear; animation-iteration-count: infinite; }
-@keyframes wzEmberRise {
-  0% { transform: translate(0,0); opacity: 0; }
-  14% { opacity: .85; }
-  85% { opacity: .5; }
-  100% { transform: translate(16px,-300px); opacity: 0; }
-}
-.wz-win { animation: wzFlicker 4.5s ease-in-out infinite; }
-@keyframes wzFlicker { 0%,100% { opacity: 1; } 42% { opacity: .5; } 68% { opacity: .85; } }
-@keyframes wzMoon { from { transform: translateY(0); } to { transform: translateY(10px); } }
-@keyframes wzDrift1 { from { transform: translate(0,0); } to { transform: translate(40px,26px); } }
-@keyframes wzDrift2 { from { transform: translate(0,0); } to { transform: translate(-34px,22px); } }
-@keyframes wzMist { from { transform: translateX(-16px); opacity:.5; } to { transform: translateX(16px); opacity:.85; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .fa-stage .fa-screen > * { transition: none !important; opacity: 1 !important; transform: none !important; }
-  .fa-mote, .wz-ember { display: none; }
-  .wz-star, .wz-win { animation: none !important; }
-}</style>
-</head>
-<body>
-  <div class="stage">
-    <div class="caption">Vědomé utrácení</div>
-    <div id="root"></div>
-  </div>
-
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-
-  <script type="text/babel" src="ios-frame.jsx"></script>
-  <script type="text/babel" src="tweaks-panel.jsx"></script>
-  <script type="text/babel" src="fa-core.jsx"></script>
-  <script type="text/babel" src="fa-i18n.jsx"></script>
-  <script type="text/babel" src="fa-forest.jsx"></script>
-  <script type="text/babel" src="fa-wizard.jsx"></script>
-  <script type="text/babel" src="fa-ui.jsx"></script>
-  <script type="text/babel" src="fa-tree.jsx"></script>
-  <script type="text/babel" src="fa-invest.jsx"></script>
-  <script type="text/babel" src="fa-prehled.jsx"></script>
-  <script type="text/babel" src="fa-screens.jsx"></script>
-  <script type="text/babel" src="fa-plan.jsx"></script>
-  <script type="text/babel" src="fa-app.jsx"></script>
-</body>
-</html>
+Object.assign(window, {
+  IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard,
+});

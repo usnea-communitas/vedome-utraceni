@@ -1,164 +1,246 @@
-// fa-core.jsx — data model, formatting helpers, and nature-inspired icons
-// for "Vědomé utrácení" (Conscious Spending) — forest-calm redesign.
+// fa-forest.jsx — a "living forest" ambient backdrop.
+// Layers (back → front): canopy gradient wash · drifting light pools ·
+// swaying tree-crown silhouettes · sweeping god-rays · dappled light through
+// leaves · slow falling leaves · grain · frosted cream veil.
+//
+// Optional `videoSrc` plays a real forest clip behind the veil instead of the
+// CSS canopy (loops, muted, cover). Honors prefers-reduced-motion and the
+// `motion` tweak: off | barely | gentle | living.
 
-// ── Number / currency formatting (Czech: space thousands sep) ───────────
-function fmt(n) {
-  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-}
-function kc(n) { return fmt(n) + ' Kč'; }
-
-// ── App data — mirrors the live structure exactly ──────────────────────
-const APP = {
-  user: 'Anička',
-  month: 'Červen 2026',
-  income: 2600,
-  allocated: 2420,
-  remaining: 180,
-  plannedPct: 93,
-  incomeSources: [
-    { name: 'Hlavní práce', amount: 1900, accent: 'moss' },
-    { name: 'Coaching', amount: 430, accent: 'honey' },
-    { name: 'Podpora', amount: 180, accent: 'blush' },
-    { name: 'Drobné brigády', amount: 90, accent: 'sage' },
-  ],
-  categories: [
-    {
-      key: 'nutne', name: 'Potřebné', icon: 'fir', accent: 'moss',
-      targetPct: 50, target: 1300, actual: 1510, incomePct: 58, ofTarget: 116,
-      status: 'Řešit', tone: 'over', note: 'Překročeno o 210 Kč.',
-      sub: 'Nájem, energie, jídlo a vše, bez čeho to nejde.',
-    },
-    {
-      key: 'budouci', name: 'Budoucí já', icon: 'sprout', accent: 'honey',
-      targetPct: 20, target: 520, actual: 380, incomePct: 15, ofTarget: 73,
-      status: 'Řešit', tone: 'under', note: 'Pod cílem o 140 Kč.',
-      sub: 'Spoření a investice, které pěstuješ pro sebe.',
-    },
-    {
-      key: 'radost', name: 'Radost', icon: 'blossom', accent: 'blush',
-      targetPct: 30, target: 780, actual: 530, incomePct: 20, ofTarget: 68,
-      status: 'OK', tone: 'ok', note: 'V rámci cíle.',
-      sub: 'Kavárny, výlety a drobnosti, co tě těší.',
-    },
-  ],
-  reserves: {
-    total: 114077, goalTotal: 160000, remainingToGoal: 45923, investPct: 24,
-    goals: [
-      { name: 'Nouzová rezerva', saved: 48000, target: 60000, icon: 'shield', accent: 'moss' },
-      { name: 'Investice · ETF', saved: 41200, target: 50000, icon: 'sprout', accent: 'honey' },
-      { name: 'Dovolená · Toskánsko', saved: 12500, target: 30000, icon: 'sun', accent: 'blush' },
-      { name: 'Nový notebook', saved: 12377, target: 20000, icon: 'leaf', accent: 'sage' },
-    ],
-  },
-  extra: {
-    total: 26700,
-    note: 'Vedlejší zdroje a jednorázové příjmy.',
-    sources: [
-      { name: 'spořák', amount: 26700 },
-    ],
-  },
-  reflexe: {
-    prompts: [
-      { q: 'Co mi tento měsíc udělalo radost — a stálo to méně, než bych čekala?', icon: 'blossom', accent: 'blush' },
-      { q: 'Který výdaj se mi teď zdá zbytečný — a co bych za ty peníze raději měla?', icon: 'leaf', accent: 'moss' },
-      { q: 'Co dobrého jsem udělala pro své „budoucí já"?', icon: 'sprout', accent: 'honey' },
-    ],
-  },
-  tipy: [
-    { t: 'Pravidlo 24 hodin', d: 'U věcí nad 1 000 Kč počkej den. Touha často sama opadne.', icon: 'leaf', accent: 'moss',
-      factTitle: 'Věděla jsi?', fact: 'Odložený nákup zruší skoro každý druhý člověk. Po dni „spaní“ už novou věc mozek tolik nechce.' },
-    { t: 'Zaplať nejdřív budoucí já', d: 'Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí".', icon: 'sprout', accent: 'honey',
-      factTitle: 'Malé číslo, velký les', fact: '500 Kč měsíčně při 6 % výnosu je za 30 let přes půl milionu. Složený úrok je tichá zahradnice.' },
-    { t: 'Radost není luxus', d: 'Drobné potěšení plánuj naschvál — vina jen kazí požitek.', icon: 'blossom', accent: 'blush',
-      factTitle: 'Zážitky > věci', fact: 'Výzkumy štěstí říkají: peníze za zážitky těší déle než za věci. Vzpomínka neztratí lesk.' },
-    { t: 'Pojmenuj své cíle', d: 'Spoření s názvem („Toskánsko“) přežije pokušení líp než „rezerva“.', icon: 'mountain', accent: 'sage',
-      factTitle: 'Síla jména', fact: 'Pojmenovaný cíl máš výrazně větší šanci dotáhnout — mozek ho pak brání jako svůj.' },
-  ],
-};
-
-// ── Accent color resolver (reads CSS vars so Tweaks can re-tint) ────────
-const ACCENTS = {
-  moss:  { v: '--moss',  soft: '--moss-soft'  },
-  honey: { v: '--honey', soft: '--honey-soft' },
-  blush: { v: '--blush', soft: '--blush-soft' },
-  sage:  { v: '--sage',  soft: '--sage-soft'  },
-};
-function accentVar(name)  { return `var(${(ACCENTS[name] || ACCENTS.moss).v})`; }
-function accentSoft(name) { return `var(${(ACCENTS[name] || ACCENTS.moss).soft})`; }
-
-// ── Theme-aware icons ──────────────────────────────────────────────────
-// The app has two skins; in "wizard" the same icon names resolve to magical
-// glyphs via WIZ_ICON. App sets this synchronously each render (top-down).
-let FA_THEME = 'forest';
-function setFaTheme(v) { FA_THEME = (v === 'wizard' || v === 'kouzelnický') ? 'wizard' : 'forest'; }
-// pick a label per active theme
-function faLabel(forest, wizard) { return FA_THEME === 'wizard' ? wizard : forest; }
-const WIZ_ICON = {
-  fir: 'castle', sprout: 'coins', blossom: 'potion',
-  leaf: 'feather', sun: 'coins', shield: 'vault',
-  mountain: 'star', book: 'spellbook', bulb: 'wand',
-  home: 'castle', more: 'owl',
-};
-
-// ── Nature-inspired line icons (clean, geometric, not childish) ─────────
-function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {} }) {
-  const p = { fill: 'none', stroke: color, strokeWidth: stroke, strokeLinecap: 'round', strokeLinejoin: 'round' };
-  const paths = {
-    // fir / evergreen — "Nutné" (essentials, sturdy)
-    fir: <g {...p}><path d="M12 3 L7 10 h3 L6 16 h5 v5 m1-18 L17 10 h-3 L18 16 h-5"/></g>,
-    // seedling / sprout — "Budoucí já" (growth)
-    sprout: <g {...p}><path d="M12 21 V11"/><path d="M12 13 C12 9 9 7 5 7 C5 11 8 13 12 13Z"/><path d="M12 11 C12 8 14.5 6 18 6 C18 9.5 15.5 11 12 11Z"/></g>,
-    // blossom — "Radost" (joy)
-    blossom: <g {...p}><circle cx="12" cy="12" r="2.4"/><path d="M12 9.6 C12 6 10 4 12 4 C14 4 12 6 12 9.6"/><path d="M14.4 12 C18 12 20 10 20 12 C20 14 18 12 14.4 12"/><path d="M12 14.4 C12 18 14 20 12 20 C10 20 12 18 12 14.4"/><path d="M9.6 12 C6 12 4 14 4 12 C4 10 6 12 9.6 12"/></g>,
-    // single leaf
-    leaf: <g {...p}><path d="M5 19 C5 11 11 5 19 5 C19 13 13 19 5 19Z"/><path d="M5 19 C9 15 13 11 17 7"/></g>,
-    // sun — income / warmth
-    sun: <g {...p}><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></g>,
-    // mountain — goals horizon
-    mountain: <g {...p}><path d="M3 19 L9.5 8 L13 13 L16 9 L21 19 Z"/></g>,
-    // shield — reserve / safety
-    shield: <g {...p}><path d="M12 3 L19 6 V11 C19 16 16 19 12 21 C8 19 5 16 5 11 V6 Z"/><path d="M9.5 12l1.8 1.8L15 10"/></g>,
-    // book — reflection
-    book: <g {...p}><path d="M5 4 h9 a3 3 0 0 1 3 3 v13 H8 a3 3 0 0 1-3-3Z"/><path d="M17 7 h2 v13 H8"/><path d="M8 8h6M8 11h6"/></g>,
-    // bulb — tips
-    bulb: <g {...p}><path d="M9 17 h6 M10 20 h4"/><path d="M12 3 C8.7 3 6.5 5.4 6.5 8.2 C6.5 10.6 8 11.8 9 13.2 V14.5 h6 V13.2 C16 11.8 17.5 10.6 17.5 8.2 C17.5 5.4 15.3 3 12 3Z"/></g>,
-    // home — overview
-    home: <g {...p}><path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 h12 V9.5"/><path d="M10 20v-5h4v5"/></g>,
-    // scales / plan
-    plan: <g {...p}><path d="M12 4 v16 M6 20 h12"/><path d="M5 8 h14 M12 4 l-1 0 M5 8 L2.8 13 a3 3 0 0 0 4.4 0 Z M19 8 l2.2 5 a3 3 0 0 1-4.4 0 Z"/></g>,
-    // more — three petals / dots
-    more: <g {...p}><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></g>,
-    // chevron
-    chevron: <g {...p}><path d="M9 6l6 6-6 6"/></g>,
-    // arrow up-right
-    arrow: <g {...p}><path d="M7 17 L17 7 M9 7 h8 v8"/></g>,
-    // plus
-    plus: <g {...p}><path d="M12 6v12M6 12h12"/></g>,
-    // bell / alert
-    alert: <g {...p}><path d="M12 4 a5 5 0 0 1 5 5 c0 4 1.5 5 2 6 H5 c.5-1 2-2 2-6 a5 5 0 0 1 5-5Z"/><path d="M10.5 20 a2 2 0 0 0 3 0"/></g>,
-    check: <g {...p}><path d="M5 12.5l4.5 4.5L19 7"/></g>,
-    // repeat / recurring
-    repeat: <g {...p}><path d="M4 9 a5 5 0 0 1 5-5 h7 M16 2 l3 2-3 2"/><path d="M20 15 a5 5 0 0 1-5 5 H8 M8 22 l-3-2 3-2"/></g>,
-    // trash
-    trash: <g {...p}><path d="M5 7 h14 M10 7 V5 a1 1 0 0 1 1-1 h2 a1 1 0 0 1 1 1 v2 M7 7 l1 12 a1 1 0 0 0 1 1 h6 a1 1 0 0 0 1-1 l1-12"/></g>,
-    // ── wizard glyphs ──
-    castle: <g {...p}><path d="M3 21 V11 h2 V9 h2 v2 h2 V9 h2 v2 h2 V9 h2 v2 h2 V9 h2 v2 h2 V21"/><path d="M10 21 v-4 a2 2 0 0 1 4 0 v4"/></g>,
-    coins: <g {...p}><ellipse cx="12" cy="7.5" rx="6" ry="2.5"/><path d="M6 7.5 V12 c0 1.4 2.7 2.5 6 2.5 s6-1.1 6-2.5 V7.5"/><path d="M6 12 v4.5 C6 17.9 8.7 19 12 19 s6-1.1 6-2.5 V12"/></g>,
-    potion: <g {...p}><path d="M9.5 3 h5"/><path d="M11 3 v5 L6.8 15.4 A3.2 3.2 0 0 0 9.6 20.2 h4.8 a3.2 3.2 0 0 0 2.8-4.8 L13 8 V3"/><path d="M8.2 14 h7.6"/><circle cx="11.5" cy="16.6" r="0.7"/><circle cx="14" cy="18" r="0.5"/></g>,
-    feather: <g {...p}><path d="M20 4 C11 5 7 11 5 17 L4 20"/><path d="M19 5 C16 10 12 13 7.5 14.5"/><path d="M4 20 l3.2-1"/></g>,
-    vault: <g {...p}><rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="12" cy="12" r="3.4"/><path d="M12 8.6 V7 M12 17 v-1.6 M8.6 12 H7 M17 12 h-1.6"/><circle cx="12" cy="12" r="0.6"/></g>,
-    star: <g {...p}><path d="M12 3 C12.4 8.2 15.8 11.6 21 12 C15.8 12.4 12.4 15.8 12 21 C11.6 15.8 8.2 12.4 3 12 C8.2 11.6 11.6 8.2 12 3 Z"/></g>,
-    spellbook: <g {...p}><path d="M5 5 a2 2 0 0 1 2-2 h11 a1 1 0 0 1 1 1 v14 a1 1 0 0 1-1 1 H7 a2 2 0 0 1-2-2 Z"/><path d="M5 17 a2 2 0 0 1 2-2 h12"/><path d="M12 6.4 l.85 1.9 2.05.28 -1.5 1.45 .36 2.03 -1.76-.96 -1.76.96 .36-2.03 -1.5-1.45 2.05-.28z"/></g>,
-    owl: <g {...p}><path d="M5.5 10 a6.5 6.5 0 0 1 13 0 v2.5 a6.5 6.5 0 0 1-13 0 Z"/><circle cx="9.3" cy="10.5" r="1.5"/><circle cx="14.7" cy="10.5" r="1.5"/><path d="M12 12.4 l-1.1 1.6 h2.2 z"/><path d="M6 6.4 L8.6 8.4 M18 6.4 L15.4 8.4"/><path d="M9.5 17.6 l1.2 1.8 M14.5 17.6 l-1.2 1.8"/></g>,
-    wand: <g {...p}><path d="M4 20 L16 8"/><path d="M18 5.4 h2 M19 4.4 v2"/><path d="M20.4 9.4 h1.4 M21.1 8.7 v1.4"/></g>,
-    key: <g {...p}><circle cx="7.5" cy="8" r="3.5"/><path d="M10 10.5 L19 19.5 M16 16.5 l2-2 M18.5 19 l1.5-1.5"/></g>,
+// Seamless looping video via crossfade: two stacked copies of the clip;
+// shortly before the active one ends we restart the other from 0 and dissolve
+// between them, so the loop seam is never a hard cut.
+// `endTrim` cuts dead time at the clip's tail (e.g. a fade-to-black) — we treat
+// the effective end as duration - endTrim and never let a copy sit on the end.
+function CrossfadeVideo({ src, fade = 0.8, endTrim = 0, startAt = 0, filter, style = {} }) {
+  const aRef = React.useRef(null);
+  const bRef = React.useRef(null);
+  const activeRef = React.useRef('a');
+  React.useEffect(() => {
+    const va = aRef.current, vb = bRef.current;
+    if (!va || !vb) return;
+    [va, vb].forEach(v => { v.muted = true; v.loop = false; });
+    va.style.opacity = '1'; vb.style.opacity = '0';
+    const play = (v) => { const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+    const endOf = (v) => (v.duration ? v.duration - endTrim : Infinity);
+    const restart = (v) => { try { v.currentTime = startAt; } catch (e) {} };
+    restart(va); play(va);
+    let raf;
+    const swap = () => {
+      const cur = activeRef.current === 'a' ? va : vb;
+      const nxt = activeRef.current === 'a' ? vb : va;
+      restart(nxt); play(nxt);
+      cur.style.opacity = '0'; nxt.style.opacity = '1';
+      activeRef.current = activeRef.current === 'a' ? 'b' : 'a';
+    };
+    const tick = () => {
+      const cur = activeRef.current === 'a' ? va : vb;
+      const nxt = activeRef.current === 'a' ? vb : va;
+      const end = endOf(cur);
+      // keep the visible one playing if a stall paused it mid-segment
+      if (cur.paused && cur.currentTime < end - fade) play(cur);
+      // if we somehow overran into the dead tail, jump back immediately
+      if (cur.currentTime >= end - 0.02 && nxt.paused) { swap(); }
+      else if (cur.currentTime >= end - fade && nxt.paused) { swap(); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    // safety net: if a copy ever fires 'ended' (rAF was throttled), loop at once
+    const onEnded = (e) => { e.target.style.opacity = '0'; swap(); };
+    va.addEventListener('ended', onEnded);
+    vb.addEventListener('ended', onEnded);
+    const onVis = () => { if (!document.hidden) play(activeRef.current === 'a' ? va : vb); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      cancelAnimationFrame(raf);
+      va.removeEventListener('ended', onEnded);
+      vb.removeEventListener('ended', onEnded);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [src, fade, endTrim, startAt]);
+  const base = {
+    position: 'absolute', inset: 0, width: '100%', height: '100%',
+    objectFit: 'cover', transition: `opacity ${fade}s linear`, filter, ...style,
   };
-  const resolved = (FA_THEME === 'wizard' && WIZ_ICON[name]) ? WIZ_ICON[name] : name;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={style} aria-hidden="true">
-      {paths[resolved] || paths[name] || paths.leaf}
-    </svg>
+    <React.Fragment>
+      <video ref={aRef} src={src} muted playsInline preload="auto" style={base} />
+      <video ref={bRef} src={src} muted playsInline preload="auto" style={base} />
+    </React.Fragment>
   );
 }
 
-Object.assign(window, { fmt, kc, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel });
+function ForestBackground({ motion = 'gentle', videoSrc = null }) {
+  const animate = motion !== 'off';
+  const lvl = { off: 0, barely: 1, gentle: 2, living: 3 }[motion] ?? 2;
+  // duration multiplier — slower for "barely", a touch livelier for "living"
+  const mul = motion === 'barely' ? 1.5 : motion === 'living' ? 0.82 : 1;
+  const dur = (s) => `${(s * mul).toFixed(1)}s`;
+
+  const blob = (c, w, h, top, left, anim, secs, blur = 46, op = 0.9) => ({
+    position: 'absolute', width: w, height: h, top, left,
+    borderRadius: '50%', background: c, filter: `blur(${blur}px)`,
+    opacity: op, willChange: 'transform',
+    animation: animate ? `${anim} ${dur(secs)} ease-in-out infinite alternate` : 'none',
+  });
+
+  // ── a soft organic tree-crown silhouette (cluster of blurred leaf blobs) ──
+  const Crown = ({ w, h, top, left, fill, swayAnim, secs, delay = 0, blur = 9, op = 0.5, origin = 'top center' }) => (
+    <div style={{
+      position: 'absolute', width: w, height: h, top, left,
+      transformOrigin: origin, willChange: 'transform',
+      animation: animate ? `${swayAnim} ${dur(secs)} ease-in-out ${delay}s infinite alternate` : 'none',
+    }}>
+      <svg viewBox="0 0 200 160" width="100%" height="100%" style={{ filter: `blur(${blur}px)`, opacity: op, display: 'block' }}>
+        <g fill={fill}>
+          <ellipse cx="60" cy="60" rx="52" ry="44" />
+          <ellipse cx="110" cy="48" rx="58" ry="50" />
+          <ellipse cx="150" cy="70" rx="46" ry="40" />
+          <ellipse cx="95" cy="90" rx="62" ry="46" />
+          <ellipse cx="40" cy="96" rx="40" ry="36" />
+          <ellipse cx="160" cy="104" rx="38" ry="34" />
+        </g>
+      </svg>
+    </div>
+  );
+
+  // ── falling leaves (living only) ──
+  const leafShape = (color) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%">
+      <path d="M5 19 C5 11 11 5 19 5 C19 13 13 19 5 19Z M5 19 C9 15 13 11 17 7"
+        fill={color} stroke="none" opacity="0.9" />
+    </svg>
+  );
+  const leaves = lvl >= 3
+    ? Array.from({ length: 6 }).map((_, i) => (
+        <span key={i} style={{
+          position: 'absolute', top: '-8%',
+          left: `${10 + i * 15}%`,
+          width: 13 + (i % 3) * 4, height: 13 + (i % 3) * 4,
+          color: ['var(--moss)', 'var(--sage)', 'var(--honey)'][i % 3],
+          opacity: 0.28, willChange: 'transform',
+          animation: `faLeafFall ${dur(15 + i * 2.5)} linear ${-i * 3.5}s infinite`,
+        }}>{leafShape('currentColor')}</span>
+      ))
+    : null;
+
+  // soft floating motes (pollen / light) — living only
+  const motes = lvl >= 3
+    ? Array.from({ length: 7 }).map((_, i) => (
+        <span key={'m' + i} className="fa-mote" style={{
+          left: `${8 + i * 13}%`,
+          bottom: `-${6 + (i % 3) * 4}%`,
+          width: 5 + (i % 3) * 3, height: 5 + (i % 3) * 3,
+          animationDuration: dur(16 + i * 3),
+          animationDelay: `${-i * 4}s`,
+        }} />
+      ))
+    : null;
+
+  return (
+    <div aria-hidden="true" style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      background: 'var(--canopy-base)', zIndex: 0,
+    }}>
+      {/* deep canopy gradient wash */}
+      <div style={{ position: 'absolute', inset: -40, background: 'var(--canopy-wash)' }} />
+
+      {/* drifting blurred light pools (depth) */}
+      {lvl >= 1 && <div style={blob('var(--canopy-1)', 320, 320, '-14%', '-22%', 'faDrift1', 42)} />}
+      {lvl >= 1 && <div style={blob('var(--canopy-3)', 360, 360, '44%', '-28%', 'faDrift3', 60)} />}
+      {lvl >= 1 && <div style={blob('var(--canopy-1)', 280, 280, '62%', '48%', 'faDrift2', 48)} />}
+
+      {/* optional real forest video, behind everything-but-wash */}
+      {videoSrc && (
+        <React.Fragment>
+          <CrossfadeVideo src={videoSrc} fade={0.8}
+            filter="saturate(1.32) contrast(1.05) brightness(1.04)" />
+          {/* mossy tint to deepen the greens warmly */}
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--moss)', mixBlendMode: 'soft-light', opacity: 0.35 }} />
+          {/* warm top + bottom vignette so chrome/nav stay legible */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(241,234,220,0.5) 0%, rgba(241,234,220,0) 22%, rgba(241,234,220,0) 74%, rgba(241,234,220,0.55) 100%)' }} />
+        </React.Fragment>
+      )}
+
+      {/* swaying tree-crown silhouettes (no video) */}
+      {!videoSrc && lvl >= 2 && (
+        <React.Fragment>
+          {/* top canopy — looking up into the crowns */}
+          <Crown w="62%" h="42%" top="-18%" left="-12%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={9} op={0.6} blur={10} />
+          <Crown w="58%" h="40%" top="-20%" left="30%" fill="var(--canopy-1)" swayAnim="faSwayB" secs={11} delay={1.2} op={0.55} blur={11} />
+          <Crown w="50%" h="36%" top="-15%" left="66%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={10} delay={0.6} op={0.52} blur={10} />
+          {/* lower side crowns for framing */}
+          <Crown w="46%" h="34%" top="58%" left="-16%" fill="var(--canopy-3)" swayAnim="faSwayB" secs={13} delay={0.4} op={0.42} blur={13} origin="bottom center" />
+          <Crown w="44%" h="32%" top="66%" left="74%" fill="var(--canopy-1)" swayAnim="faSwayA" secs={12} delay={1.6} op={0.4} blur={13} origin="bottom center" />
+        </React.Fragment>
+      )}
+
+      {/* sweeping god-rays from upper canopy (CSS scene only) */}
+      {!videoSrc && lvl >= 2 && (
+        <React.Fragment>
+          <div style={{
+            position: 'absolute', top: '-12%', left: '14%', width: '34%', height: '90%',
+            background: 'var(--canopy-shaft)', filter: 'blur(26px)',
+            transform: 'rotate(12deg)', transformOrigin: 'top center',
+            animation: animate ? `faGodray ${dur(16)} ease-in-out infinite alternate` : 'none',
+          }} />
+          <div style={{
+            position: 'absolute', top: '-12%', left: '52%', width: '26%', height: '80%',
+            background: 'var(--canopy-shaft)', filter: 'blur(30px)',
+            transform: 'rotate(16deg)', transformOrigin: 'top center', opacity: 0.7,
+            animation: animate ? `faGodray2 ${dur(21)} ease-in-out 1.5s infinite alternate` : 'none',
+          }} />
+        </React.Fragment>
+      )}
+
+      {/* warm top glow */}
+      {!videoSrc && (
+      <div style={{
+        position: 'absolute', top: '-10%', left: '22%', width: '56%', height: '50%',
+        background: 'var(--canopy-shaft)', filter: 'blur(30px)',
+        transform: 'rotate(8deg)', opacity: 0.6,
+        animation: animate ? `faGlow ${dur(20)} ease-in-out infinite alternate` : 'none',
+      }} />
+      )}
+
+      {/* dappled light through moving leaves (CSS scene only) */}
+      {!videoSrc && lvl >= 2 && (
+        <div style={{ position: 'absolute', inset: 0 }}>
+          {Array.from({ length: lvl >= 3 ? 9 : 6 }).map((_, i) => (
+            <span key={'d' + i} style={{
+              position: 'absolute',
+              top: `${8 + (i * 37) % 70}%`, left: `${(i * 53 + 12) % 86}%`,
+              width: 60 + (i % 3) * 26, height: 60 + (i % 3) * 26,
+              borderRadius: '50%', background: 'var(--dapple)', filter: 'blur(22px)',
+              willChange: 'opacity, transform',
+              animation: animate ? `faDapple ${dur(7 + (i % 4) * 2)} ease-in-out ${-i * 1.3}s infinite` : 'none',
+            }} />
+          ))}
+        </div>
+      )}
+
+      {!videoSrc && leaves}
+
+      {/* lichen / paper grain (skip over video — it grays the footage) */}
+      {!videoSrc && (
+      <div style={{
+        position: 'absolute', inset: 0, opacity: 'var(--grain-opacity)',
+        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        mixBlendMode: 'multiply',
+      }} />
+      )}
+
+      {/* frosted cream veil — lighter over video so the forest stays vivid */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: videoSrc ? 'rgba(244,239,228,0.22)' : 'var(--veil)',
+        backdropFilter: videoSrc ? 'none' : 'blur(2px)',
+        WebkitBackdropFilter: videoSrc ? 'none' : 'blur(2px)',
+      }} />
+
+      {!videoSrc && motes}
+    </div>
+  );
+}
+
+Object.assign(window, { ForestBackground, CrossfadeVideo });
