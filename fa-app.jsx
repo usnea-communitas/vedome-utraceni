@@ -34,6 +34,12 @@ function App() {
   // On a real phone (or installed to home screen) drop the device bezel and
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
+  const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
+  const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
+  const [month, setMonth] = useA(() => { try { return localStorage.getItem('fa.month') || APP.month; } catch (e) { return APP.month; } });
+  useAE(() => { try { localStorage.setItem('fa.month', month); } catch (e) {} }, [month]);
+  useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
+  useAE(() => { try { localStorage.setItem('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
   useAE(() => {
     const check = () => {
       const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
@@ -57,7 +63,9 @@ function App() {
 
   const go = (key) => { if (key !== screen) setScreen(key); };
 
-  const isWizard = t.theme === 'kouzelnický';
+  const isWizard = theme === 'kouzelnický';
+  // apply editable 50/30/20 ratios onto the shared data model before render
+  APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
   setFaTheme(isWizard ? 'wizard' : 'forest');
   setFaLang(lang);
 
@@ -79,9 +87,11 @@ function App() {
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} />
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} />
             </div>
           </div>
+          {/* sync APP.month so static reads stay in step */}
+          {(() => { APP.month = month; return null; })()}
         </div>
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />
@@ -97,7 +107,7 @@ function App() {
 
       <TweaksPanel>
         <TweakSection label="Téma" />
-        <TweakRadio label="Styl" value={t.theme} options={['lesní', 'kouzelnický']} onChange={v => setTweak('theme', v)} />
+        <TweakRadio label="Styl" value={theme} options={['lesní', 'kouzelnický']} onChange={v => { setTheme(v); setTweak('theme', v); }} />
         <TweakSection label="Pozadí" />
         {!isWizard && <TweakRadio label="Scéna" value={t.scene} options={['video', 'les']} onChange={v => setTweak('scene', v)} />}
         <TweakRadio label="Pohyb" value={t.motion} options={['off', 'barely', 'gentle', 'living']} onChange={v => setTweak('motion', v)} />

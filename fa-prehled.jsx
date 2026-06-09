@@ -2,7 +2,7 @@
 // (income + balance + "Lesní koláč peněz" donut), then the three 50/30/20
 // category cards, reserves and extra-income cards.
 
-function Prehled({ go }) {
+function Prehled({ go, ratios, month, setMonth }) {
   const a = APP;
   const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent) }));
   // unallocated slice
@@ -13,7 +13,7 @@ function Prehled({ go }) {
       <ScreenHeader
         eyebrow="Vědomé utrácení"
         title={L('Přehled')}
-        right={<MonthPill month={a.month} />}
+        right={<MonthPill month={a.month} setMonth={setMonth} ratios={ratios} go={go} />}
       />
 
       {/* ── Spojená přehledová karta: příjem + Lesní koláč ─────── */}
@@ -70,22 +70,27 @@ function Prehled({ go }) {
       {/* ── Zdroje příjmu (roční, sloupcový graf) ────────────────── */}
       <SectionLabel>{L('Zdroje příjmu')}</SectionLabel>
       <Card style={{ marginBottom: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)' }}>{L('Celkem')} · {L('ročně')}</span>
-          <span style={{ fontFamily: 'var(--title)', fontSize: 22, fontWeight: 600, color: 'var(--ink)' }}>{kc(a.income * 12)}</span>
+          <span style={{ fontFamily: 'var(--title)', fontSize: 23, fontWeight: 600, color: 'var(--ink)' }}>{kc(a.income * 12)}</span>
         </div>
         {(() => {
           const maxA = Math.max(...a.incomeSources.map(s => s.amount));
+          const tot = a.incomeSources.reduce((s, x) => s + x.amount, 0) || 1;
           return (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 132, marginTop: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 150, marginTop: 12, padding: '0 2px' }}>
               {a.incomeSources.map((s, i) => {
-                const h = Math.round(20 + (s.amount / maxA) * 80); // % of column area
+                const h = Math.round(26 + (s.amount / maxA) * 74);
                 return (
-                  <div key={s.name} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
-                    <span style={{ fontFamily: 'var(--serif)', fontSize: 14, color: 'var(--ink)', marginBottom: 5, whiteSpace: 'nowrap' }}>{Math.round(s.amount / a.income * 100)}&nbsp;%</span>
-                    <div className="fa-col" style={{ height: `${h}%`, background: `linear-gradient(180deg, color-mix(in oklab, var(--src-${i + 1}), #fff 16%), var(--src-${i + 1}))` }} />
-                    <span style={{ fontFamily: 'var(--sans)', fontSize: 10.5, fontWeight: 600, color: 'var(--ink-soft)', marginTop: 7, textAlign: 'center', lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{L(s.name)}</span>
-                    <span style={{ fontFamily: 'var(--sans)', fontSize: 10, color: 'var(--ink-faint)', marginTop: 1, whiteSpace: 'nowrap' }}>{fmt(s.amount * 12)}</span>
+                  <div key={s.name} className="fa-bar-col" style={{ flex: 1, minWidth: 0 }}>
+                    <span className="fa-bar-pct">{Math.round(s.amount / tot * 100)}&nbsp;%</span>
+                    <div className="fa-bar-track2">
+                      <div className="fa-bar-fill" style={{ height: `${h}%`, ['--c']: `var(--src-${i + 1})` }}>
+                        <span className="fa-bar-cap" />
+                      </div>
+                    </div>
+                    <span className="fa-bar-name">{L(s.name)}</span>
+                    <span className="fa-bar-amt">{fmt(s.amount * 12)}&nbsp;Kč</span>
                   </div>
                 );
               })}
@@ -152,11 +157,33 @@ function ScreenHeader({ eyebrow, title, right }) {
   );
 }
 
-function MonthPill({ month }) {
+function MonthPill({ month, setMonth, ratios, go }) {
+  const [open, setOpen] = React.useState(false);
+  const MONTHS = ['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+  const year = (month && month.match(/\d{4}/)) ? month.match(/\d{4}/)[0] : '2026';
+  const r = ratios || { nutne: 50, budouci: 20, radost: 30 };
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-      <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, fontWeight: 600, color: 'var(--ink)', padding: '7px 13px', borderRadius: 999, background: 'var(--card)', border: '1px solid var(--card-line)', boxShadow: 'var(--shadow-chip)' }}>{L(month)}</span>
-      <span className="fa-ratio-pill" style={{ fontFamily: 'var(--sans)', fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2, color: 'var(--moss)', padding: '3px 9px', borderRadius: 999, background: 'var(--moss-soft)', whiteSpace: 'nowrap' }}>50 / 30 / 20</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, position: 'relative' }}>
+      <button className="fa-pill-btn" onClick={() => setMonth && setOpen(o => !o)} style={{ cursor: setMonth ? 'pointer' : 'default' }}>
+        {L(month)}{setMonth && <Icon name="chevron" size={13} stroke={2} style={{ transform: 'rotate(90deg)', marginLeft: 2 }} />}
+      </button>
+      <button className="fa-ratio-pill" onClick={() => go && go('vice')} style={{ cursor: go ? 'pointer' : 'default', border: 'none' }}>
+        {r.nutne} / {r.radost} / {r.budouci}
+      </button>
+      {open && (
+        <React.Fragment>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+          <div className="fa-month-pop">
+            {MONTHS.map(mn => {
+              const label = mn + ' ' + year;
+              const on = L(month).startsWith(L(mn));
+              return (
+                <button key={mn} data-on={on} onClick={() => { setMonth(label); setOpen(false); }}>{L(mn)}</button>
+              );
+            })}
+          </div>
+        </React.Fragment>
+      )}
     </div>
   );
 }

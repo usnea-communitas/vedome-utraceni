@@ -120,13 +120,7 @@ function InvestSim() {
         </div>
       </div>
 
-      {/* educational caption */}
-      <div className="fa-invest-note">
-        <Icon name={rateKey === 'opt' ? 'bulb' : 'sprout'} size={15} stroke={1.7} />
-        <p style={{ margin: 0 }}>
-          {L('Složené úročení znamená, že výnosy samy vydělávají další výnosy. Index S&P\u00a0500 historicky vynesl s reinvesticí dividend zhruba 7–10\u00a0% ročně. Graf je zjednodušená ilustrace — minulé výnosy nezaručují budoucí a nejde o investiční doporučení.')}
-        </p>
-      </div>
+      {/* educational caption — rendered above the simulator via prop */}
     </Card>
   );
 }

@@ -34,7 +34,7 @@ const PLAN_DESC = {
   radost: 'Kavárny, výlety a drobnosti, co tě těší.',
 };
 
-function Plan({ go }) {
+function Plan({ go, month, setMonth, ratios }) {
   const cats = APP.categories; // {key,name,icon,accent,targetPct}
   const [income, setIncome] = usePl(() => plLoad('fa.plan.income', PLAN_INCOME0));
   const [items, setItems] = usePl(() => plLoad('fa.plan.items', PLAN_ITEMS0));
@@ -54,7 +54,7 @@ function Plan({ go }) {
 
   return (
     <div className="fa-screen">
-      <ScreenHeader eyebrow={L('Měsíční plán')} title={L('Plán')} right={<MonthPill month={APP.month} />} />
+      <ScreenHeader eyebrow={L('Měsíční plán')} title={L('Plán')} right={<MonthPill month={APP.month} setMonth={setMonth} ratios={ratios} go={go} />} />
 
       {/* ── Hero: the split graph is the priority ── */}
       <Card pad={0} style={{ overflow: 'hidden', marginBottom: 18 }}>

@@ -45,8 +45,8 @@ function Foliage({ cx, cy, pct, accent, grown, delay, mini }) {
 }
 
 function GoalTree({ goals, size = 230, mini = false, onClick }) {
-  const [grown, setGrown] = useTr(false);
-  useTrE(() => { const t = setTimeout(() => setGrown(true), 80); return () => clearTimeout(t); }, []);
+  // resting state is fully grown so it can never stick hidden in a throttled tab
+  const grown = true;
   const list = goals.slice(0, 5);
 
   return (

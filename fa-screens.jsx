@@ -5,12 +5,12 @@ const { useState: useS2 } = React;
 // ════════════════════════════════════════════════════════════════════
 // CÍLE — reserves & savings goals, each a "growing plant"
 // ════════════════════════════════════════════════════════════════════
-function Cile({ go }) {
+function Cile({ go, month, setMonth, ratios }) {
   const r = APP.reserves;
   const totalPct = Math.round(r.total / r.goalTotal * 100);
   return (
     <div className="fa-screen">
-      <ScreenHeader eyebrow={L('Rezervy a cíle')} title={L('Cíle')} right={<MonthPill month={APP.month} />} />
+      <ScreenHeader eyebrow={L('Rezervy a cíle')} title={L('Cíle')} right={<MonthPill month={APP.month} setMonth={setMonth} ratios={ratios} go={go} />} />
 
       <Card pad={0} style={{ overflow: 'hidden', marginBottom: 20 }}>
         <div style={{ position: 'relative', padding: '22px 20px 20px', textAlign: 'center' }}>
@@ -147,9 +147,23 @@ function Tipy() {
   return (
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Laskavé rady')} title={L('Tipy')} />
-      <p className="fa-lede">{L('Malé návyky, které dělají velký klid. Klepni na kartu a otoč ji — čeká tě malá zajímavost.')}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
-        {APP.tipy.map((t, i) => <TipFlip key={i} t={t} />)}
+      <div style={{ marginTop: 8 }}>
+        <SectionLabel>{faLabel('Síla složeného úročení', 'Kouzlo složeného úročení')}</SectionLabel>
+        <div className="fa-invest-note" style={{ marginTop: 0, marginBottom: 12 }}>
+          <Icon name="bulb" size={15} stroke={1.7} />
+          <p style={{ margin: 0 }}>
+            {L('Složené úročení znamená, že výnosy samy vydělávají další výnosy. Index S&P\u00a0500 historicky vynesl s reinvesticí dividend zhruba 7–10\u00a0% ročně. Graf je zjednodušená ilustrace — minulé výnosy nezaručují budoucí a nejde o investiční doporučení.')}
+          </p>
+        </div>
+        <InvestSim />
+      </div>
+
+      <div style={{ marginTop: 22 }}>
+        <SectionLabel>{L('Laskavé rady')}</SectionLabel>
+        <p className="fa-lede" style={{ marginTop: 0, marginBottom: 10 }}>{L('Malé návyky, které dělají velký klid. Klepni na kartu a otoč ji — čeká tě malá zajímavost.')}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {APP.tipy.map((t, i) => <TipFlip key={i} t={t} />)}
+        </div>
       </div>
 
       {/* ── Tři kategorie, tři role — hlubší vysvětlení ── */}
@@ -169,11 +183,6 @@ function Tipy() {
             </Card>
           ))}
         </div>
-      </div>
-
-      <div style={{ marginTop: 22 }}>
-        <SectionLabel>{faLabel('Síla složeného úročení', 'Kouzlo složeného úročení')}</SectionLabel>
-        <InvestSim />
       </div>
     </div>
   );
@@ -214,49 +223,138 @@ function TipFlip({ t }) {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// REFLEXE — a soft monthly journal
-// ════════════════════════════════════════════════════════════════════
+// REFLEXE — monthly quiz with A/B/C/D answers + a graphic month review
+// Each option scores 0–3; total maps to an assessment + tailored tip.
+const REFLEX_QUIZ = [
+  { q: 'Když tento měsíc přišly peníze, co se dělo?', icon: 'coins', accent: 'honey', opts: [
+    { t: 'Hned se rozkutálely, ani nevím kam', s: 0 },
+    { t: 'Něco jsem utratila, něco zůstalo náhodou', s: 1 },
+    { t: 'Většinu jsem rozdělila podle plánu', s: 2 },
+    { t: 'Nejdřív jsem odložila pro budoucí já, pak utrácela', s: 3 },
+  ] },
+  { q: 'Jak ses cítila u větších výdajů?', icon: 'blossom', accent: 'blush', opts: [
+    { t: 'S úzkostí, často je lituju', s: 0 },
+    { t: 'Napětí, ale nějak to šlo', s: 1 },
+    { t: 'Klidně — byly promyšlené', s: 2 },
+    { t: 'S radostí, věděla jsem, že si je můžu dovolit', s: 3 },
+  ] },
+  { q: 'Kolik šlo do „Budoucí já" (spoření a investice)?', icon: 'sprout', accent: 'moss', opts: [
+    { t: 'Nic, nezbylo', s: 0 },
+    { t: 'Pár korun na konci měsíce', s: 1 },
+    { t: 'Skoro podle cíle', s: 2 },
+    { t: 'Celý cíl, hned po výplatě', s: 3 },
+  ] },
+  { q: 'Jak to bylo s radostí a drobným potěšením?', icon: 'sun', accent: 'honey', opts: [
+    { t: 'Buď vina, nebo úplné odříkání', s: 0 },
+    { t: 'Náhodně, bez plánu', s: 1 },
+    { t: 'Občas naplánované', s: 2 },
+    { t: 'Vědomě naplánovaná, bez výčitek', s: 3 },
+  ] },
+];
+
+const REFLEX_RESULT = {
+  tense:   { key: 'tense',  label: 'Stísněně',   accent: 'clay',  tip: 'Zkus jedinou změnu: hned po výplatě odlož 10 % stranou, než cokoli utratíš. Malý automatický krok ti vrátí pocit kontroly — a příští reflexe bude lehčí.' },
+  balance: { key: 'balance', label: 'V rovnováze', accent: 'honey', tip: 'Máš pevný základ. Tento měsíc zkus pojmenovat jeden konkrétní cíl a posílat na něj pravidelnou částku. Z rovnováhy se tak pomalu stane radost.' },
+  joy:     { key: 'joy',    label: 'S radostí',  accent: 'moss',  tip: 'Krásná práce. Udrž si to: zautomatizuj spoření a dopřej si bez výčitek jednu naplánovanou radost. Můžeš zvážit i mírné zvýšení investic.' },
+};
+function reflexBand(score, max) {
+  const pct = score / max;
+  if (pct < 0.42) return REFLEX_RESULT.tense;
+  if (pct < 0.75) return REFLEX_RESULT.balance;
+  return REFLEX_RESULT.joy;
+}
+
 function Reflexe() {
-  const [mood, setMood] = useS2(1);
-  const moods = ['Stísněně', 'V rovnováze', 'S radostí'];
+  const [answers, setAnswers] = useS2({});
+  const qKeys = Object.keys(answers);
+  const answered = qKeys.length;
+  const maxScore = REFLEX_QUIZ.length * 3;
+  const score = Object.values(answers).reduce((a, b) => a + b.s, 0);
+  const done = answered === REFLEX_QUIZ.length;
+  const band = reflexBand(score, maxScore);
+  const pct = Math.round(score / maxScore * 100);
   return (
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Konec měsíce')} title={L('Reflexe')} />
-      <Card pad={20} style={{ marginBottom: 18 }}>
-        <h3 className="fa-cardtitle" style={{ marginBottom: 14 }}>{L('Jak ti bylo s penězi?')}</h3>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {moods.map((m, i) => (
-            <button key={i} onClick={() => setMood(i)} className="fa-mood" data-on={mood === i}>
-              <span style={{ width: 12, height: 12, borderRadius: 999, background: ['var(--clay)','var(--honey)','var(--moss)'][i] }} />
-              {L(m)}
-            </button>
-          ))}
-        </div>
-      </Card>
+      <p className="fa-lede">{L('Odpověz na pár otázek a podívej se, jak ti tento měsíc bylo s penězi.')}</p>
 
-      <SectionLabel>{L('Otázky měsíce')}</SectionLabel>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {APP.reflexe.prompts.map((p, i) => (
-          <Card key={i} pad={18} interactive>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 13, marginBottom: 13 }}>
-              <Medallion icon={p.icon} accent={p.accent} size={38} />
-              <p style={{ fontFamily: 'var(--serif)', fontSize: 17.5, fontStyle: 'italic', lineHeight: 1.42, color: 'var(--ink)', margin: '3px 0 0' }}>„{L(p.q)}"</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 6 }}>
+        {REFLEX_QUIZ.map((q, qi) => (
+          <Card key={qi} pad={18}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 13 }}>
+              <Medallion icon={q.icon} accent={q.accent} size={38} />
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 17.5, color: 'var(--ink)', fontWeight: 500, margin: '2px 0 0', lineHeight: 1.3 }}>{L(q.q)}</h3>
             </div>
-            <div className="fa-note">{L('Napiš pár vět jen pro sebe…')}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {q.opts.map((o, oi) => {
+                const sel = answers[qi] && answers[qi].sel === oi;
+                return (
+                  <button key={oi} className="fa-quiz-opt" data-on={sel}
+                    onClick={() => setAnswers({ ...answers, [qi]: { s: o.s, sel: oi } })}>
+                    <span className="fa-quiz-letter">{'ABCD'[oi]}</span>
+                    <span className="fa-quiz-text">{L(o.t)}</span>
+                  </button>
+                );
+              })}
+            </div>
           </Card>
         ))}
+      </div>
+
+      {/* progress + result */}
+      <div style={{ marginTop: 22 }}>
+        <SectionLabel>{L('Přehled minulého měsíce')}</SectionLabel>
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          {!done ? (
+            <div style={{ padding: '26px 20px', textAlign: 'center' }}>
+              <Donut segments={[{ value: answered, color: 'var(--brand)' }, { value: REFLEX_QUIZ.length - answered, color: 'var(--bar-track)' }]}
+                size={120} thickness={14} centerMain={answered + '/' + REFLEX_QUIZ.length} centerSub={L('odpovězeno')} />
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink-soft)', margin: '14px auto 0', maxWidth: 230, lineHeight: 1.5 }}>{L('Odpověz na všechny otázky a ukáže se tvé hodnocení i tip na příští měsíc.')}</p>
+            </div>
+          ) : (
+            <div>
+              <div style={{ position: 'relative', padding: '24px 20px 20px', textAlign: 'center' }}>
+                <div className="fa-hero-glow" />
+                <div style={{ position: 'relative' }}>
+                  <Donut segments={reflexSegments(score, maxScore)} size={132} thickness={16}
+                    centerTop={L('Hodnocení')} centerMain={pct + '\u00A0%'} centerSub={L(band.label)} />
+                  <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 15px', borderRadius: 999, background: accentSoft(band.accent), color: accentVar(band.accent) }}>
+                    <span style={{ width: 10, height: 10, borderRadius: 999, background: accentVar(band.accent) }} />
+                    <span style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600 }}>{L('Tento měsíc:')} {L(band.label)}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '4px 18px 20px' }}>
+                <div className="fa-invest-note" style={{ marginTop: 0 }}>
+                  <Icon name="bulb" size={16} stroke={1.7} />
+                  <div>
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--brand)', marginBottom: 4 }}>{L('Tip na příští měsíc')}</div>
+                    <p style={{ margin: 0 }}>{L(band.tip)}</p>
+                  </div>
+                </div>
+                <button className="fa-textbtn" style={{ marginTop: 12 }} onClick={() => setAnswers({})}>{L('Vyplnit znovu')}</button>
+              </div>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
 }
 
+function reflexSegments(score, max) {
+  const b = reflexBand(score, max);
+  const col = b.key === 'joy' ? 'var(--moss)' : b.key === 'balance' ? 'var(--honey)' : 'var(--clay)';
+  return [{ value: score, color: col }, { value: max - score, color: 'var(--bar-track)' }];
+}
+
 // ════════════════════════════════════════════════════════════════════
 // VÍCE — settings, warmly restyled
 // ════════════════════════════════════════════════════════════════════
-function Vice({ lang, setLang }) {
+function Vice({ lang, setLang, theme, setTheme, ratios, setRatios }) {
   const groups = [
     { h: 'Účet', rows: [ {i:'sprout', t:'Anička', d:'Osobní profil'}, {i:'sun', t:'Měsíční příjem', d:'2 600 Kč'}, {i:'shield', t:'Zabezpečení', d:'Face ID'} ] },
-    { h: 'Vědomé utrácení', rows: [ {i:'plan', t:'Pravidlo 50 / 30 / 20', d:'Upravit poměry'}, {i:'bell', t:'Jemné připomínky', d:'Zapnuto'}, {i:'leaf', t:'Vzhled', d:faLabel('Lesní klid', 'Kouzelnický')} ] },
+    { h: 'Vědomé utrácení', rows: [ {i:'bell', t:'Jemné připomínky', d:'Zapnuto'} ] },
   ];
   return (
     <div className="fa-screen">
@@ -282,6 +380,21 @@ function Vice({ lang, setLang }) {
       </div>
 
       <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Vzhled')}</SectionLabel>
+        <Card pad={14}>
+          <div className="fa-lang">
+            <button data-on={theme === 'lesní'} onClick={() => setTheme('lesní')}>{L('Lesní klid')}</button>
+            <button data-on={theme === 'kouzelnický'} onClick={() => setTheme('kouzelnický')}>{L('Kouzelnický')}</button>
+          </div>
+        </Card>
+      </div>
+
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Poměry kategorií')}</SectionLabel>
+        <RatioEditor ratios={ratios} setRatios={setRatios} />
+      </div>
+
+      <div style={{ marginTop: 18 }}>
         <SectionLabel>{L('Jazyk')}</SectionLabel>
         <Card pad={14}>
           <div className="fa-lang">
@@ -303,4 +416,35 @@ function Vice({ lang, setLang }) {
   );
 }
 
-Object.assign(window, { Cile, Tipy, Reflexe, Vice, PlantStage, GrowthScene });
+// editable 50/30/20 ratios — three steppers + live total
+function RatioEditor({ ratios, setRatios }) {
+  const cats = APP.categories;
+  const total = cats.reduce((s, c) => s + (ratios[c.key] || 0), 0);
+  const ok = total === 100;
+  const set = (key, v) => { const n = Math.max(0, Math.min(100, Math.round(v))); setRatios({ ...ratios, [key]: n }); };
+  return (
+    <Card pad={16}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+        {cats.map(c => (
+          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+            <span style={{ width: 11, height: 11, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(c.name)}</span>
+            <div className="fa-step">
+              <button onClick={() => set(c.key, (ratios[c.key] || 0) - 5)} aria-label="minus">−</button>
+              <span style={{ minWidth: 46, textAlign: 'center', fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--ink)' }}>{ratios[c.key] || 0}&nbsp;%</span>
+              <button onClick={() => set(c.key, (ratios[c.key] || 0) + 5)} aria-label="plus">+</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, paddingTop: 13, borderTop: '1px solid var(--card-line)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600, color: ok ? 'var(--moss-deep)' : 'var(--clay)' }}>
+          <Icon name={ok ? 'check' : 'alert'} size={15} stroke={2} /> {L('Celkem')} {total}&nbsp;%
+        </span>
+        <button className="fa-textbtn" onClick={() => setRatios({ nutne: 50, budouci: 20, radost: 30 })}>{L('Obnovit 50 / 30 / 20')}</button>
+      </div>
+    </Card>
+  );
+}
+
+Object.assign(window, { Cile, Tipy, Reflexe, Vice, RatioEditor, PlantStage, GrowthScene });
