@@ -58,13 +58,28 @@ function Prehled({ go, ratios, month, setMonth }) {
       </Card>
 
       {/* ── Mini strom cílů (odkaz na Cíle) ─────────────────────── */}
-      <Card onClick={() => go('cile')} style={{ marginBottom: 22, paddingTop: 14, paddingBottom: 12 }}>
+      <Card onClick={() => go('cile')} style={{ marginBottom: 22, paddingTop: 14, paddingBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="sprout" size={17} stroke={1.7} color="var(--brand)" />
-          <h3 className="fa-cardtitle" style={{ fontSize: 17 }}>{faLabel(L('Strom cílů'), L('Strom přání'))}</h3>
+          <h3 className="fa-cardtitle" style={{ fontSize: 17, whiteSpace: 'nowrap' }}>{faLabel(L('Strom cílů'), L('Strom přání'))}</h3>
           <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" style={{ marginLeft: 'auto' }} />
         </div>
-        <GoalTree goals={a.reserves.goals} size={150} mini onClick={() => go('cile')} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <GoalTree goals={a.reserves.goals} size={140} mini onClick={() => go('cile')} />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
+            <div>
+              <div style={{ fontFamily: 'var(--sans)', fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--ink-faint)' }}>{L('Naspořeno')}</div>
+              <div style={{ fontFamily: 'var(--title)', fontSize: 22, fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{kc(a.reserves.total)}</div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+                <span style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)' }}>{Lf('z cíle {v}', { v: kc(a.reserves.goalTotal) })}</span>
+                <span style={{ fontFamily: 'var(--serif)', fontSize: 15, color: 'var(--brand)' }}>{Math.round(a.reserves.total / a.reserves.goalTotal * 100)}&nbsp;%</span>
+              </div>
+              <Bar pct={Math.round(a.reserves.total / a.reserves.goalTotal * 100)} color="var(--brand)" h={7} />
+            </div>
+          </div>
+        </div>
       </Card>
 
       {/* ── Zdroje příjmu (roční, sloupcový graf) ────────────────── */}
@@ -189,9 +204,9 @@ function MonthPill({ month, setMonth, ratios, go }) {
 }
 
 // ── Year goals: snake-fill progress bars, auto from Cíle + add your own ──
+// fill renders at value immediately (robust); transition covers live changes
 function SnakeBar({ pct, color, h = 13, delay = 140 }) {
-  const [w, setW] = React.useState(0);
-  React.useEffect(() => { const t = setTimeout(() => setW(Math.min(pct, 100)), delay); return () => clearTimeout(t); }, [pct, delay]);
+  const w = Math.min(pct, 100);
   return (
     <div style={{ position: 'relative', height: h, borderRadius: 999, background: 'var(--bar-track)', overflow: 'hidden' }}>
       <div style={{
@@ -287,8 +302,7 @@ function YearGoals({ go }) {
 // growth ring with sprout — used for reserves
 function GrowthMark({ pct }) {
   const size = 52, r = 22, c = 2 * Math.PI * r;
-  const [grow, setGrow] = React.useState(false);
-  React.useEffect(() => { const t = setTimeout(() => setGrow(true), 200); return () => clearTimeout(t); }, []);
+  const grow = true; // resting state = drawn
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>

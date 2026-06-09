@@ -50,10 +50,10 @@ function Chip({ tone = 'ok', children }) {
   );
 }
 
-// ── Progress bar — animates to value on mount, overflow shown in clay ──
+// ── Progress bar — fill renders at value immediately (robust in throttled
+// tabs); the width transition still animates live value changes ──
 function Bar({ pct, color, track = 'var(--bar-track)', h = 9, delay = 120 }) {
-  const [w, setW] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setW(Math.min(pct, 100)), delay); return () => clearTimeout(t); }, [pct, delay]);
+  const w = Math.min(pct, 100);
   const over = pct > 100;
   return (
     <div style={{ position: 'relative', height: h, borderRadius: 999, background: track, overflow: 'hidden' }}>
@@ -80,8 +80,7 @@ function Donut({ segments, size = 168, thickness = 22, centerTop, centerMain, ce
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
-  const [grow, setGrow] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setGrow(true), 160); return () => clearTimeout(t); }, []);
+  const grow = true; // resting state = drawn; robust in throttled tabs
   let offset = 0;
   const gap = 0.012 * c; // small gap between arcs
   return (

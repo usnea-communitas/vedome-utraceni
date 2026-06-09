@@ -72,6 +72,7 @@ const S = {
   'Investice': { en: 'Investments', pl: 'Inwestycje', uk: 'Інвестиції', es: 'Inversiones' },
   'Mimořádné příjmy': { en: 'Extra income', pl: 'Dodatkowe dochody', uk: 'Додаткові доходи', es: 'Ingresos extra' },
   'Zdroje příjmu': { en: 'Income sources', pl: 'Źródła dochodu', uk: 'Джерела доходу', es: 'Fuentes de ingreso' },
+  'Naspořeno': { en: 'Saved', pl: 'Oszczędzono', uk: 'Заощаджено', es: 'Ahorrado' },
   'ročně': { en: 'per year', pl: 'rocznie', uk: 'на рік', es: 'al año' },
   'Celkem': { en: 'Total', pl: 'Razem', uk: 'Усього', es: 'Total' },
   'Poměry kategorií': { en: 'Category ratios', pl: 'Proporcje kategorii', uk: 'Пропорції категорій', es: 'Proporciones' },

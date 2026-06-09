@@ -72,6 +72,7 @@ function App() {
   // apply theme tweaks to the root
   const rootAttrs = {
     'data-theme': isWizard ? 'wizard' : 'forest',
+    'data-scene': isWizard ? 'video' : t.scene,
     'data-depth': t.depth, 'data-card': t.card, 'data-accent': t.accent,
   };
 

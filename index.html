@@ -155,6 +155,17 @@
   --card-line: rgba(74,54,20,0.11);
 }
 .fa-root[data-theme="wizard"] .fa-hint svg { color: var(--honey-deep); }
+/* on-the-forest-video text (forest+video only): lift to cream so it stays
+   legible over the dark footage (inline colors → !important) */
+.fa-root[data-theme="forest"][data-scene="video"] .fa-title { color: #F4EFE0 !important; text-shadow: 0 1px 14px rgba(18,28,14,0.6); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-eyebrow { color: rgba(238,233,216,0.88) !important; text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-seclabel { color: rgba(238,233,216,0.88) !important; text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-seclabel + .fa-textbtn { color: #E9F0D8; text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-lede { color: rgba(240,236,224,0.92) !important; text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-hint { color: rgba(240,236,224,0.92) !important; text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-hint strong { color: #FFFDF4 !important; }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-footer-name { color: rgba(244,240,228,0.94) !important; text-shadow: 0 1px 10px rgba(18,28,14,0.7); }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-footer-sub { color: rgba(226,224,206,0.8) !important; text-shadow: 0 1px 10px rgba(18,28,14,0.7); }
 /* on-the-night-sky text: gold/light so it stays legible off-card (inline colors → !important) */
 .fa-root[data-theme="wizard"] .fa-title { color: #E8C879 !important; letter-spacing: 1.2px; text-shadow: 0 1px 16px rgba(0,0,0,0.55), 0 0 1px rgba(232,200,121,0.4); }
 .fa-root[data-theme="wizard"] .fa-title::after { content: " ✦"; font-size: 0.5em; vertical-align: 0.5em; color: rgba(232,200,121,0.9); letter-spacing: 0; }
@@ -283,6 +294,10 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 .fa-screen { display: flex; flex-direction: column; }
 .fa-scroll { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .fa-scroll::-webkit-scrollbar { display: none; }
+
+/* eyebrow + title never wrap mid-token over the header */
+.fa-eyebrow { white-space: nowrap; }
+.fa-title { white-space: nowrap; }
 
 /* entrance — resting state is visible; we transition IN from hidden.
    Driven by the .is-in class (toggled in JS via setTimeout). */
@@ -533,7 +548,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 }
 .fa-bar-cap { position: absolute; top: 5px; left: 18%; right: 18%; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.5); }
 @keyframes faColRise2 { from { transform: scaleY(0.02); opacity: .4; } to { transform: scaleY(1); opacity: 1; } }
-.fa-bar-name { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--ink-soft); margin-top: 9px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; width: 100%; }
+.fa-bar-name { font-family: var(--sans); font-size: 10.5px; font-weight: 600; color: var(--ink-soft); margin-top: 9px; max-width: 100%; text-align: center; width: 100%; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .fa-bar-amt { font-family: var(--sans); font-size: 10px; color: var(--ink-faint); margin-top: 1px; white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .fa-col { animation: none; } .fa-src-ribbon > div { animation: none; } .fa-bar-fill { animation: none; } }
 .fa-root[data-theme="wizard"] .fa-input-btn { background: linear-gradient(180deg, #ECCE86, #C99E46); color: #3B2C0C; }
@@ -541,6 +556,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 /* language picker */
 .fa-lang { display: flex; flex-wrap: wrap; gap: 7px; }
 .fa-lang button {
+  white-space: nowrap;
   border: 1px solid var(--card-line); background: var(--cream);
   color: var(--ink-soft); font-family: var(--sans); font-size: 13px; font-weight: 600;
   padding: 8px 13px; border-radius: 12px; cursor: pointer;

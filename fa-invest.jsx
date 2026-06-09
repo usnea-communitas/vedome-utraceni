@@ -140,9 +140,9 @@ function Legend({ swatch, label, value }) {
 function Slider({ label, value, min, max, step, v, set }) {
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7 }}>
-        <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)' }}>{label}</span>
-        <span style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>{value}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 7, gap: 10 }}>
+        <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{label}</span>
+        <span style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{value}</span>
       </div>
       <input type="range" className="fa-range" min={min} max={max} step={step} value={v}
         style={{ ['--accent']: 'var(--brand)' }}
