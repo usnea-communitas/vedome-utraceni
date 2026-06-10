@@ -145,6 +145,27 @@ const S = {
   'Pod cílem o {v}.': { en: 'Under target by {v}.', pl: 'Poniżej celu o {v}.', uk: 'Нижче цілі на {v}.', es: 'Por debajo de la meta en {v}.' },
   'V rámci cíle.': { en: 'Within target.', pl: 'W ramach celu.', uk: 'У межах цілі.', es: 'Dentro de la meta.' },
 
+  // ── add expense (FAB + sheet) ──
+  'Nový výdaj': { en: 'New expense', pl: 'Nowy wydatek', uk: 'Нова витрата', es: 'Nuevo gasto' },
+  'Přidat výdaj': { en: 'Add expense', pl: 'Dodaj wydatek', uk: 'Додати витрату', es: 'Añadir gasto' },
+  'Za co to bylo?': { en: 'What was it for?', pl: 'Za co to było?', uk: 'За що це було?', es: '¿En qué fue?' },
+  'Opakované': { en: 'Repeated', pl: 'Powtarzane', uk: 'Повторювані', es: 'Repetidos' },
+  'Návrhy': { en: 'Suggestions', pl: 'Propozycje', uk: 'Пропозиції', es: 'Sugerencias' },
+  'Poslední výdaje': { en: 'Recent expenses', pl: 'Ostatnie wydatki', uk: 'Останні витрати', es: 'Gastos recientes' },
+  'Smazat': { en: 'Delete', pl: 'Usuń', uk: 'Видалити', es: 'Eliminar' },
+  'Celkem tento měsíc {v}': { en: 'Total this month {v}', pl: 'Razem w tym miesiącu {v}', uk: 'Усього цього місяця {v}', es: 'Total este mes {v}' },
+  'Zpět': { en: 'Undo', pl: 'Cofnij', uk: 'Скасувати', es: 'Deshacer' },
+  'zbývá {v}': { en: '{v} left', pl: 'zostało {v}', uk: 'залишилось {v}', es: 'quedan {v}' },
+  'přes o {v}': { en: '{v} over', pl: 'przekroczono o {v}', uk: 'перевищено на {v}', es: '{v} de más' },
+  'Nákup potravin': { en: 'Groceries', pl: 'Zakupy spożywcze', uk: 'Продукти', es: 'Compra' },
+  'Benzín': { en: 'Fuel', pl: 'Paliwo', uk: 'Пальне', es: 'Gasolina' },
+  'Lékárna': { en: 'Pharmacy', pl: 'Apteka', uk: 'Аптека', es: 'Farmacia' },
+  'Káva': { en: 'Coffee', pl: 'Kawa', uk: 'Кава', es: 'Café' },
+  'Restaurace': { en: 'Restaurant', pl: 'Restauracja', uk: 'Ресторан', es: 'Restaurante' },
+  'Dárek': { en: 'Gift', pl: 'Prezent', uk: 'Подарунок', es: 'Regalo' },
+  'Investice': { en: 'Investment', pl: 'Inwestycja', uk: 'Інвестиція', es: 'Inversión' },
+  'Spoření': { en: 'Savings', pl: 'Oszczędzanie', uk: 'Заощадження', es: 'Ahorro' },
+
   // ── templates: Přehled/Plán ──
   'Cíl {p} % · {v}': { en: 'Target {p} % · {v}', pl: 'Cel {p} % · {v}', uk: 'Ціль {p} % · {v}', es: 'Meta {p} % · {v}' },
   '{p} % z příjmu': { en: '{p} % of income', pl: '{p} % dochodu', uk: '{p} % доходу', es: '{p} % del ingreso' },

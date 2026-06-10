@@ -2,7 +2,7 @@
 // (income + balance + "Lesní koláč peněz" donut), then the three 50/30/20
 // category cards, reserves and extra-income cards.
 
-function Prehled({ go, ratios, month, setMonth }) {
+function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) {
   const a = APP;
   const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent) }));
   // unallocated slice
@@ -56,6 +56,9 @@ function Prehled({ go, ratios, month, setMonth }) {
           {L('Upravit měsíční plán')} <Icon name="chevron" size={16} stroke={2} />
         </button>
       </Card>
+
+      {/* ── Poslední výdaje (uživatelské one-off) ─────────────── */}
+      <RecentExpenses expenses={expenses} onDelete={deleteExpense} go={go} />
 
       {/* ── Mini strom cílů (odkaz na Cíle) ─────────────────────── */}
       <Card onClick={() => go('cile')} style={{ marginBottom: 22, paddingTop: 14, paddingBottom: 14 }}>
@@ -144,7 +147,7 @@ function CategoryRow({ c, index }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 9 }}>
         <Icon name={overflow ? 'alert' : 'check'} size={14} stroke={2}
           color={overflow ? 'var(--clay)' : c.tone === 'under' ? 'var(--honey-deep)' : 'var(--moss)'} />
-        <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)' }}>{L(c.note)}</span>
+        <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)' }}>{faCatNote(c)}</span>
       </div>
     </div>
   );

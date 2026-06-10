@@ -37,6 +37,12 @@ function App() {
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
   const [month, setMonth] = useA(() => { try { return localStorage.getItem('fa.month') || APP.month; } catch (e) { return APP.month; } });
+  const [expenses, setExpenses] = useA(loadFaExpenses);
+  const [addOpen, setAddOpen] = useA(false);
+  useAE(() => { saveFaExpenses(expenses); }, [expenses]);
+  const addExpense = (e) => { setExpenses(list => [...list, e]); setToast(e); };
+  const deleteExpense = (ts) => setExpenses(list => list.filter(e => e.ts !== ts));
+  const [toast, setToast] = useA(null);
   useAE(() => { try { localStorage.setItem('fa.month', month); } catch (e) {} }, [month]);
   useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
   useAE(() => { try { localStorage.setItem('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
@@ -66,6 +72,8 @@ function App() {
   const isWizard = theme === 'kouzelnický';
   // apply editable 50/30/20 ratios onto the shared data model before render
   APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
+  // then layer user-added one-off expenses on top (recomputes derived stats)
+  applyFaExpenses(expenses);
   setFaTheme(isWizard ? 'wizard' : 'forest');
   setFaLang(lang);
 
@@ -88,12 +96,16 @@ function App() {
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} />
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}
           {(() => { APP.month = month; return null; })()}
         </div>
+        {/* add expense: floating + button & sheet */}
+        <AddFab onClick={() => setAddOpen(true)} />
+        <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} />
+        <FaToast toast={toast} onUndo={deleteExpense} onHide={() => setToast(null)} />
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />
       </div>

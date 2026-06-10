@@ -49,7 +49,10 @@ function CrossfadeVideo({ src, fade = 0.8, endTrim = 0, startAt = 0, filter, sty
     const onEnded = (e) => { e.target.style.opacity = '0'; swap(); };
     va.addEventListener('ended', onEnded);
     vb.addEventListener('ended', onEnded);
-    const onVis = () => { if (!document.hidden) play(activeRef.current === 'a' ? va : vb); };
+    const onVis = () => {
+      if (document.hidden) { va.pause(); vb.pause(); }
+      else play(activeRef.current === 'a' ? va : vb);
+    };
     document.addEventListener('visibilitychange', onVis);
     return () => {
       cancelAnimationFrame(raf);

@@ -55,7 +55,7 @@
   --invest-gains: color-mix(in oklab, var(--brand), transparent 70%);
 
   /* income-sources pie — deeper, non-pastel palette (distinct from category pie) */
-  --src-1: #2C7D63; --src-2: #CC7A3B; --src-3: #A6486F; --src-4: #45708F;
+  --src-1: #2C7D63; --src-2: #BD9130; --src-3: #A6486F; --src-4: #45708F;
 
   /* goal tree */
   --tree-bark: #7A5E36; --tree-ground: #B9A77E;
@@ -733,6 +733,133 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
   .fa-stage .fa-screen > * { transition: none !important; opacity: 1 !important; transform: none !important; }
   .fa-mote, .wz-ember { display: none; }
   .wz-star, .wz-win { animation: none !important; }
+}
+/* ════════════════════ ADD EXPENSE (FAB + SHEET) ════════════════════ */
+.fa-fab {
+  position: absolute; right: 16px; bottom: 104px; z-index: 6;
+  width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px color-mix(in oklab, var(--brand), transparent 55%), 0 2px 6px rgba(40,52,30,0.18);
+  transition: transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-fab:active { transform: scale(.9); }
+.fa-root[data-bare="true"] .fa-fab { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+.fa-root[data-theme="wizard"] .fa-fab {
+  background: linear-gradient(180deg, #E9CF7E, #C9A23E); color: #2C2412;
+  box-shadow: 0 8px 22px rgba(170,132,40,0.45), inset 0 1px 0 rgba(255,240,200,0.8);
+}
+
+.fa-sheet-wrap { position: absolute; inset: 0; z-index: 20; }
+.fa-sheet-backdrop { position: absolute; inset: 0; background: rgba(28,34,20,0); transition: background .3s; }
+.fa-sheet-wrap.is-open .fa-sheet-backdrop { background: rgba(28,34,20,0.42); }
+.fa-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: var(--card); border-radius: 28px 28px 0 0;
+  padding: 10px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 40px rgba(30,40,20,0.25);
+  transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.8,.2,1);
+  max-height: 86%; overflow-y: auto;
+}
+.fa-sheet-wrap.is-open .fa-sheet { transform: translateY(0); }
+.fa-sheet-grip { width: 40px; height: 4px; border-radius: 999px; background: var(--card-line); margin: 2px auto 12px; }
+.fa-sheet-x {
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--card-line);
+  background: var(--cream); color: var(--ink-soft); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+.fa-sheet-label { font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--ink-faint); margin: 0 2px 7px; }
+
+.fa-amount-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+.fa-amount {
+  flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: none;
+  font-family: var(--serif); font-size: 44px; font-weight: 500; color: var(--ink);
+  padding: 0; caret-color: var(--brand);
+}
+.fa-amount::placeholder { color: var(--ink-faint); }
+.fa-amount-unit { font-family: var(--serif); font-size: 24px; color: var(--ink-soft); }
+.fa-field {
+  width: 100%; border: 1px solid var(--card-line); border-radius: 14px;
+  background: var(--cream); padding: 12px 14px; outline: none;
+  font-family: var(--sans); font-size: 15px; color: var(--ink); margin-bottom: 12px;
+  box-sizing: border-box;
+}
+.fa-field:focus { border-color: var(--brand); }
+.fa-catpick { display: flex; gap: 8px; }
+.fa-catpick button {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 4px; border-radius: 14px; cursor: pointer;
+  border: 1px solid var(--card-line); background: var(--cream); color: var(--ink-soft);
+  font-family: var(--sans); font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  transition: all .2s ease; -webkit-tap-highlight-color: transparent;
+}
+.fa-catpick button[data-on="true"] { background: var(--cp-soft); color: var(--ink); border-color: var(--cp); }
+.fa-catpick button[data-on="true"] svg { color: var(--cp); }
+.fa-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.fa-chipbtn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--card-line); background: var(--cream); cursor: pointer;
+  font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--ink);
+  padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+  transition: background .15s, transform .12s;
+}
+.fa-chipbtn:active { transform: scale(.95); background: var(--brand-soft); }
+.fa-chipbtn[data-acc="true"] { background: var(--brand-soft); border-color: color-mix(in oklab, var(--brand), transparent 60%); }
+.fa-chipbtn svg { color: var(--brand); flex-shrink: 0; }
+
+.fa-exp-row { display: flex; align-items: center; gap: 11px; padding: 11px 16px; }
+.fa-exp-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+.fa-exp-del {
+  width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--cream); color: var(--ink-faint); font-size: 11px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-exp-del:active { background: var(--clay-soft); color: var(--clay); }
+.fa-exp-foot {
+  padding: 10px 16px; border-top: 1px solid var(--card-line);
+  font-family: var(--sans); font-size: 12px; color: var(--ink-soft); background: var(--cream);
+}
+
+/* toast (confirm + undo) — floats above the nav */
+.fa-toast {
+  position: absolute; left: 50%; bottom: 112px; z-index: 18;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 9px;
+  max-width: calc(100% - 48px); box-sizing: border-box;
+  background: var(--ink); color: #F4F1E6;
+  border-radius: 999px; padding: 10px 10px 10px 16px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  box-shadow: 0 10px 28px rgba(30,40,20,0.35);
+  animation: faToastIn .35s cubic-bezier(.2,.8,.2,1) backwards;
+}
+.fa-toast svg { color: var(--sage); flex-shrink: 0; }
+.fa-toast button {
+  border: none; cursor: pointer; border-radius: 999px;
+  background: rgba(255,255,255,0.14); color: #fff;
+  font-family: var(--sans); font-size: 12.5px; font-weight: 700;
+  padding: 6px 13px; white-space: nowrap;
+  transition: background .15s;
+}
+.fa-toast button:active { background: rgba(255,255,255,0.26); }
+@keyframes faToastIn { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.fa-root[data-bare="true"] .fa-toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+.fa-root[data-theme="wizard"] .fa-toast { background: #2A2118; color: #EDDFB8; box-shadow: 0 10px 28px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(201,162,62,0.35); }
+.fa-root[data-theme="wizard"] .fa-toast svg { color: #C9A23E; }
+.fa-root[data-theme="wizard"] .fa-toast button { background: rgba(201,162,62,0.22); color: #EDDFB8; }
+
+/* budget-left hint inside category picker */
+.fa-cat-left {
+  font-style: normal; font-family: var(--sans);
+  font-size: 9.5px; font-weight: 600; letter-spacing: 0.1px;
+  color: var(--ink-faint); white-space: nowrap;
+}
+.fa-catpick button[data-on="true"] .fa-cat-left { color: var(--ink-soft); }
+.fa-cat-left[data-neg="true"] { color: var(--clay); }
+@media (prefers-reduced-motion: reduce) {
+  .fa-sheet, .fa-sheet-backdrop { transition: none; }
+  .fa-toast { animation: none; }
 }</style>
 </head>
 <body>
@@ -755,6 +882,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
   <script type="text/babel" src="fa-tree.jsx"></script>
   <script type="text/babel" src="fa-invest.jsx"></script>
   <script type="text/babel" src="fa-prehled.jsx"></script>
+  <script type="text/babel" src="fa-add.jsx"></script>
   <script type="text/babel" src="fa-screens.jsx"></script>
   <script type="text/babel" src="fa-plan.jsx"></script>
   <script type="text/babel" src="fa-app.jsx"></script>
