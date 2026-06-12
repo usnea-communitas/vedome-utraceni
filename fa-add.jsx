@@ -99,10 +99,13 @@ function AddSheet({ open, onClose, onSave, expenses }) {
   const valid = amt > 0 && name.trim().length > 0;
   const bump = (v) => setAmount(prev => String(Math.round(parseFloat(String(prev).replace(',', '.')) || 0) + v));
 
-  const pick = (n, c2, a2) => {
+  const pick = (n, c2) => {
+    // Suggestions should only choose the label/category. Do not focus the
+    // amount field or prefill a historical amount: on iOS this could summon
+    // the numeric keyboard while the sheet is animating, briefly exposing the
+    // app's dark background; it also made suggested expenses feel like they
+    // had a random, hard-to-change amount.
     setName(n); setCat(c2);
-    if (a2) setAmount(String(a2));
-    if (amountRef.current) amountRef.current.focus();
   };
   const save = () => {
     if (!valid || savedRef.current) return;
@@ -124,7 +127,7 @@ function AddSheet({ open, onClose, onSave, expenses }) {
 
         {/* amount */}
         <div className="fa-amount-row">
-          <input ref={amountRef} className="fa-amount" type="text" inputMode="decimal" autoFocus
+          <input ref={amountRef} className="fa-amount" type="text" inputMode="decimal"
             placeholder="0" value={amount}
             onChange={e => setAmount(e.target.value.replace(/[^\d.,]/g, ''))}
             onKeyDown={e => { if (e.key === 'Enter') save(); }} />
