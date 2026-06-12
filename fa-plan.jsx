@@ -235,6 +235,7 @@ function StructureBar({ items, accent }) {
 function ItemEditor({ list, setList, accent, suggest, addLabel }) {
   const [name, setName] = usePl('');
   const [amount, setAmount] = usePl('');
+  const amountRef = React.useRef(null);
   const update = (i, patch) => setList(list.map((it, k) => k === i ? { ...it, ...patch } : it));
   const remove = (i) => setList(list.filter((_, k) => k !== i));
   const add = (nm, amt, rec) => {
@@ -244,6 +245,13 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
     return true;
   };
   const commit = () => { if (add(name, amount, true)) { setName(''); setAmount(''); } };
+  const pickSuggestion = (s) => {
+    // Suggestions are labels, not fixed-price presets. Let the user enter the
+    // real amount instead of auto-adding a default like 90 Kč.
+    setName(s);
+    setAmount('');
+    setTimeout(() => amountRef.current && amountRef.current.focus(), 0);
+  };
   const used = new Set(list.map(it => it.name));
   const chips = (suggest || []).filter(s => !used.has(s));
 
@@ -265,7 +273,7 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 2 }}>
           <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', alignSelf: 'center' }}>{L('Návrhy')}:</span>
           {chips.map(s => (
-            <button key={s} className="fa-chip" onClick={() => add(s, defaultFor(s), true)}>
+            <button key={s} className="fa-chip" onClick={() => pickSuggestion(s)}>
               <Icon name="plus" size={11} stroke={2.4} /> {L(s)}
             </button>
           ))}
@@ -274,7 +282,7 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
 
       <div style={{ display: 'flex', gap: 7, marginTop: 4 }}>
         <input className="fa-input" value={name} placeholder={L('Název položky')} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1.4 }} />
-        <input className="fa-input" type="number" inputMode="numeric" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
+        <input ref={amountRef} className="fa-input" type="number" inputMode="numeric" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
         <button className="fa-input-btn" onClick={commit} style={{ ['--accent']: accentVar(accent) }}>{L('Přidat')}</button>
       </div>
     </div>
