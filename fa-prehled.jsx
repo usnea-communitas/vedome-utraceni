@@ -4,9 +4,9 @@
 
 function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) {
   const a = APP;
-  const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent) }));
+  const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent), label: L(c.name) }));
   // unallocated slice
-  segs.push({ value: a.remaining, color: 'var(--unalloc)' });
+  if (a.remaining > 0) segs.push({ value: a.remaining, color: 'var(--unalloc)', label: L('Nerozděleno') });
 
   return (
     <div className="fa-screen">
@@ -74,6 +74,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
               <div style={{ fontFamily: 'var(--sans)', fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--ink-faint)' }}>{L('Naspořeno')}</div>
               <div style={{ fontFamily: 'var(--title)', fontSize: 22, fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{kc(a.reserves.total)}</div>
             </div>
+            {a.reserves.goalTotal > 0 ? (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
                 <span style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)' }}>{Lf('z cíle {v}', { v: kc(a.reserves.goalTotal) })}</span>
@@ -81,6 +82,9 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
               </div>
               <Bar pct={Math.round(a.reserves.total / a.reserves.goalTotal * 100)} color="var(--brand)" h={7} />
             </div>
+            ) : (
+            <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', margin: 0, lineHeight: 1.45 }}>{L('Zasaď první cíl a strom začne růst.')}</p>
+            )}
           </div>
         </div>
       </Card>
@@ -94,26 +98,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
         </div>
         {(() => {
           const maxA = Math.max(...a.incomeSources.map(s => s.amount));
-          const tot = a.incomeSources.reduce((s, x) => s + x.amount, 0) || 1;
-          return (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 150, marginTop: 12, padding: '0 2px' }}>
-              {a.incomeSources.map((s, i) => {
-                const h = Math.round(26 + (s.amount / maxA) * 74);
-                return (
-                  <div key={s.name} className="fa-bar-col" style={{ flex: 1, minWidth: 0 }}>
-                    <span className="fa-bar-pct">{Math.round(s.amount / tot * 100)}&nbsp;%</span>
-                    <div className="fa-bar-track2">
-                      <div className="fa-bar-fill" style={{ height: `${h}%`, ['--c']: `var(--src-${i + 1})` }}>
-                        <span className="fa-bar-cap" />
-                      </div>
-                    </div>
-                    <span className="fa-bar-name">{L(s.name)}</span>
-                    <span className="fa-bar-amt">{fmt(s.amount * 12)}&nbsp;Kč</span>
-                  </div>
-                );
-              })}
-            </div>
-          );
+          return <SourceBars sources={a.incomeSources} maxA={maxA} />;
         })()}
       </Card>
 
@@ -320,4 +305,35 @@ function GrowthMark({ pct }) {
   );
 }
 
-Object.assign(window, { Prehled, ScreenHeader, GrowthMark, YearGoals, SnakeBar });
+// ── income-source columns — tap a column to focus it (others dim) and see
+// the monthly amount; tap again to go back to yearly view ───────────────
+function SourceBars({ sources, maxA }) {
+  const [sel, setSel] = React.useState(null);
+  const tot = sources.reduce((s, x) => s + x.amount, 0) || 1;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 150, marginTop: 12, padding: '0 2px' }}>
+      {sources.map((s, i) => {
+        const h = Math.round(26 + (s.amount / maxA) * 74);
+        const on = sel === i;
+        return (
+          <div key={s.name} className="fa-bar-col" data-dim={sel != null && !on}
+            onClick={() => setSel(on ? null : i)}
+            style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}>
+            <span className="fa-bar-pct" style={on ? { color: 'var(--ink)', fontWeight: 700 } : null}>{Math.round(s.amount / tot * 100)}&nbsp;%</span>
+            <div className="fa-bar-track2">
+              <div className="fa-bar-fill" data-on={on} style={{ height: `${h}%`, ['--c']: `var(--src-${i + 1})` }}>
+                <span className="fa-bar-cap" />
+              </div>
+            </div>
+            <span className="fa-bar-name">{L(s.name)}</span>
+            <span className="fa-bar-amt" style={on ? { color: 'var(--brand)', fontWeight: 700 } : null}>
+              {on ? `${fmt(s.amount)}\u00A0${L('Kč/měs')}` : `${fmt(s.amount * 12)}\u00A0Kč`}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+Object.assign(window, { Prehled, ScreenHeader, GrowthMark, YearGoals, SnakeBar, SourceBars });

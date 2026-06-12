@@ -57,6 +57,17 @@ function InvestSim() {
     { k: 'opt',  label: L('Odvážný'), pct: '10 %' },
   ];
 
+  // ── scrub interaction: drag across the chart to read values over time ──
+  const [scrub, setScrub] = React.useState(null); // index into data, or null
+  const chartRef = React.useRef(null);
+  const scrubTo = (clientX) => {
+    const rect = chartRef.current.getBoundingClientRect();
+    const frac = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+    setScrub(Math.round(frac * (n - 1)));
+  };
+  const sp = scrub != null ? data[Math.min(scrub, n - 1)] : null;
+  const spX = sp != null && n > 1 ? Math.min(scrub, n - 1) / (n - 1) : 0;
+
   return (
     <Card pad={18} style={{ marginTop: 6 }}>
       {/* headline result */}
@@ -70,8 +81,27 @@ function InvestSim() {
         </div>
       </div>
 
-      {/* chart */}
-      <div style={{ marginTop: 14, position: 'relative' }}>
+      {/* chart — táhni prstem a čti hodnoty v čase */}
+      <div ref={chartRef} style={{ marginTop: 14, position: 'relative', touchAction: 'none' }}
+        onPointerDown={(e) => { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} scrubTo(e.clientX); }}
+        onPointerMove={(e) => { if (e.buttons || e.pointerType === 'touch') scrubTo(e.clientX); }}
+        onPointerUp={() => setScrub(null)}
+        onPointerCancel={() => setScrub(null)}>
+        {/* floating readout */}
+        <div style={{
+          position: 'absolute', top: -6, left: `${spX * 100}%`,
+          transform: `translate(${spX < 0.18 ? '0%' : spX > 0.82 ? '-100%' : '-50%'}, -100%)`,
+          background: 'var(--card)', border: '1px solid var(--card-line)', borderRadius: 12,
+          boxShadow: 'var(--shadow-chip)', padding: '7px 11px', whiteSpace: 'nowrap',
+          pointerEvents: 'none', zIndex: 2,
+          opacity: sp ? 1 : 0, transition: 'opacity .15s ease',
+        }}>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase', color: 'var(--ink-faint)' }}>
+            {sp && sp.y === 0 ? L('dnes') : sp ? Lf('za {y} let', { y: sp.y }) : ''}
+          </div>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--ink)', fontWeight: 500 }}>{sp ? kc(Math.round(sp.fv)) : ''}</div>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)' }}>{sp ? `${L('Vklady')} ${kc(Math.round(sp.contributed))}` : ''}</div>
+        </div>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="auto" preserveAspectRatio="none"
           style={{ display: 'block', overflow: 'visible' }}>
           <defs>
@@ -92,9 +122,19 @@ function InvestSim() {
           <path d={contribLine} fill="none" stroke="var(--invest-contrib-solid)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeDasharray="3 3" />
           {/* value line on top */}
           <path d={fvLine} fill="none" stroke="var(--brand)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+          {/* scrub guide */}
+          {sp && (
+            <g pointerEvents="none">
+              <line x1={X(Math.min(scrub, n - 1))} y1="0" x2={X(Math.min(scrub, n - 1))} y2={H} stroke="var(--ink-faint)" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+              <circle cx={X(Math.min(scrub, n - 1))} cy={Y(sp.contributed)} r="3.4" fill="var(--invest-contrib-solid)" stroke="var(--card)" strokeWidth="1.5" />
+              <circle cx={X(Math.min(scrub, n - 1))} cy={Y(sp.fv)} r="4.4" fill="var(--brand)" stroke="var(--card)" strokeWidth="2" />
+            </g>
+          )}
         </svg>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontFamily: 'var(--sans)', fontSize: 10.5, color: 'var(--ink-faint)' }}>
-          <span>{L('dnes')}</span><span>{Lf('za {y} let', { y: years })}</span>
+          <span>{L('dnes')}</span>
+          <span style={{ opacity: 0.75 }}>{L('táhni prstem po grafu')}</span>
+          <span>{Lf('za {y} let', { y: years })}</span>
         </div>
       </div>
 

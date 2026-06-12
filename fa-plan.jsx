@@ -176,32 +176,57 @@ function Plan({ go, month, setMonth, ratios }) {
   );
 }
 
-// ── stacked allocation ribbon ──
-function PlanRibbon({ segments, h = 14 }) {
+// ── stacked allocation ribbon — shows % inside segments wide enough ──
+function PlanRibbon({ segments, h = 16 }) {
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
   return (
     <div style={{ display: 'flex', gap: 3, height: h, borderRadius: 999, overflow: 'hidden', background: 'var(--bar-track)' }}>
-      {segments.map((s, i) => (
-        <div key={i} style={{ flex: Math.max(s.value, 0.0001), background: s.color, borderRadius: 999, transition: 'flex .6s cubic-bezier(.2,.8,.2,1)' }} />
-      ))}
+      {segments.map((s, i) => {
+        const pct = Math.round(s.value / total * 100);
+        return (
+          <div key={i} style={{
+            flex: Math.max(s.value, 0.0001), background: s.color, borderRadius: 999,
+            transition: 'flex .6s cubic-bezier(.2,.8,.2,1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden',
+          }}>
+            {pct >= 14 && (
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fontWeight: 700, color: 'rgba(255,255,255,0.92)', whiteSpace: 'nowrap' }}>{pct} %</span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-// ── mini structure bar: proportion of each item within a category ──
+// ── mini structure bar: proportion of each item within a category.
+// Tap a segment to see its name · amount · share; tap again to hide.
 function StructureBar({ items, accent }) {
+  const [sel, setSel] = usePl(null);
   const total = items.reduce((s, x) => s + (+x.amount || 0), 0) || 1;
   const base = accentVar(accent);
-  if (!items.length) return <div style={{ height: 8, borderRadius: 999, background: 'var(--bar-track)' }} />;
+  if (!items.length) return <div style={{ height: 9, borderRadius: 999, background: 'var(--bar-track)' }} />;
+  const active = sel != null ? items[sel] : null;
   return (
-    <div style={{ display: 'flex', gap: 2, height: 8, borderRadius: 999, overflow: 'hidden' }}>
-      {items.map((it, i) => (
-        <div key={i} title={it.name} style={{
-          flex: Math.max(+it.amount || 0, 0.0001),
-          background: `color-mix(in oklab, ${base}, #fff ${(i % 4) * 13}%)`,
-          borderRadius: 999,
-        }} />
-      ))}
+    <div>
+      <div style={{ display: 'flex', gap: 2, height: 11, borderRadius: 999, overflow: 'hidden' }}>
+        {items.map((it, i) => (
+          <div key={i} onClick={(e) => { e.stopPropagation(); setSel(sel === i ? null : i); }} style={{
+            flex: Math.max(+it.amount || 0, 0.0001),
+            background: `color-mix(in oklab, ${base}, #fff ${(i % 4) * 13}%)`,
+            borderRadius: 999, cursor: 'pointer',
+            opacity: sel != null && sel !== i ? 0.38 : 1,
+            transition: 'opacity .22s ease, flex .5s cubic-bezier(.2,.8,.2,1)',
+          }} />
+        ))}
+      </div>
+      {active && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: 3, background: `color-mix(in oklab, ${base}, #fff ${(sel % 4) * 13}%)`, flexShrink: 0 }}></span>
+          <span style={{ fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(active.name)}</span>
+          <span style={{ whiteSpace: 'nowrap' }}>· {kc(active.amount)} · {Math.round((+active.amount || 0) / total * 100)} %</span>
+        </div>
+      )}
     </div>
   );
 }

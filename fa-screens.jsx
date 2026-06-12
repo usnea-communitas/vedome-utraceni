@@ -5,13 +5,42 @@ const { useState: useS2 } = React;
 // ════════════════════════════════════════════════════════════════════
 // CÍLE — reserves & savings goals, each a "growing plant"
 // ════════════════════════════════════════════════════════════════════
-function Cile({ go, month, setMonth, ratios }) {
+function Cile({ go, month, setMonth, ratios, profile }) {
+  const real = profile && !profile.demo;
+  const [, bump] = useS2(0);
+  const [adding, setAdding] = useS2(false);
+  const [openId, setOpenId] = useS2(null);
   const r = APP.reserves;
-  const totalPct = Math.round(r.total / r.goalTotal * 100);
+  const totalPct = r.goalTotal > 0 ? Math.round(r.total / r.goalTotal * 100) : 0;
+  const empty = r.goals.length === 0;
+  const mutate = (fn) => { if (!real) return; saveFaGoals(fn(loadFaGoals())); faHydrate(ratios); bump(x => x + 1); };
+  const addGoal = (g) => mutate(list => [...list, g]);
+  const removeGoal = (id) => { mutate(list => list.filter(g => g.id !== id)); setOpenId(null); };
+  const deposit = (id, amount) => {
+    mutate(list => list.map(g => g.id === id ? { ...g, saved: Math.max(0, (+g.saved || 0) + amount) } : g));
+    try { window.dispatchEvent(new CustomEvent('fa-goal-deposit', { detail: { id } })); } catch (e) {}
+  };
   return (
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Rezervy a cíle')} title={L('Cíle')} right={<MonthPill month={APP.month} setMonth={setMonth} ratios={ratios} go={go} />} />
 
+      {empty ? (
+      <Card pad={0} style={{ overflow: 'hidden', marginBottom: 20 }}>
+        <div style={{ position: 'relative', padding: '26px 22px 24px', textAlign: 'center' }}>
+          <div className="fa-hero-glow" />
+          <div style={{ position: 'relative' }}>
+            <GoalTree goals={[]} size={150} />
+            <h3 className="fa-cardtitle" style={{ marginTop: 8 }}>{L('Zasaď svůj první cíl')}</h3>
+            <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', margin: '8px auto 0', maxWidth: 250, lineHeight: 1.5 }}>{L('Každý cíl je větev tvého stromu. S každou naspořenou korunou poroste.')}</p>
+            {real && !adding && (
+              <button className="fa-cta fa-cta-solid" style={{ marginTop: 16 }} onClick={() => setAdding(true)}>
+                {L('Přidat cíl')} <Icon name="chevron" size={16} stroke={2} />
+              </button>
+            )}
+          </div>
+        </div>
+      </Card>
+      ) : (
       <Card pad={0} style={{ overflow: 'hidden', marginBottom: 20 }}>
         <div style={{ position: 'relative', padding: '22px 20px 20px', textAlign: 'center' }}>
           <div className="fa-hero-glow" />
@@ -31,12 +60,23 @@ function Cile({ go, month, setMonth, ratios }) {
           <HeroStat label={L('Zbývá splnit')} value={kc(r.remainingToGoal)} />
         </div>
       </Card>
+      )}
 
-      <SectionLabel action={L('Přidat cíl')}>{faLabel(L('Tvůj malý les'), L('Tvé malé trezory'))}</SectionLabel>
+      {!empty && (
+        <SectionLabel action={real ? L('Přidat cíl') : null} onAction={real ? () => setAdding(true) : undefined}>{faLabel(L('Tvůj malý les'), L('Tvé malé trezory'))}</SectionLabel>
+      )}
+      {adding && <AddGoalForm onAdd={addGoal} onClose={() => setAdding(false)} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-        {r.goals.map((g, i) => <GoalCard key={g.name} g={g} i={i} />)}
+        {r.goals.map((g, i) => (
+          <GoalCard key={g.id || g.name} g={g} i={i} real={real}
+            open={openId === (g.id || g.name)}
+            onToggle={() => setOpenId(openId === (g.id || g.name) ? null : (g.id || g.name))}
+            onDeposit={(v) => deposit(g.id, v)}
+            onDelete={() => removeGoal(g.id)} />
+        ))}
       </div>
 
+      {APP.extra.total > 0 && (<React.Fragment>
       <SectionLabel>{L('Mimořádné příjmy')}</SectionLabel>
       <Card>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -47,14 +87,56 @@ function Cile({ go, month, setMonth, ratios }) {
           </div>
         </div>
       </Card>
+      </React.Fragment>)}
     </div>
   );
 }
 
-function GoalCard({ g, i }) {
-  const pct = Math.round(g.saved / g.target * 100);
+// inline add-goal form (presets shared with onboarding)
+function AddGoalForm({ onAdd, onClose }) {
+  const presets = window.OB_GOALS || [];
+  const [key, setKey] = useS2(null);
+  const [name, setName] = useS2('');
+  const [target, setTarget] = useS2('');
+  const pick = (g) => { setKey(g.key); setName(g.key === 'custom' ? '' : L(g.name)); };
+  const valid = key && name.trim() && (parseInt(String(target).replace(/\s/g, ''), 10) || 0) > 0;
+  const commit = () => {
+    if (!valid) return;
+    const g = presets.find(x => x.key === key);
+    onAdd({ id: Date.now(), name: name.trim(), target: parseInt(String(target).replace(/\s/g, ''), 10), saved: 0, icon: g.icon, accent: g.accent, kind: g.kind });
+    onClose();
+  };
   return (
-    <Card pad={16} interactive>
+    <Card pad={16} style={{ marginBottom: 12 }}>
+      <h3 className="fa-cardtitle" style={{ fontSize: 17, marginBottom: 11 }}>{L('Nový cíl')}</h3>
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 11 }}>
+        {presets.map(g => (
+          <button key={g.key} className="fa-onb-chip" data-on={key === g.key} onClick={() => pick(g)}>{L(g.name)}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        <input className="fa-onb-input" type="text" value={name} maxLength={28} placeholder={L('Název cíle')}
+          onChange={e => setName(e.target.value)} style={{ padding: '11px 13px', fontSize: 14.5 }} />
+        <div className="fa-onb-money">
+          <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={target} placeholder={L('Cílová částka')}
+            onChange={e => setTarget(e.target.value)} style={{ textAlign: 'right', padding: '11px 13px', fontSize: 14.5 }} />
+          <span>Kč</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 9, marginTop: 13 }}>
+        <button className="fa-cta fa-cta-solid" style={{ flex: 1, opacity: valid ? 1 : 0.45, pointerEvents: valid ? 'auto' : 'none' }} onClick={commit}>{L('Přidat')}</button>
+        <button className="fa-ghostbtn" onClick={onClose}>{L('Zrušit')}</button>
+      </div>
+    </Card>
+  );
+}
+
+function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
+  const pct = g.target > 0 ? Math.round(g.saved / g.target * 100) : 0;
+  const [amt, setAmt] = useS2('');
+  const commit = () => { const v = parseInt(String(amt).replace(/\s/g, ''), 10) || 0; if (v > 0) { onDeposit(v); setAmt(''); } };
+  return (
+    <Card pad={16} interactive onClick={real ? onToggle : undefined}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
         <PlantStage pct={pct} accent={g.accent} icon={g.icon} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -67,6 +149,14 @@ function GoalCard({ g, i }) {
         </div>
       </div>
       <Bar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
+      {real && open && (
+        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 8, marginTop: 13, alignItems: 'center' }}>
+          <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={amt} placeholder={L('Částka v Kč')}
+            onChange={e => setAmt(e.target.value)} style={{ flex: 1, padding: '9px 12px', fontSize: 14, minWidth: 0 }} />
+          <button className="fa-ghostbtn" onClick={commit} style={{ flexShrink: 0 }}><Icon name="plus" size={14} stroke={2} /> {L('Vložit')}</button>
+          <button className="fa-textbtn" onClick={onDelete} style={{ color: 'var(--clay)', flexShrink: 0 }}>{L('Smazat')}</button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -264,8 +354,10 @@ function reflexBand(score, max) {
   return REFLEX_RESULT.joy;
 }
 
-function Reflexe() {
-  const [answers, setAnswers] = useS2({});
+function Reflexe({ month }) {
+  const mKey = month || APP.month;
+  const [answers, setAnswersRaw] = useS2(() => { try { const s = loadFaReflexe(); return (s[mKey] && s[mKey].answers) || {}; } catch (e) { return {}; } });
+  const setAnswers = (next) => { setAnswersRaw(next); const s = loadFaReflexe(); s[mKey] = { answers: next }; saveFaReflexe(s); };
   const qKeys = Object.keys(answers);
   const answered = qKeys.length;
   const maxScore = REFLEX_QUIZ.length * 3;
@@ -351,10 +443,15 @@ function reflexSegments(score, max) {
 // ════════════════════════════════════════════════════════════════════
 // VÍCE — settings, warmly restyled
 // ════════════════════════════════════════════════════════════════════
-function Vice({ lang, setLang, theme, setTheme, ratios, setRatios }) {
+function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, resetAll }) {
+  const real = profile && !profile.demo;
   const groups = [
-    { h: 'Účet', rows: [ {i:'sprout', t:'Anička', d:'Osobní profil'}, {i:'sun', t:'Měsíční příjem', d:'2 600 Kč'}, {i:'shield', t:'Zabezpečení', d:'Face ID'} ] },
-    { h: 'Vědomé utrácení', rows: [ {i:'bell', t:'Jemné připomínky', d:'Zapnuto'} ] },
+    { h: 'Účet', rows: [
+      { i: 'sprout', t: APP.user || L('Bez jména'), d: L('Osobní profil'), raw: true },
+      { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true },
+      { i: 'shield', t: L('Zabezpečení'), d: L('Face ID'), raw: true },
+    ] },
+    { h: 'Vědomé utrácení', rows: [ { i: 'bell', t: L('Jemné připomínky'), d: L('Zapnuto'), raw: true } ] },
   ];
   return (
     <div className="fa-screen">
@@ -368,9 +465,9 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios }) {
                 <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none' }}>
                   <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(row.t)}</div>
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.raw ? row.t : L(row.t)}</div>
                   </div>
-                  <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', whiteSpace: 'nowrap', flexShrink: 0 }}>{L(row.d)}</span>
+                  <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', whiteSpace: 'nowrap', flexShrink: 0 }}>{row.raw ? row.d : L(row.d)}</span>
                   <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
                 </div>
               ))}
@@ -405,6 +502,15 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios }) {
         </Card>
       </div>
 
+      {real && (
+        <div style={{ marginTop: 18 }}>
+          <SectionLabel>{L('Data')}</SectionLabel>
+          <Card pad={0} style={{ overflow: 'hidden' }}>
+            <DangerRow label={L('Smazat všechna data')} confirmLabel={L('Opravdu smazat? Nejde vrátit')} onConfirm={resetAll} />
+          </Card>
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginTop: 26, opacity: 0.7 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'var(--brand)', whiteSpace: 'nowrap' }}>
           <Icon name="leaf" size={15} stroke={1.7} />
@@ -412,6 +518,21 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios }) {
         </div>
         <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {L('verze 1.0')}</div>
       </div>
+    </div>
+  );
+}
+
+// two-step destructive row (tap → arm → tap to confirm)
+function DangerRow({ label, confirmLabel, onConfirm }) {
+  const [armed, setArmed] = useS2(false);
+  return (
+    <div className="fa-row" style={{ cursor: 'pointer' }} onClick={() => armed ? onConfirm() : setArmed(true)}>
+      <Medallion icon="alert" accent="blush" size={36} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 14.5, fontWeight: 600, color: 'var(--clay)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{armed ? confirmLabel : label}</div>
+      </div>
+      {armed && <button className="fa-textbtn" onClick={e => { e.stopPropagation(); setArmed(false); }}>{L('Zrušit')}</button>}
+      <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
     </div>
   );
 }
@@ -447,4 +568,4 @@ function RatioEditor({ ratios, setRatios }) {
   );
 }
 
-Object.assign(window, { Cile, Tipy, Reflexe, Vice, RatioEditor, PlantStage, GrowthScene });
+Object.assign(window, { Cile, Tipy, Reflexe, Vice, RatioEditor, PlantStage, GrowthScene, AddGoalForm, GoalCard, DangerRow });

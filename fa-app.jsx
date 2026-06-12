@@ -34,6 +34,7 @@ function App() {
   // On a real phone (or installed to home screen) drop the device bezel and
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
+  const [profile, setProfile] = useA(loadFaProfile);
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
   const [month, setMonth] = useA(() => { try { return localStorage.getItem('fa.month') || APP.month; } catch (e) { return APP.month; } });
@@ -69,11 +70,36 @@ function App() {
 
   const go = (key) => { if (key !== screen) setScreen(key); };
 
+  // ── onboarding / data-mode handlers ──
+  const finishOnboarding = (p) => {
+    faSeedFreshUser(p);
+    if (p.theme) setTheme(p.theme);
+    setRatios(p.ratios);
+    setExpenses([]);
+    setProfile(loadFaProfile());
+    setScreen('prehled');
+  };
+  const resetAll = () => {
+    faResetAll();
+    setExpenses([]);
+    setRatios({ nutne: 50, budouci: 20, radost: 30 });
+    setProfile(null);
+    setScreen('prehled');
+  };
+  const loadDemo = () => {
+    faLoadDemo();
+    setExpenses([]);
+    setProfile(loadFaProfile());
+  };
+
   const isWizard = theme === 'kouzelnický';
   // apply editable 50/30/20 ratios onto the shared data model before render
   APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
+  // real-data mode: rewrite APP from the user's stores (no-op for demo profile)
+  faHydrate(ratios);
   // then layer user-added one-off expenses on top (recomputes derived stats)
   applyFaExpenses(expenses);
+  faDerive();
   setFaTheme(isWizard ? 'wizard' : 'forest');
   setFaLang(lang);
 
@@ -91,12 +117,15 @@ function App() {
       {isWizard
         ? <WizardBackground motion={t.motion} videoSrc={WIZARD_VIDEO} />
         : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
+      {!profile ? (
+        <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} />
+      ) : (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
         {/* scrollable content */}
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} />
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} profile={profile} resetAll={resetAll} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}
@@ -109,6 +138,7 @@ function App() {
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />
       </div>
+      )}
     </div>
   );
 
@@ -128,6 +158,9 @@ function App() {
         <TweakRadio label="Karty" value={t.card} options={['soft', 'layered']} onChange={v => setTweak('card', v)} />
         {!isWizard && <TweakRadio label="Hloubka" value={t.depth} options={['cream', 'moss']} onChange={v => setTweak('depth', v)} />}
         {!isWizard && <TweakRadio label="Akcent" value={t.accent} options={['classic', 'blossom', 'amber']} onChange={v => setTweak('accent', v)} />}
+        <TweakSection label="Data (náhled)" />
+        <TweakButton label="Načíst ukázková data" onClick={loadDemo} />
+        <TweakButton label="Smazat data → onboarding" onClick={resetAll} />
       </TweaksPanel>
     </div>
   );
