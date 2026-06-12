@@ -43,6 +43,10 @@ icon.png                ← ikona aplikace
    - [ ] Videa na pozadí běží a opakují se plynule (síťový panel: `assets/*.mp4` = 200).
    - [ ] Více → Vzhled: přepnutí Lesní ↔ Kouzelnický funguje.
    - [ ] Více → jazyky: CZ/EN/PL/UK/ES se přepínají.
+   - [ ] Více → Zabezpečení: nastavení PIN (2× zadání) / Face ID; po obnovení
+         stránky se zobrazí zamykací obrazovka a jde odemknout.
+   - [ ] Více → Jemné připomínky: přepínač + frekvence + čas se ukládají.
+   - [ ] Více → Měsíční příjem: jde upravit a propisuje se do celé appky.
    - [ ] Na telefonu: „Přidat na plochu" → otevírá se přes celou obrazovku (PWA).
 
 4. Pokud cokoliv z checklistu selže, NEOPRAVUJ kód aplikace — zkontroluj,

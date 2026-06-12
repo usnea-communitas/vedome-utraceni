@@ -939,7 +939,107 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .fa-sheet, .fa-sheet-backdrop { transition: none; }
   .fa-toast { animation: none; }
-}</style>
+  .fa-face-beam { animation: none !important; }
+}
+
+/* ════════ settings: security / reminders / income ════════ */
+.fa-sec-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 11px 12px; border-radius: 18px; cursor: pointer;
+  border: 1px solid var(--card-line); background: var(--cream);
+  transition: background .2s ease, border-color .2s ease, transform .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-sec-row:active { transform: scale(.985); }
+.fa-sec-row[data-on="true"] { background: var(--brand-soft); border-color: color-mix(in oklab, var(--brand), transparent 65%); }
+
+.fa-pin-dots { display: flex; gap: 14px; justify-content: center; }
+.fa-pin-dots.is-err { animation: faPinShake .45s ease; }
+.fa-pin-dot {
+  width: 13px; height: 13px; border-radius: 50%;
+  border: 1.5px solid var(--ink-faint); background: transparent;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.fa-pin-dot[data-on="true"] { background: var(--brand); border-color: var(--brand); transform: scale(1.1); }
+.fa-pin-dots.is-err .fa-pin-dot { border-color: var(--clay); }
+.fa-pin-dots.is-err .fa-pin-dot[data-on="true"] { background: var(--clay); }
+@keyframes faPinShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} }
+
+.fa-pin-pad {
+  display: grid; grid-template-columns: repeat(3, 64px); gap: 12px 22px;
+  justify-content: center; margin: 20px auto 8px;
+}
+.fa-pin-key {
+  width: 64px; height: 64px; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--card-line); background: var(--card);
+  font-family: var(--serif); font-size: 24px; color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-chip);
+  transition: transform .12s ease, background .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-pin-key:active { transform: scale(.92); background: var(--brand-soft); }
+
+.fa-switch {
+  position: relative; width: 50px; height: 30px; border-radius: 999px; flex-shrink: 0;
+  border: 1px solid var(--card-line); background: var(--bar-track); cursor: pointer;
+  transition: background .25s ease, border-color .25s ease; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-switch[data-on="true"] { background: var(--brand); border-color: var(--brand); }
+.fa-switch-knob {
+  position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 4px rgba(40,52,30,.25);
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.fa-switch[data-on="true"] .fa-switch-knob { transform: translateX(20px); }
+
+.fa-inc-input {
+  width: 110px; padding: 9px 12px; border-radius: 13px; text-align: right;
+  border: 1px solid var(--card-line); background: var(--cream);
+  font-family: var(--serif); font-size: 17px; color: var(--ink); outline: none;
+}
+.fa-inc-input:focus { border-color: var(--brand); background: var(--card); }
+
+/* lock screen overlay */
+.fa-lock {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--canopy-wash);
+}
+.fa-lock::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--veil);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.fa-lock-inner { position: relative; text-align: center; padding: 0 24px; width: 100%; }
+.fa-lock-mark {
+  width: 64px; height: 64px; border-radius: 38%; margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-soft); color: var(--brand);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand), transparent 75%);
+}
+.fa-face-btn {
+  position: relative; width: 108px; height: 108px; border-radius: 32px; margin: 22px auto 0;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border: 1.5px solid var(--card-line); background: var(--card); color: var(--brand);
+  cursor: pointer; box-shadow: var(--shadow-card);
+  transition: transform .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-face-btn:active { transform: scale(.95); }
+.fa-face-beam {
+  position: absolute; left: 10px; right: 10px; height: 2.5px; top: 14px; border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  opacity: 0; pointer-events: none;
+}
+.fa-face-btn.is-scan .fa-face-beam { opacity: 1; animation: faScan 1.05s ease-in-out; }
+@keyframes faScan { 0%{transform:translateY(0)} 50%{transform:translateY(78px)} 100%{transform:translateY(0)} }
+
+[data-theme="wizard"] .fa-lock { background: linear-gradient(180deg, #1B1D38 0%, #141528 60%, #0F101E 100%); }
+[data-theme="wizard"] .fa-lock::before { background: rgba(16,17,30,0.35); }
+[data-theme="wizard"] .fa-lock-inner > div { color: var(--wiz-gold, #D9B45C) !important; }
+[data-theme="wizard"] .fa-pin-key { background: var(--card); }</style>
 </head>
 <body>
   <div class="stage">
@@ -966,6 +1066,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
   <script type="text/babel" src="fa-plan.jsx"></script>
   <script type="text/babel" src="fa-store.jsx"></script>
   <script type="text/babel" src="fa-onboard.jsx"></script>
+  <script type="text/babel" src="fa-settings.jsx"></script>
   <script type="text/babel" src="fa-app.jsx"></script>
 </body>
 </html>

@@ -35,6 +35,7 @@ function App() {
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
   const [profile, setProfile] = useA(loadFaProfile);
+  const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
   const [month, setMonth] = useA(() => { try { return localStorage.getItem('fa.month') || APP.month; } catch (e) { return APP.month; } });
@@ -125,7 +126,7 @@ function App() {
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} profile={profile} resetAll={resetAll} />
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}
@@ -138,6 +139,9 @@ function App() {
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />
       </div>
+      )}
+      {profile && locked && (
+        <LockScreen security={loadFaSecurity()} userName={profile.name} onUnlock={() => setLocked(false)} />
       )}
     </div>
   );

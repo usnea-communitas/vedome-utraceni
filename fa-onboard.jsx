@@ -25,7 +25,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
   const [goalKey, setGoalKey] = useOb(null);
   const [goalName, setGoalName] = useOb('');
   const [goalTarget, setGoalTarget] = useOb('');
-  const [theme, setTheme] = useOb(initialTheme === 'kouzelnický' ? 'kouzelnický' : 'lesní');
+  const [theme, setTheme] = useOb('lesní'); // onboarding vždy startuje na Lesním klidu
 
   const inc = parseInt(income, 10) || 0;
   const sum = r.nutne + r.budouci + r.radost;

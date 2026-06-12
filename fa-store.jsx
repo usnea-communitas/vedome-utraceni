@@ -8,6 +8,7 @@
 const FA_STORE_KEYS = [
   'fa.profile', 'fa.plan.income', 'fa.plan.items', 'fa.expenses',
   'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe', 'fa.ratios', 'fa.month',
+  'fa.security', 'fa.reminders',
 ];
 
 function faLoad(key, fallback) {

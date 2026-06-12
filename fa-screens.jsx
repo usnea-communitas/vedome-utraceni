@@ -443,15 +443,22 @@ function reflexSegments(score, max) {
 // ════════════════════════════════════════════════════════════════════
 // VÍCE — settings, warmly restyled
 // ════════════════════════════════════════════════════════════════════
-function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, resetAll }) {
+function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setProfile, resetAll }) {
   const real = profile && !profile.demo;
+  const [sheet, setSheet] = useS2(null); // 'income' | 'security' | 'reminders' | null
+  const [, bump] = useS2(0);
+  const refresh = () => { if (setProfile) setProfile(loadFaProfile()); bump(n => n + 1); };
+  const sec = loadFaSecurity();
+  const rem = loadFaReminders();
+  const secLabel = !sec ? L('Vypnuto') : sec.mode === 'pin' ? L('PIN kód') : 'Face ID';
+  const remLabel = rem.on ? `${L('Zapnuto')} · ${L(rem.freq === 'denně' ? 'Denně' : 'Týdně')}` : L('Vypnuto');
   const groups = [
     { h: 'Účet', rows: [
       { i: 'sprout', t: APP.user || L('Bez jména'), d: L('Osobní profil'), raw: true },
-      { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true },
-      { i: 'shield', t: L('Zabezpečení'), d: L('Face ID'), raw: true },
+      { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true, open: 'income' },
+      { i: 'shield', t: L('Zabezpečení'), d: secLabel, raw: true, open: 'security' },
     ] },
-    { h: 'Vědomé utrácení', rows: [ { i: 'bell', t: L('Jemné připomínky'), d: L('Zapnuto'), raw: true } ] },
+    { h: 'Vědomé utrácení', rows: [ { i: 'bell', t: L('Jemné připomínky'), d: remLabel, raw: true, open: 'reminders' } ] },
   ];
   return (
     <div className="fa-screen">
@@ -462,7 +469,8 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, rese
             <SectionLabel>{L(grp.h)}</SectionLabel>
             <Card pad={0} style={{ overflow: 'hidden' }}>
               {grp.rows.map((row, ri) => (
-                <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none' }}>
+                <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none', cursor: row.open ? 'pointer' : 'default' }}
+                  onClick={row.open ? () => setSheet(row.open) : undefined}>
                   <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.raw ? row.t : L(row.t)}</div>
@@ -518,6 +526,10 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, rese
         </div>
         <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {L('verze 1.0')}</div>
       </div>
+
+      <IncomeSheet open={sheet === 'income'} onClose={() => setSheet(null)} onChanged={refresh} demo={!real} />
+      <SecuritySheet open={sheet === 'security'} onClose={() => setSheet(null)} onChanged={refresh} />
+      <RemindersSheet open={sheet === 'reminders'} onClose={() => setSheet(null)} onChanged={refresh} />
     </div>
   );
 }
