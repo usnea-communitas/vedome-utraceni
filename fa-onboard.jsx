@@ -5,7 +5,7 @@
 const { useState: useOb } = React;
 
 const OB_PRESETS = [
-  { name: 'Klasika 50/30/20', r: { nutne: 50, budouci: 20, radost: 30 } },
+  { name: 'Vyvážená 50/30/20', r: { nutne: 50, budouci: 20, radost: 30 } },
   { name: 'Úsporné', r: { nutne: 50, budouci: 30, radost: 20 } },
   { name: 'Volnější', r: { nutne: 45, budouci: 15, radost: 40 } },
 ];

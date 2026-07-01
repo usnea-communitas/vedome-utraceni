@@ -48,7 +48,7 @@ function Plan({ go, month, setMonth, ratios }) {
   const remaining = incomeTotal - allocated;
 
   const segs = cats.map(c => ({ value: catTotal(c.key), color: accentVar(c.accent) }));
-  if (remaining > 0) segs.push({ value: remaining, color: 'var(--unalloc)' });
+  if (remaining > 0) segs.push({ value: remaining, color: 'var(--unalloc)', light: true });
 
   const setCatItems = (k, next) => setItems({ ...items, [k]: next });
 
@@ -190,7 +190,7 @@ function PlanRibbon({ segments, h = 16 }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden',
           }}>
             {pct >= 14 && (
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fontWeight: 700, color: 'rgba(255,255,255,0.92)', whiteSpace: 'nowrap' }}>{pct} %</span>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fontWeight: 700, color: s.light ? 'var(--ink-soft)' : 'rgba(255,255,255,0.92)', whiteSpace: 'nowrap' }}>{pct} %</span>
             )}
           </div>
         );

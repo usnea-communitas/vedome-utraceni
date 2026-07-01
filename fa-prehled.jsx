@@ -27,7 +27,14 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
                 <Icon name="leaf" size={18} stroke={1.7} color="var(--brand)" />
                 <h3 className="fa-cardtitle" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>{faLabel(L('Lesní koláč peněz'), L('Kouzelný měšec'))}</h3>
               </div>
-              <Chip tone="ok"><Icon name="check" size={13} stroke={2.2} /> {L('v limitu')}</Chip>
+              {(() => {
+                const anyOver = a.categories.some(c => c.ofTarget > 100);
+                const nothing = !a.allocated;
+                const tone = nothing ? 'calm' : anyOver ? 'over' : 'ok';
+                const icon = nothing ? 'leaf' : anyOver ? 'alert' : 'check';
+                const label = nothing ? L('zatím bez plánu') : anyOver ? L('nad plán') : L('v limitu');
+                return <Chip tone={tone}><Icon name={icon} size={13} stroke={2.2} /> {label}</Chip>;
+              })()}
             </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <Donut segments={segs} size={150} thickness={21} centerTop={L('Plán')} centerMain={a.plannedPct + '\u00A0%'} centerSub={L('naplánováno')} />

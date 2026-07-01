@@ -27,7 +27,7 @@ const TR_BLOBS = [
 
 function Foliage({ cx, cy, pct, accent, delay, mini, dim, selected, onTap }) {
   const base = accentVar(accent);
-  const s = 0.5 + 0.5 * Math.min(pct, 1);
+  const s = 0.62 + 0.38 * Math.min(pct, 1);
   const full = pct >= 1;
   return (
     <g transform={`translate(${cx},${cy})`}

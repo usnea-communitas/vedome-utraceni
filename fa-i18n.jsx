@@ -30,7 +30,7 @@ const S = {
   'Výplata a pravidelné přivýdělky dohromady. Později jde upravit v Plánu.': { en: 'Salary plus regular side income. You can change it later in Plan.' },
   'Rozděl si příjem': { en: 'Split your income' },
   'Osvědčený základ je 50 / 30 / 20 — uprav si ho podle sebe.': { en: 'The proven base is 50 / 30 / 20 — adjust it to fit you.' },
-  'Klasika 50/30/20': { en: 'Classic 50/30/20' },
+  'Vyvážená 50/30/20': { en: 'Balanced 50/30/20', pl: 'Zrównoważony 50/30/20', uk: 'Збалансований 50/30/20', es: 'Equilibrado 50/30/20' },
   'Úsporné': { en: 'Frugal' },
   'Volnější': { en: 'Relaxed' },
   'Krásně vyvážené — dohromady 100 %.': { en: 'Beautifully balanced — 100 % total.' },
@@ -62,6 +62,8 @@ const S = {
   'Smazat všechna data': { en: 'Delete all data' },
   'Opravdu smazat? Nejde vrátit': { en: 'Really delete? Cannot be undone' },
   'Nerozděleno': { en: 'Unallocated', pl: 'Nieprzydzielone', uk: 'Нерозподілено', es: 'Sin asignar' },
+  'zatím bez plánu': { en: 'no plan yet', pl: 'jeszcze bez planu', uk: 'поки без плану', es: 'aún sin plan' },
+  'nad plán': { en: 'over plan', pl: 'ponad plan', uk: 'понад план', es: 'sobre el plan' },
   // ── settings: security / reminders / income ──
   'Vypnuto': { en: 'Off', pl: 'Wyłączone', uk: 'Вимкнено', es: 'Desactivado' },
   'Bez zámku': { en: 'No lock', pl: 'Bez blokady', uk: 'Без замка', es: 'Sin bloqueo' },
