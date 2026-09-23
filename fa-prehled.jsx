@@ -13,7 +13,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
       <ScreenHeader
         eyebrow="Vědomé utrácení"
         title={L('Přehled')}
-        right={<MonthPill month={a.month} setMonth={setMonth} ratios={ratios} go={go} />}
+        right={<MonthPill month={month} setMonth={setMonth} ratios={ratios} go={go} />}
       />
 
       {/* ── Spojená přehledová karta: příjem + Lesní koláč ─────── */}
@@ -37,14 +37,14 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
               })()}
             </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Donut segments={segs} size={150} thickness={21} centerTop={L('Plán')} centerMain={a.plannedPct + '\u00A0%'} centerSub={L('naplánováno')} />
+            <Donut segments={segs} size={150} thickness={21} centerTop={L('Rozděleno')} centerMain={a.plannedPct + '\u00A0%'} centerSub={L('z příjmu')} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
               {a.categories.map(c => (
                 <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                   <span style={{ width: 9, height: 9, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', fontWeight: 600 }}>{L(c.name)}</div>
-                    <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{kc(c.actual)} · {Lf('cíl {p} %', { p: c.targetPct })}</div>
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{Lf('{a} z {b}', { a: kc(c.actual), b: kc(c.target) })}</div>
                   </div>
                   <span style={{ fontFamily: 'var(--serif)', fontSize: 17, color: c.tone === 'over' ? 'var(--clay)' : 'var(--ink)', whiteSpace: 'nowrap' }}>{c.ofTarget}&nbsp;%</span>
                 </div>
@@ -56,16 +56,26 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
               <span style={{ opacity: 0.4 }}>·</span>
               <span>{L('Zbývá rozdělit')} <strong style={{ color: 'var(--moss-deep)', fontWeight: 600 }}>{kc(a.remaining)}</strong></span>
             </div>
+            {a.spentTotal > 0 && (
+              <div style={{ textAlign: 'center', marginTop: 6, fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-faint)' }}>
+                {Lf('z toho plán {a} a jednorázové výdaje {b}', { a: kc(a.plannedTotal || 0), b: kc(a.spentTotal) })}
+              </div>
+            )}
+            {!a.allocated && (
+              <p style={{ textAlign: 'center', margin: '10px auto 0', maxWidth: 270, fontFamily: 'var(--sans)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--ink-soft)' }}>
+                {L('Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.')}
+              </p>
+            )}
           </div>
         </div>
 
         <button className="fa-cta" onClick={() => go('plan')}>
-          {L('Upravit měsíční plán')} <Icon name="chevron" size={16} stroke={2} />
+          {a.allocated ? L('Upravit měsíční plán') : L('Rozepsat měsíční plán')} <Icon name="chevron" size={16} stroke={2} />
         </button>
       </Card>
 
       {/* ── Poslední výdaje (uživatelské one-off) ─────────────── */}
-      <RecentExpenses expenses={expenses} onDelete={deleteExpense} go={go} />
+      <RecentExpenses expenses={expenses} onDelete={deleteExpense} go={go} month={month} />
 
       {/* ── Mini strom cílů (odkaz na Cíle) ─────────────────────── */}
       <Card onClick={() => go('cile')} style={{ marginBottom: 22, paddingTop: 14, paddingBottom: 14 }}>
@@ -169,13 +179,17 @@ function ScreenHeader({ eyebrow, title, right }) {
 
 function MonthPill({ month, setMonth, ratios, go }) {
   const [open, setOpen] = React.useState(false);
-  const MONTHS = ['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
-  const year = (month && month.match(/\d{4}/)) ? month.match(/\d{4}/)[0] : '2026';
+  const current = faCurrentMonth();
+  const shown = faParseMonth(month);
+  const [year, setYear] = React.useState(() => faMonthParts(shown).y);
+  React.useEffect(() => { if (open) setYear(faMonthParts(shown).y); }, [open, shown]);
   const r = ratios || { nutne: 50, budouci: 20, radost: 30 };
+  const pick = (key) => { setMonth(key); setOpen(false); };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, position: 'relative' }}>
-      <button className="fa-pill-btn" onClick={() => setMonth && setOpen(o => !o)} style={{ cursor: setMonth ? 'pointer' : 'default' }}>
-        {L(month)}{setMonth && <Icon name="chevron" size={13} stroke={2} style={{ transform: 'rotate(90deg)', marginLeft: 2 }} />}
+      <button className="fa-pill-btn" onClick={() => setMonth && setOpen(o => !o)} style={{ cursor: setMonth ? 'pointer' : 'default' }}
+        aria-haspopup={setMonth ? 'true' : undefined} aria-expanded={setMonth ? open : undefined}>
+        {faMonthLabel(shown)}{setMonth && <Icon name="chevron" size={13} stroke={2} style={{ transform: 'rotate(90deg)', marginLeft: 2 }} />}
       </button>
       <button className="fa-ratio-pill" onClick={() => go && go('vice')} style={{ cursor: go ? 'pointer' : 'default', border: 'none' }}>
         {r.nutne} / {r.radost} / {r.budouci}
@@ -183,14 +197,21 @@ function MonthPill({ month, setMonth, ratios, go }) {
       {open && (
         <React.Fragment>
           <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
-          <div className="fa-month-pop">
-            {MONTHS.map(mn => {
-              const label = mn + ' ' + year;
-              const on = L(month).startsWith(L(mn));
+          <div className="fa-month-pop" role="dialog" aria-label={L('Vyber měsíc')}>
+            <div className="fa-month-year">
+              <button onClick={() => setYear(y => y - 1)} aria-label={L('Předchozí rok')}>‹</button>
+              <span>{year}</span>
+              <button onClick={() => setYear(y => y + 1)} aria-label={L('Další rok')}>›</button>
+            </div>
+            {FA_MONTHS.map((mn, i) => {
+              const key = year + '-' + String(i + 1).padStart(2, '0');
               return (
-                <button key={mn} data-on={on} onClick={() => { setMonth(label); setOpen(false); }}>{L(mn)}</button>
+                <button key={mn} data-on={key === shown} data-now={key === current} onClick={() => pick(key)}>{L(mn)}</button>
               );
             })}
+            {shown !== current && (
+              <button className="fa-month-now" onClick={() => pick(current)}>{L('Zpět na aktuální měsíc')}</button>
+            )}
           </div>
         </React.Fragment>
       )}

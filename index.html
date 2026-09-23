@@ -4,6 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Vědomé utrácení</title>
+<meta name="description" content="Klidný plán peněz podle 50/30/20: co je potřeba, co tě těší a co posíláš svému budoucímu já. Data zůstávají v tvém prohlížeči." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Vědomé utrácení" />
+<meta property="og:description" content="Klidný plán peněz podle 50/30/20: co je potřeba, co tě těší a co posíláš svému budoucímu já." />
+<meta property="og:image" content="icon.png" />
+<meta property="og:locale" content="cs_CZ" />
+<meta name="twitter:card" content="summary" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -244,6 +251,11 @@
   transition: background .15s, color .15s; -webkit-tap-highlight-color: transparent;
 }
 .fa-month-pop button[data-on="true"] { background: var(--brand-soft); color: var(--ink); }
+.fa-month-pop button[data-now="true"]:not([data-on="true"]) { box-shadow: inset 0 0 0 1px var(--card-line); }
+.fa-month-year { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 0 2px 4px; }
+.fa-month-year span { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--ink); }
+.fa-month-pop .fa-month-year button { padding: 4px 12px; font-size: 16px; line-height: 1; }
+.fa-month-pop .fa-month-now { grid-column: 1 / -1; color: var(--brand); }
 .fa-month-pop button:active { transform: scale(.95); }
 /* gold ratio pill (50/30/20) instead of mint */
 .fa-root[data-theme="wizard"] .fa-ratio-pill {
@@ -283,10 +295,10 @@ body {
 body:has(.fa-root[data-bare="true"]) { padding: 0; display: block; }
 body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 /* content padding: clears the real status bar (safe-area) + bottom nav */
-.fa-content { padding: 54px 17px 132px; }
+.fa-content { padding: 54px 17px 176px; }
 .fa-root[data-bare="true"] .fa-content {
   padding-top: calc(22px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(164px + env(safe-area-inset-bottom, 0px));
 }
 .fa-root[data-bare="true"] .fa-nav {
   padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
@@ -370,6 +382,9 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 
 /* settings row */
 .fa-row { display: flex; align-items: center; gap: 13px; padding: 13px 16px; }
+.fa-row-btn { width: 100%; border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; }
+.fa-row:focus-visible, .fa-card:focus-visible, .fa-sec-row:focus-visible, .fa-quiz-opt:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 /* interactive list row inside a merged card */
 .fa-listrow {
@@ -865,6 +880,8 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
   box-sizing: border-box;
 }
 .fa-field:focus { border-color: var(--brand); }
+.fa-date-row { display: flex; align-items: center; gap: 10px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.fa-date-row .fa-date { flex: 1; min-width: 0; padding: 9px 12px; font-size: 14px; }
 .fa-catpick { display: flex; gap: 8px; }
 .fa-catpick button {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
@@ -1047,26 +1064,14 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
     <div id="root"></div>
   </div>
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-
-  <script type="text/babel" src="ios-frame.jsx"></script>
-  <script type="text/babel" src="tweaks-panel.jsx"></script>
-  <script type="text/babel" src="fa-core.jsx"></script>
-  <script type="text/babel" src="fa-i18n.jsx"></script>
-  <script type="text/babel" src="fa-forest.jsx"></script>
-  <script type="text/babel" src="fa-wizard.jsx"></script>
-  <script type="text/babel" src="fa-ui.jsx"></script>
-  <script type="text/babel" src="fa-tree.jsx"></script>
-  <script type="text/babel" src="fa-invest.jsx"></script>
-  <script type="text/babel" src="fa-prehled.jsx"></script>
-  <script type="text/babel" src="fa-add.jsx"></script>
-  <script type="text/babel" src="fa-screens.jsx"></script>
-  <script type="text/babel" src="fa-plan.jsx"></script>
-  <script type="text/babel" src="fa-store.jsx"></script>
-  <script type="text/babel" src="fa-onboard.jsx"></script>
-  <script type="text/babel" src="fa-settings.jsx"></script>
-  <script type="text/babel" src="fa-app.jsx"></script>
+  <!-- app.js is generated from the .jsx files by `npm run compile` -->
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    }
+  </script>
 </body>
 </html>

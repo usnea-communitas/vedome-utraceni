@@ -13,7 +13,7 @@ const NAV = [
 ];
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "theme": "kouzelnický",
+  "theme": "lesní",
   "scene": "video",
   "motion": "gentle",
   "depth": "cream",
@@ -22,7 +22,6 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 const FOREST_VIDEO = 'assets/forest-ambient.mp4';
-const WIZARD_VIDEO = 'assets/castle-ambient.mp4';
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -38,14 +37,14 @@ function App() {
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
-  const [month, setMonth] = useA(() => { try { return localStorage.getItem('fa.month') || APP.month; } catch (e) { return APP.month; } });
+  // always open on the current month; the picker lets you look back or ahead
+  const [month, setMonth] = useA(faCurrentMonth);
   const [expenses, setExpenses] = useA(loadFaExpenses);
   const [addOpen, setAddOpen] = useA(false);
   useAE(() => { saveFaExpenses(expenses); }, [expenses]);
   const addExpense = (e) => { setExpenses(list => [...list, e]); setToast(e); };
   const deleteExpense = (ts) => setExpenses(list => list.filter(e => e.ts !== ts));
   const [toast, setToast] = useA(null);
-  useAE(() => { try { localStorage.setItem('fa.month', month); } catch (e) {} }, [month]);
   useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
   useAE(() => { try { localStorage.setItem('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
   useAE(() => {
@@ -99,7 +98,9 @@ function App() {
   // real-data mode: rewrite APP from the user's stores (no-op for demo profile)
   faHydrate(ratios);
   // then layer user-added one-off expenses on top (recomputes derived stats)
-  applyFaExpenses(expenses);
+  // only the selected month's one-off expenses count towards its numbers
+  const monthExpenses = expenses.filter(e => faExpenseMonth(e) === month);
+  applyFaExpenses(monthExpenses);
   faDerive();
   setFaTheme(isWizard ? 'wizard' : 'forest');
   setFaLang(lang);
@@ -116,7 +117,7 @@ function App() {
   const inner = (
     <div style={{ position: 'absolute', inset: 0 }}>
       {isWizard
-        ? <WizardBackground motion={t.motion} videoSrc={WIZARD_VIDEO} />
+        ? <WizardBackground motion={t.motion} />
         : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
       {!profile ? (
         <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} />
@@ -125,8 +126,8 @@ function App() {
         {/* scrollable content */}
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
-            <div key={screen} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={expenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} />
+            <div key={screen + '|' + month} className={'fa-stage' + (entered ? ' is-in' : '')}>
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}
@@ -134,7 +135,7 @@ function App() {
         </div>
         {/* add expense: floating + button & sheet */}
         <AddFab onClick={() => setAddOpen(true)} />
-        <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} />
+        <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} month={month} />
         <FaToast toast={toast} onUndo={deleteExpense} onHide={() => setToast(null)} />
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />

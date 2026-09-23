@@ -22,7 +22,13 @@ function loadFaGoals() { return faLoad('fa.goals', []); }
 function saveFaGoals(list) { faSave('fa.goals', list); }
 
 // ── reflexe store: { [month]: { mood, answers:{} } } ────────────────────
-function loadFaReflexe() { return faLoad('fa.reflexe', {}); }
+function loadFaReflexe() {
+  // older versions keyed months by their Czech label ('Červen 2026'); normalise to 'YYYY-MM'
+  const raw = faLoad('fa.reflexe', {});
+  const out = {};
+  Object.keys(raw).forEach(k => { out[faMonthFromLabel(k) || k] = raw[k]; });
+  return out;
+}
 function saveFaReflexe(obj) { faSave('fa.reflexe', obj); }
 
 // ── wipe everything (Více → „Smazat všechna data") ──────────────────────
@@ -94,6 +100,31 @@ function faHydrate(ratios) {
   return profile;
 }
 
+// ── backup: export / import all user data as a JSON file ────────────────
+// fa.security is left out on purpose — restoring a backup must never lock anyone out.
+// Values are kept as the raw localStorage strings so every key round-trips exactly.
+const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security').concat(['fa.theme', 'fa.lang']);
+
+function faExportData() {
+  const data = {};
+  FA_BACKUP_KEYS.forEach(k => {
+    try { const raw = localStorage.getItem(k); if (raw != null) data[k] = raw; } catch (e) {}
+  });
+  return JSON.stringify({ app: 'vedome-utraceni', version: 1, exported: new Date().toISOString(), data }, null, 2);
+}
+
+function faImportData(text) {
+  let obj;
+  try { obj = JSON.parse(text); } catch (e) { return { ok: false, error: 'format' }; }
+  if (!obj || obj.app !== 'vedome-utraceni' || !obj.data || typeof obj.data !== 'object') return { ok: false, error: 'app' };
+  const keys = Object.keys(obj.data).filter(k => FA_BACKUP_KEYS.includes(k) && typeof obj.data[k] === 'string');
+  if (!keys.includes('fa.profile')) return { ok: false, error: 'profile' };
+  try { JSON.parse(obj.data['fa.profile']); } catch (e) { return { ok: false, error: 'profile' }; }
+  FA_BACKUP_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  keys.forEach(k => { try { localStorage.setItem(k, obj.data[k]); } catch (e) {} });
+  return { ok: true, count: keys.length };
+}
+
 // derived overview stats; call AFTER applyFaExpenses
 function faDerive() {
   const allocated = APP.categories.reduce((s, c) => s + (+c.actual || 0), 0);
@@ -105,4 +136,5 @@ function faDerive() {
 Object.assign(window, {
   faLoad, faSave, loadFaGoals, saveFaGoals, loadFaReflexe, saveFaReflexe,
   faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive,
+  FA_BACKUP_KEYS, faExportData, faImportData,
 });

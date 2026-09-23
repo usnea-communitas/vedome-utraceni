@@ -1,17 +1,80 @@
 // fa-settings.jsx — working settings for the Více screen:
-// • Zabezpečení: 4-digit PIN or (simulated) Face ID + lock screen on launch
-// • Jemné připomínky: on/off + frequency + time (with Notification permission)
+// • Zabezpečení: optional 4-digit PIN + lock screen on launch. The PIN is kept
+//   only as a SHA-256 hash; it guards against a casual glance, the data itself
+//   stays unencrypted in this browser's localStorage.
+// • Jemné připomínky: frequency + time, delivered as a calendar file (.ics) —
+//   a web app cannot wake the phone on its own.
 // • Měsíční příjem: edit income sources (the same data Plán uses)
-// All persisted in localStorage; PIN stored as a plain string (prototype —
-// the real app should hash it / use Keychain via Capacitor).
 
 const { useState: useSt, useEffect: useStE, useRef: useStR } = React;
 
 // ── stores ───────────────────────────────────────────────────────────────
-function loadFaSecurity() { try { return JSON.parse(localStorage.getItem('fa.security')); } catch (e) { return null; } }
+function loadFaSecurity() {
+  try {
+    const v = JSON.parse(localStorage.getItem('fa.security'));
+    // only PIN locks exist now; older simulated modes (face) are ignored
+    return v && v.mode === 'pin' && (v.hash || v.pin) ? v : null;
+  } catch (e) { return null; }
+}
 function saveFaSecurity(v) { try { v ? localStorage.setItem('fa.security', JSON.stringify(v)) : localStorage.removeItem('fa.security'); } catch (e) {} }
 function loadFaReminders() { try { return JSON.parse(localStorage.getItem('fa.reminders')) || { on: false, freq: 'denně', time: '20:00' }; } catch (e) { return { on: false, freq: 'denně', time: '20:00' }; } }
 function saveFaReminders(v) { try { localStorage.setItem('fa.reminders', JSON.stringify(v)); } catch (e) {} }
+
+// SHA-256 of the PIN (salted with the app name); falls back to a simple
+// string hash where WebCrypto is unavailable (non-secure origins).
+async function faHashPin(pin) {
+  const text = 'vedome-utraceni:' + pin;
+  try {
+    if (window.crypto && crypto.subtle && window.TextEncoder) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {}
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return 'f' + h.toString(16);
+}
+
+// save a text file to the user's device
+function faDownload(filename, text, type) {
+  try {
+    const blob = new Blob([text], { type: type || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    return true;
+  } catch (e) { return false; }
+}
+
+// recurring calendar reminder (floating local time, 10 min, alarm at start)
+function faReminderIcs(rem) {
+  const parts = String(rem.time || '20:00').split(':');
+  const h = parseInt(parts[0], 10) || 0, m = parseInt(parts[1], 10) || 0;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  if (start <= now) start.setDate(start.getDate() + 1);
+  const end = new Date(start.getTime() + 10 * 60000);
+  const p = n => String(n).padStart(2, '0');
+  const local = d => d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + 'T' + p(d.getHours()) + p(d.getMinutes()) + '00';
+  const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const esc = s => String(s).replace(/\\/g, '\\\\').replace(/([,;])/g, '\\$1').replace(/\n/g, '\\n');
+  const title = esc(L('Zapsat výdaje do Vědomého utrácení'));
+  return [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Vedome utraceni//CS', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    'UID:vedome-utraceni-' + now.getTime() + '@vedome-utraceni',
+    'DTSTAMP:' + stamp,
+    'DTSTART:' + local(start),
+    'DTEND:' + local(end),
+    'RRULE:FREQ=' + (rem.freq === 'týdně' ? 'WEEKLY' : 'DAILY'),
+    'SUMMARY:' + title,
+    'DESCRIPTION:' + esc(L('Pár minut na zápis výdajů. Žádný stres.')),
+    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + title, 'TRIGGER:PT0M', 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR',
+  ].join('\r\n') + '\r\n';
+}
 
 // ── shared bottom-sheet shell (same look as AddSheet) ───────────────────
 function SettingsSheet({ open, title, onClose, children }) {
@@ -53,13 +116,14 @@ function PinPad({ onDigit, onBack, disabled }) {
     <div className="fa-pin-pad">
       {keys.map((k, i) => k === '' ? <span key={i} /> : (
         <button key={i} className="fa-pin-key" disabled={disabled}
+          aria-label={k === '⌫' ? L('Smazat') : k}
           onClick={() => k === '⌫' ? onBack() : onDigit(k)}>{k}</button>
       ))}
     </div>
   );
 }
 
-// ── Zabezpečení sheet: none / PIN / Face ID ─────────────────────────────
+// ── Zabezpečení sheet: none / PIN ───────────────────────────────────────
 function SecuritySheet({ open, onClose, onChanged }) {
   const sec = loadFaSecurity();
   const [stage, setStage] = useSt('menu');   // menu | pin1 | pin2
@@ -70,7 +134,6 @@ function SecuritySheet({ open, onClose, onChanged }) {
 
   const choose = (mode) => {
     if (mode === 'none') { saveFaSecurity(null); onChanged(); onClose(); }
-    else if (mode === 'face') { saveFaSecurity({ mode: 'face' }); onChanged(); onClose(); }
     else { setStage('pin1'); setEntry(''); setFirst(''); }
   };
 
@@ -80,9 +143,9 @@ function SecuritySheet({ open, onClose, onChanged }) {
     setEntry(next);
     if (next.length < 4) return;
     // full PIN entered
-    setTimeout(() => {
+    setTimeout(async () => {
       if (stage === 'pin1') { setFirst(next); setEntry(''); setStage('pin2'); }
-      else if (next === first) { saveFaSecurity({ mode: 'pin', pin: next }); onChanged(); onClose(); }
+      else if (next === first) { saveFaSecurity({ mode: 'pin', hash: await faHashPin(next) }); onChanged(); onClose(); }
       else { setErr(true); setTimeout(() => { setErr(false); setEntry(''); setFirst(''); setStage('pin1'); }, 650); }
     }, 160);
   };
@@ -103,10 +166,9 @@ function SecuritySheet({ open, onClose, onChanged }) {
       {stage === 'menu' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 6 }}>
           <Row icon="leaf" label={L('Bez zámku')} sub={L('Aplikace se otevře rovnou')} on={!sec} onClick={() => choose('none')} />
-          <Row icon="key" label={L('PIN kód')} sub={sec && sec.mode === 'pin' ? L('Nastaven · klepni pro změnu') : L('4místný kód při spuštění')} on={sec && sec.mode === 'pin'} onClick={() => choose('pin')} />
-          <Row icon="faceid" label="Face ID" sub={L('Odemknutí pohledem (simulace)')} on={sec && sec.mode === 'face'} onClick={() => choose('face')} />
+          <Row icon="key" label={L('PIN kód')} sub={sec ? L('Nastaven · klepni pro změnu') : L('4místný kód při spuštění')} on={!!sec} onClick={() => choose('pin')} />
           <p style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-faint)', margin: '6px 4px 0', lineHeight: 1.45 }}>
-            {L('V hotové aplikaci se PIN ukládá šifrovaně a Face ID používá systémové ověření.')}
+            {L('PIN brání jen náhodnému nahlédnutí. Data zůstávají v tomto prohlížeči a nejsou šifrovaná.')}
           </p>
         </div>
       ) : (
@@ -124,20 +186,22 @@ function SecuritySheet({ open, onClose, onChanged }) {
   );
 }
 
-// ── Jemné připomínky sheet ──────────────────────────────────────────────
+// ── Jemné připomínky sheet — reminder as a calendar event ───────────────
 function RemindersSheet({ open, onClose, onChanged }) {
   const [rem, setRem] = useSt(loadFaReminders);
-  useStE(() => { if (open) setRem(loadFaReminders()); }, [open]);
+  const [saved, setSaved] = useSt(false);
+  useStE(() => { if (open) { setRem(loadFaReminders()); setSaved(false); } }, [open]);
   const update = (patch) => {
     const next = { ...rem, ...patch };
     setRem(next); saveFaReminders(next); onChanged();
-    if (patch.on && typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      try { Notification.requestPermission(); } catch (e) {}
-    }
+  };
+  const addToCalendar = () => {
+    const ok = faDownload('vedome-utraceni-pripominka.ics', faReminderIcs(rem), 'text/calendar;charset=utf-8');
+    if (ok) { update({ on: true }); setSaved(true); }
   };
   const Seg = ({ value, options, onPick }) => (
     <div className="fa-lang">
-      {options.map(o => <button key={o.v} data-on={value === o.v} onClick={() => onPick(o.v)}>{o.l}</button>)}
+      {options.map(o => <button key={o.v} data-on={value === o.v} onClick={() => { onPick(o.v); setSaved(false); }}>{o.l}</button>)}
     </div>
   );
   return (
@@ -145,27 +209,28 @@ function RemindersSheet({ open, onClose, onChanged }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Medallion icon="alert" accent="honey" size={38} />
-          <span style={{ flex: 1, fontFamily: 'var(--sans)', fontSize: 15, fontWeight: 600, color: 'var(--ink)' }}>{L('Připomínat zápis výdajů')}</span>
-          <button className="fa-switch" data-on={rem.on} onClick={() => update({ on: !rem.on })} aria-label={rem.on ? L('Zapnuto') : L('Vypnuto')}>
-            <span className="fa-switch-knob" />
-          </button>
+          <span style={{ flex: 1, fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.45 }}>
+            {L('Aplikace běží v prohlížeči, takže sama upozornit neumí. Přidej si připomínku do kalendáře v telefonu nebo počítači — ozve se ve zvolený čas.')}
+          </span>
         </div>
+        <div>
+          <div className="fa-sheet-label">{L('Jak často')}</div>
+          <Seg value={rem.freq} onPick={v => update({ freq: v })} options={[{ v: 'denně', l: L('Denně') }, { v: 'týdně', l: L('Týdně') }]} />
+        </div>
+        <div>
+          <div className="fa-sheet-label">{L('V kolik hodin')}</div>
+          <Seg value={rem.time} onPick={v => update({ time: v })} options={[{ v: '8:00', l: L('Ráno') + ' · 8:00' }, { v: '12:00', l: '12:00' }, { v: '20:00', l: L('Večer') + ' · 20:00' }]} />
+        </div>
+        <button className="fa-cta fa-cta-solid" onClick={addToCalendar}>{L('Přidat do kalendáře')}</button>
+        {saved && (
+          <p role="status" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--moss-deep)', margin: '0 2px', lineHeight: 1.45 }}>
+            {L('Soubor s připomínkou se stáhl. Otevři ho a potvrď přidání do kalendáře.')}
+          </p>
+        )}
         {rem.on && (
-          <React.Fragment>
-            <div>
-              <div className="fa-sheet-label">{L('Jak často')}</div>
-              <Seg value={rem.freq} onPick={v => update({ freq: v })} options={[{ v: 'denně', l: L('Denně') }, { v: 'týdně', l: L('Týdně') }]} />
-            </div>
-            <div>
-              <div className="fa-sheet-label">{L('V kolik hodin')}</div>
-              <Seg value={rem.time} onPick={v => update({ time: v })} options={[{ v: '8:00', l: L('Ráno') + ' · 8:00' }, { v: '12:00', l: '12:00' }, { v: '20:00', l: L('Večer') + ' · 20:00' }]} />
-            </div>
-            <p style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-faint)', margin: '0 2px', lineHeight: 1.45 }}>
-              {typeof Notification !== 'undefined' && Notification.permission === 'denied'
-                ? L('Upozornění jsou v prohlížeči zablokovaná — povol je v nastavení.')
-                : L('Jemné ťuknutí, žádný stres. V hotové aplikaci přijde jako notifikace.')}
-            </p>
-          </React.Fragment>
+          <button className="fa-textbtn" style={{ alignSelf: 'flex-start' }} onClick={() => { update({ on: false }); setSaved(false); }}>
+            {L('Označit jako vypnuté')}
+          </button>
         )}
       </div>
     </SettingsSheet>
@@ -216,57 +281,45 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
   );
 }
 
-// ── Lock screen — shown on launch when security is configured ──────────
+// ── Lock screen — shown on launch when a PIN is set ─────────────────────
 function LockScreen({ security, userName, onUnlock }) {
   const [entry, setEntry] = useSt('');
   const [err, setErr] = useSt(false);
-  const [scanning, setScanning] = useSt(false);
+  const [busy, setBusy] = useSt(false);
 
   const digit = (d) => {
-    if (entry.length >= 4) return;
+    if (busy || entry.length >= 4) return;
     const next = entry + d;
     setEntry(next);
     if (next.length < 4) return;
-    setTimeout(() => {
-      if (next === security.pin) onUnlock();
+    setBusy(true);
+    setTimeout(async () => {
+      let ok = false;
+      if (security.hash) ok = (await faHashPin(next)) === security.hash;
+      else if (security.pin) {
+        // legacy plain-text PIN: accept once, then upgrade to a hash
+        ok = next === security.pin;
+        if (ok) saveFaSecurity({ mode: 'pin', hash: await faHashPin(next) });
+      }
+      setBusy(false);
+      if (ok) onUnlock();
       else { setErr(true); setTimeout(() => { setErr(false); setEntry(''); }, 600); }
     }, 160);
-  };
-
-  const scanFace = () => {
-    if (scanning) return;
-    setScanning(true);
-    setTimeout(onUnlock, 1100); // simulated scan
   };
 
   return (
     <div className="fa-lock" data-screen-label="Zámek">
       <div className="fa-lock-inner">
         <div className="fa-lock-mark">
-          <Icon name={security.mode === 'face' ? 'faceid' : 'key'} size={30} stroke={1.5} />
+          <Icon name="key" size={30} stroke={1.5} />
         </div>
         <div style={{ fontFamily: 'var(--serif)', fontSize: 24, color: 'var(--ink)', fontWeight: 500 }}>
           {userName ? Lf('Vítej zpět, {n}', { n: userName }) : L('Vítej zpět')}
         </div>
-        {security.mode === 'pin' ? (
-          <React.Fragment>
-            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Zadej PIN')}</div>
-            <div style={{ marginTop: 18 }}><PinDots len={entry.length} error={err} /></div>
-            {err && <div style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('Špatný PIN')}</div>}
-            <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} />
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Klepni pro odemknutí')}</div>
-            <button className={'fa-face-btn' + (scanning ? ' is-scan' : '')} onClick={scanFace} aria-label="Face ID">
-              <Icon name="faceid" size={44} stroke={1.3} />
-              <span className="fa-face-beam" />
-            </button>
-            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-faint)', marginTop: 10 }}>
-              {scanning ? L('Ověřuji…') : 'Face ID'}
-            </div>
-          </React.Fragment>
-        )}
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Zadej PIN')}</div>
+        <div style={{ marginTop: 18 }}><PinDots len={entry.length} error={err} /></div>
+        {err && <div role="alert" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('Špatný PIN')}</div>}
+        <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} disabled={busy} />
       </div>
     </div>
   );
@@ -274,5 +327,6 @@ function LockScreen({ security, userName, onUnlock }) {
 
 Object.assign(window, {
   loadFaSecurity, saveFaSecurity, loadFaReminders, saveFaReminders,
+  faHashPin, faDownload, faReminderIcs,
   SettingsSheet, SecuritySheet, RemindersSheet, IncomeSheet, LockScreen, PinPad, PinDots,
 });

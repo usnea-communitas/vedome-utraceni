@@ -1,0 +1,8 @@
+# sources and tooling — the site is served from index.html, app.js, vendor/ and assets/
+*.jsx
+scripts/
+node_modules/
+package.json
+package-lock.json
+HERMES_DEPLOY_PROMPT.md
+README.md

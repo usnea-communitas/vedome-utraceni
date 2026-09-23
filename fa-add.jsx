@@ -27,6 +27,8 @@ const FA_SUGGESTED = [
 // ── apply expenses onto the shared APP model (after ratios!) ───────────
 function applyFaExpenses(expenses) {
   if (!APP._baseActuals) APP._baseActuals = APP.categories.map(c => c.actual);
+  APP.plannedTotal = APP._baseActuals.reduce((s, v) => s + (+v || 0), 0);
+  APP.spentTotal = expenses.reduce((s, e) => s + (+e.amount || 0), 0);
   APP.categories.forEach((c, i) => {
     const extra = expenses.reduce((s, e) => s + (e.cat === c.key ? e.amount : 0), 0);
     c.actual = APP._baseActuals[i] + extra;
@@ -47,6 +49,13 @@ function faCatNote(c) {
   return L('V rámci cíle.');
 }
 
+// default date of a new expense: today while looking at the current month,
+// otherwise the 1st of the month being viewed (easy to change in the sheet)
+function faDefaultDay(month) {
+  const today = faTodayIso();
+  return !month || month === today.slice(0, 7) ? today : month + '-01';
+}
+
 // ── floating + button ───────────────────────────────────────────────────
 function AddFab({ onClick }) {
   return (
@@ -57,8 +66,9 @@ function AddFab({ onClick }) {
 }
 
 // ── bottom sheet ────────────────────────────────────────────────────────
-function AddSheet({ open, onClose, onSave, expenses }) {
+function AddSheet({ open, onClose, onSave, expenses, month }) {
   const [amount, setAmount] = useX('');
+  const [day, setDay] = useX('');
   const [name, setName] = useX('');
   const [cat, setCat] = useX('radost');
   const [shown, setShown] = useX(false);
@@ -68,7 +78,7 @@ function AddSheet({ open, onClose, onSave, expenses }) {
   // slide-in: resting closed; .is-open added a tick after mount
   useXE(() => {
     if (open) {
-      setAmount(''); setName(''); setCat('radost'); savedRef.current = false;
+      setAmount(''); setName(''); setCat('radost'); setDay(faDefaultDay(month)); savedRef.current = false;
       const id = setTimeout(() => setShown(true), 20);
       return () => clearTimeout(id);
     }
@@ -108,7 +118,7 @@ function AddSheet({ open, onClose, onSave, expenses }) {
     if (!valid || savedRef.current) return;
     savedRef.current = true;
     try { navigator.vibrate && navigator.vibrate(12); } catch (e) {}
-    onSave({ name: name.trim(), amount: amt, cat, ts: Date.now() });
+    onSave({ name: name.trim(), amount: amt, cat, ts: Date.now(), day: day || faTodayIso() });
     onClose();
   };
 
@@ -142,6 +152,12 @@ function AddSheet({ open, onClose, onSave, expenses }) {
         <input className="fa-field" type="text" placeholder={L('Za co to bylo?')}
           value={name} onChange={e => setName(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') save(); }} />
+
+        {/* date — lets you log an expense into another day or month */}
+        <label className="fa-date-row">
+          <span>{L('Datum')}</span>
+          <input className="fa-field fa-date" type="date" value={day} onChange={e => setDay(e.target.value)} />
+        </label>
 
         {/* category picker */}
         <div className="fa-catpick">
@@ -193,11 +209,11 @@ function AddSheet({ open, onClose, onSave, expenses }) {
 }
 
 // ── recent expenses card (Přehled) ──────────────────────────────────────
-function RecentExpenses({ expenses, onDelete, go }) {
+function RecentExpenses({ expenses, onDelete, go, month }) {
   if (!expenses.length) return null;
-  const recent = [...expenses].reverse().slice(0, 4);
+  const recent = [...expenses].sort((x, y) => faExpenseDay(y).localeCompare(faExpenseDay(x)) || (y.ts - x.ts)).slice(0, 4);
   const total = expenses.reduce((s, e) => s + e.amount, 0);
-  const catOf = k => APP.categories.find(c => c.key === k) || APP.categories[2];
+  const catOf = k => APP.categories.find(c => c.key === k) || APP.categories.find(c => c.key === 'radost') || APP.categories[0];
   return (
     <div style={{ marginBottom: 22 }}>
       <SectionLabel>{L('Poslední výdaje')}</SectionLabel>
@@ -209,7 +225,7 @@ function RecentExpenses({ expenses, onDelete, go }) {
               <span className="fa-exp-dot" style={{ background: accentVar(c.accent) }}></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}</div>
-                <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)' }}>{L(c.name)}</div>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)' }}>{L(c.name)} · {faDayLabel(faExpenseDay(e))}</div>
               </div>
               <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', whiteSpace: 'nowrap' }}>−{kc(e.amount)}</span>
               <button className="fa-exp-del" onClick={() => onDelete(e.ts)} aria-label={L('Smazat')}>✕</button>
@@ -217,7 +233,9 @@ function RecentExpenses({ expenses, onDelete, go }) {
           );
         })}
         <div className="fa-exp-foot">
-          <span>{Lf('Celkem tento měsíc {v}', { v: kc(total) })}</span>
+          <span>{month && month !== faCurrentMonth()
+            ? Lf('Celkem za {m}: {v}', { m: getFaLang() === 'en' ? faMonthLabel(month) : faMonthLabel(month).toLocaleLowerCase(), v: kc(total) })
+            : Lf('Celkem tento měsíc {v}', { v: kc(total) })}</span>
         </div>
       </Card>
     </div>

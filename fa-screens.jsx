@@ -318,15 +318,15 @@ function TipFlip({ t }) {
 const REFLEX_QUIZ = [
   { q: 'Když tento měsíc přišly peníze, co se dělo?', icon: 'coins', accent: 'honey', opts: [
     { t: 'Hned se rozkutálely, ani nevím kam', s: 0 },
-    { t: 'Něco jsem utratila, něco zůstalo náhodou', s: 1 },
-    { t: 'Většinu jsem rozdělila podle plánu', s: 2 },
-    { t: 'Nejdřív jsem odložila pro budoucí já, pak utrácela', s: 3 },
+    { t: 'Něco se utratilo, něco zůstalo náhodou', s: 1 },
+    { t: 'Většina šla podle plánu', s: 2 },
+    { t: 'Nejdřív stranou pro budoucí já, pak zbytek', s: 3 },
   ] },
-  { q: 'Jak ses cítila u větších výdajů?', icon: 'blossom', accent: 'blush', opts: [
+  { q: 'Jaké to bylo u větších výdajů?', icon: 'blossom', accent: 'blush', opts: [
     { t: 'S úzkostí, často je lituju', s: 0 },
     { t: 'Napětí, ale nějak to šlo', s: 1 },
     { t: 'Klidně — byly promyšlené', s: 2 },
-    { t: 'S radostí, věděla jsem, že si je můžu dovolit', s: 3 },
+    { t: 'S radostí — bylo jasné, že si je můžu dovolit', s: 3 },
   ] },
   { q: 'Kolik šlo do „Budoucí já" (spoření a investice)?', icon: 'sprout', accent: 'moss', opts: [
     { t: 'Nic, nezbylo', s: 0 },
@@ -450,8 +450,28 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
   const refresh = () => { if (setProfile) setProfile(loadFaProfile()); bump(n => n + 1); };
   const sec = loadFaSecurity();
   const rem = loadFaReminders();
-  const secLabel = !sec ? L('Vypnuto') : sec.mode === 'pin' ? L('PIN kód') : 'Face ID';
-  const remLabel = rem.on ? `${L('Zapnuto')} · ${L(rem.freq === 'denně' ? 'Denně' : 'Týdně')}` : L('Vypnuto');
+  const secLabel = sec ? L('PIN kód') : L('Vypnuto');
+  const remLabel = rem.on ? `${L('V kalendáři')} · ${L(rem.freq === 'denně' ? 'Denně' : 'Týdně')}` : L('Vypnuto');
+  // backup / restore
+  const fileRef = React.useRef(null);
+  const [dataMsg, setDataMsg] = useS2('');
+  const exportBackup = () => {
+    const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
+    setDataMsg(ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.'));
+  };
+  const onImportFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const res = faImportData(String(reader.result || ''));
+      if (res.ok) { setDataMsg(L('Data obnovena. Načítám…')); setTimeout(() => location.reload(), 700); }
+      else setDataMsg(L('Tenhle soubor nevypadá jako záloha Vědomého utrácení.'));
+    };
+    reader.onerror = () => setDataMsg(L('Soubor se nepodařilo přečíst.'));
+    reader.readAsText(f);
+  };
   const groups = [
     { h: 'Účet', rows: [
       { i: 'sprout', t: APP.user || L('Bez jména'), d: L('Osobní profil'), raw: true },
@@ -470,6 +490,8 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
             <Card pad={0} style={{ overflow: 'hidden' }}>
               {grp.rows.map((row, ri) => (
                 <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none', cursor: row.open ? 'pointer' : 'default' }}
+                  role={row.open ? 'button' : undefined} tabIndex={row.open ? 0 : undefined}
+                  onKeyDown={row.open ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheet(row.open); } }) : undefined}
                   onClick={row.open ? () => setSheet(row.open) : undefined}>
                   <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -510,14 +532,24 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         </Card>
       </div>
 
-      {real && (
-        <div style={{ marginTop: 18 }}>
-          <SectionLabel>{L('Data')}</SectionLabel>
-          <Card pad={0} style={{ overflow: 'hidden' }}>
-            <DangerRow label={L('Smazat všechna data')} confirmLabel={L('Opravdu smazat? Nejde vrátit')} onConfirm={resetAll} />
-          </Card>
-        </div>
-      )}
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Data')}</SectionLabel>
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          <DataRow icon="leaf" accent="moss" label={L('Zálohovat data do souboru')}
+            sub={L('Data jsou jen v tomto prohlížeči. Záloha je pojistka i cesta na jiné zařízení.')} onClick={exportBackup} />
+          <DataRow icon="sprout" accent="honey" label={L('Obnovit ze zálohy')}
+            sub={L('Nahradí současná data obsahem souboru')} onClick={() => fileRef.current && fileRef.current.click()} border />
+          {real && (
+            <div style={{ borderTop: '1px solid var(--card-line)' }}>
+              <DangerRow label={L('Smazat všechna data')} confirmLabel={L('Opravdu smazat? Nejde vrátit')} onConfirm={resetAll} />
+            </div>
+          )}
+        </Card>
+        <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={onImportFile} />
+        {dataMsg && (
+          <p role="status" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)', margin: '9px 6px 0', lineHeight: 1.45 }}>{dataMsg}</p>
+        )}
+      </div>
 
       <div style={{ textAlign: 'center', marginTop: 26, opacity: 0.7 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'var(--brand)', whiteSpace: 'nowrap' }}>
@@ -538,7 +570,9 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
 function DangerRow({ label, confirmLabel, onConfirm }) {
   const [armed, setArmed] = useS2(false);
   return (
-    <div className="fa-row" style={{ cursor: 'pointer' }} onClick={() => armed ? onConfirm() : setArmed(true)}>
+    <div className="fa-row" style={{ cursor: 'pointer' }} role="button" tabIndex={0}
+      onClick={() => armed ? onConfirm() : setArmed(true)}
+      onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); armed ? onConfirm() : setArmed(true); } }}>
       <Medallion icon="alert" accent="blush" size={36} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: 'var(--sans)', fontSize: 14.5, fontWeight: 600, color: 'var(--clay)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{armed ? confirmLabel : label}</div>
@@ -546,6 +580,20 @@ function DangerRow({ label, confirmLabel, onConfirm }) {
       {armed && <button className="fa-textbtn" onClick={e => { e.stopPropagation(); setArmed(false); }}>{L('Zrušit')}</button>}
       <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
     </div>
+  );
+}
+
+// plain action row inside a settings card (a real <button>)
+function DataRow({ icon, accent, label, sub, onClick, border }) {
+  return (
+    <button type="button" className="fa-row fa-row-btn" onClick={onClick} style={{ borderTop: border ? '1px solid var(--card-line)' : 'none' }}>
+      <Medallion icon={icon} accent={accent} size={36} />
+      <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+        <span style={{ display: 'block', fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500 }}>{label}</span>
+        {sub && <span style={{ display: 'block', fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2, lineHeight: 1.4 }}>{sub}</span>}
+      </span>
+      <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
+    </button>
   );
 }
 
@@ -580,4 +628,4 @@ function RatioEditor({ ratios, setRatios }) {
   );
 }
 
-Object.assign(window, { Cile, Tipy, Reflexe, Vice, RatioEditor, PlantStage, GrowthScene, AddGoalForm, GoalCard, DangerRow });
+Object.assign(window, { Cile, Tipy, Reflexe, Vice, RatioEditor, PlantStage, GrowthScene, AddGoalForm, GoalCard, DangerRow, DataRow });

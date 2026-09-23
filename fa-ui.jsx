@@ -9,6 +9,9 @@ function Card({ children, onClick, style = {}, pad = 18, tone = 'surface', inter
   return (
     <div
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick(e); } }) : undefined}
       onPointerDown={() => clickable && setPress(true)}
       onPointerUp={() => setPress(false)}
       onPointerLeave={() => setPress(false)}

@@ -140,7 +140,7 @@ function GoalTree({ goals, size = 230, mini = false, onClick }) {
   return (
     <div onClick={mini ? onClick : () => setSel(null)} className={'fa-tree' + (mini ? ' mini' : '')}
       style={{ width: size, margin: '0 auto', cursor: (mini && onClick) ? 'pointer' : 'default' }}>
-      <svg viewBox="0 0 220 205" width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
+      <svg viewBox="0 0 220 205" width="100%" style={{ display: 'block', overflow: 'visible' }}>
         {/* ground mound */}
         <ellipse cx="110" cy="197" rx="64" ry="9" fill="var(--tree-ground)" opacity="0.5" />
         {/* trunk */}

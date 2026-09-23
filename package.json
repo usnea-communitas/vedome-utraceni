@@ -1,0 +1,14 @@
+{
+  "name": "vedome-utraceni",
+  "private": true,
+  "type": "module",
+  "description": "Vědomé utrácení — static web app; JSX precompiled to app.js by `npm run compile`.",
+  "scripts": {
+    "compile": "node scripts/compile.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

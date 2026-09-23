@@ -34,6 +34,10 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
   const pickGoal = (g) => {
     setGoalKey(g.key);
     setGoalName(g.key === 'custom' ? '' : L(g.name));
+    // emergency reserve: suggest three months of essentials, rounded to thousands
+    if (g.key === 'rezerva' && !goalTarget && inc > 0) {
+      setGoalTarget(String(Math.max(1000, Math.round(inc * r.nutne / 100 * 3 / 1000) * 1000)));
+    }
   };
   const buildGoal = () => {
     if (!goalKey) return null;
@@ -114,7 +118,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
                 </span>
                 <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)' }}>{r[c.key]} % · {kc(Math.round(inc * r[c.key] / 100))}</span>
               </div>
-              <input type="range" className="fa-range" min={0} max={80} step={5} value={r[c.key]}
+              <input type="range" className="fa-range" min={0} max={100} step={5} value={r[c.key]}
                 style={{ ['--accent']: accentVar(c.accent) }}
                 onChange={e => setPart(c.key, +e.target.value)} />
             </div>

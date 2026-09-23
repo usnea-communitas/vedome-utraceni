@@ -72,7 +72,7 @@ function InvestSim() {
     <Card pad={18} style={{ marginTop: 6 }}>
       {/* headline result */}
       <div>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 4 }}>{Lf('Za {y} let by sis naspořila', { y: years })}</div>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 4 }}>{Lf('Za {y} let můžeš mít naspořeno', { y: years })}</div>
         <div style={{ fontFamily: 'var(--title)', fontSize: 36, fontWeight: 600, color: 'var(--ink)', lineHeight: 1, letterSpacing: -0.4, whiteSpace: 'nowrap' }}>
           {fmt(Math.round(final.fv))}<span style={{ fontFamily: 'var(--serif)', fontSize: 19, fontWeight: 600, color: 'var(--ink-soft)' }}>&nbsp;Kč</span>
         </div>
@@ -102,7 +102,7 @@ function InvestSim() {
           <div style={{ fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--ink)', fontWeight: 500 }}>{sp ? kc(Math.round(sp.fv)) : ''}</div>
           <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)' }}>{sp ? `${L('Vklady')} ${kc(Math.round(sp.contributed))}` : ''}</div>
         </div>
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="auto" preserveAspectRatio="none"
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" preserveAspectRatio="none"
           style={{ display: 'block', overflow: 'visible' }}>
           <defs>
             <linearGradient id="faGainsGrad" x1="0" y1="0" x2="0" y2="1">
@@ -141,7 +141,7 @@ function InvestSim() {
       {/* legend */}
       <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
         <Legend swatch="var(--invest-contrib-solid)" label={L('Vklady')} value={kc(Math.round(contributed))} />
-        <Legend swatch="var(--brand)" label={L('Výnos (úroky)')} value={kc(Math.round(gains))} />
+        <Legend swatch="var(--brand)" label={L('Výnos')} value={kc(Math.round(gains))} />
       </div>
 
       {/* controls */}

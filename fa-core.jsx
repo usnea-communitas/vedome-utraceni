@@ -7,10 +7,37 @@ function fmt(n) {
 }
 function kc(n) { return fmt(n) + ' Kč'; }
 
+// ── Months: stored as 'YYYY-MM', labels are built on the fly ───────────
+const FA_MONTHS = ['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+function faPad2(n) { return String(n).padStart(2, '0'); }
+function faMonthKey(d) { const x = d instanceof Date ? d : new Date(d); return x.getFullYear() + '-' + faPad2(x.getMonth() + 1); }
+function faCurrentMonth() { return faMonthKey(new Date()); }
+function faTodayIso() { const d = new Date(); return faMonthKey(d) + '-' + faPad2(d.getDate()); }
+// 'YYYY-MM' stays; an older Czech label like 'Červen 2026' becomes '2026-06'; anything else → null
+function faMonthFromLabel(v) {
+  if (typeof v !== 'string') return null;
+  if (/^\d{4}-\d{2}$/.test(v)) return v;
+  const m = v.match(/^\s*(\S+)\s+(\d{4})\s*$/);
+  if (!m) return null;
+  const i = FA_MONTHS.indexOf(m[1]);
+  return i >= 0 ? m[2] + '-' + faPad2(i + 1) : null;
+}
+function faParseMonth(v) { return faMonthFromLabel(v) || faCurrentMonth(); }
+function faMonthParts(key) { const [y, m] = faParseMonth(key).split('-').map(Number); return { y, m }; }
+function faMonthLabel(key) { const p = faMonthParts(key); return L(FA_MONTHS[p.m - 1]) + ' ' + p.y; }
+// the day an expense belongs to ('YYYY-MM-DD'); older records only have a timestamp
+function faExpenseDay(e) {
+  if (e && e.day) return e.day;
+  const d = new Date(e && e.ts ? e.ts : Date.now());
+  return faMonthKey(d) + '-' + faPad2(d.getDate());
+}
+function faExpenseMonth(e) { return faExpenseDay(e).slice(0, 7); }
+function faDayLabel(iso) { const p = String(iso).split('-'); return (+p[2]) + '. ' + (+p[1]) + '.'; }
+
 // ── App data — mirrors the live structure exactly ──────────────────────
 const APP = {
   user: 'Anička',
-  month: 'Červen 2026',
+  month: faCurrentMonth(),
   income: 2600,
   allocated: 2420,
   remaining: 180,
@@ -29,16 +56,16 @@ const APP = {
       sub: 'Nájem, energie, jídlo a vše, bez čeho to nejde.',
     },
     {
-      key: 'budouci', name: 'Budoucí já', icon: 'sprout', accent: 'honey',
-      targetPct: 20, target: 520, actual: 380, incomePct: 15, ofTarget: 73,
-      status: 'Řešit', tone: 'under', note: 'Pod cílem o 140 Kč.',
-      sub: 'Spoření a investice, které pěstuješ pro sebe.',
-    },
-    {
       key: 'radost', name: 'Radost', icon: 'blossom', accent: 'blush',
       targetPct: 30, target: 780, actual: 530, incomePct: 20, ofTarget: 68,
       status: 'OK', tone: 'ok', note: 'V rámci cíle.',
       sub: 'Kavárny, výlety a drobnosti, co tě těší.',
+    },
+    {
+      key: 'budouci', name: 'Budoucí já', icon: 'sprout', accent: 'honey',
+      targetPct: 20, target: 520, actual: 380, incomePct: 15, ofTarget: 73,
+      status: 'Řešit', tone: 'under', note: 'Pod cílem o 140 Kč.',
+      sub: 'Spoření a investice, které pěstuješ pro sebe.',
     },
   ],
   reserves: {
@@ -59,14 +86,14 @@ const APP = {
   },
   reflexe: {
     prompts: [
-      { q: 'Co mi tento měsíc udělalo radost — a stálo to méně, než bych čekala?', icon: 'blossom', accent: 'blush' },
-      { q: 'Který výdaj se mi teď zdá zbytečný — a co bych za ty peníze raději měla?', icon: 'leaf', accent: 'moss' },
-      { q: 'Co dobrého jsem udělala pro své „budoucí já"?', icon: 'sprout', accent: 'honey' },
+      { q: 'Co mi tento měsíc udělalo radost, i když to stálo málo?', icon: 'blossom', accent: 'blush' },
+      { q: 'Který výdaj se mi teď zdá zbytečný — a co by mi za ty peníze udělalo větší radost?', icon: 'leaf', accent: 'moss' },
+      { q: 'Co dobrého se tento měsíc povedlo pro mé „budoucí já"?', icon: 'sprout', accent: 'honey' },
     ],
   },
   tipy: [
     { t: 'Pravidlo 24 hodin', d: 'U věcí nad 1 000 Kč počkej den. Touha často sama opadne.', icon: 'leaf', accent: 'moss',
-      factTitle: 'Věděla jsi?', fact: 'Odložený nákup zruší skoro každý druhý člověk. Po dni „spaní“ už novou věc mozek tolik nechce.' },
+      factTitle: 'Zajímavost', fact: 'Odložený nákup zruší skoro každý druhý člověk. Po dni „spaní“ už novou věc mozek tolik nechce.' },
     { t: 'Zaplať nejdřív budoucí já', d: 'Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí".', icon: 'sprout', accent: 'honey',
       factTitle: 'Malé číslo, velký les', fact: '500 Kč měsíčně při 6 % výnosu je za 30 let přes půl milionu. Složený úrok je tichá zahradnice.' },
     { t: 'Radost není luxus', d: 'Drobné potěšení plánuj naschvál — vina jen kazí požitek.', icon: 'blossom', accent: 'blush',
@@ -163,4 +190,8 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
   );
 }
 
-Object.assign(window, { fmt, kc, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel });
+Object.assign(window, {
+  fmt, kc, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel,
+  FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
+  faMonthLabel, faExpenseDay, faExpenseMonth, faDayLabel,
+});
