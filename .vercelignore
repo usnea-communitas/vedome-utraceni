@@ -6,3 +6,10 @@ package.json
 package-lock.json
 HERMES_DEPLOY_PROMPT.md
 README.md
+
+# Impeccable design skill and agent config: tooling only, never deployed
+.claude/
+.agents/
+.codex/
+.impeccable/
+PRODUCT.md
