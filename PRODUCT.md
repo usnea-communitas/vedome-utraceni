@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-> Návrh připravený z toho, co Martin o projektu řekl, a z `index.html` a `HERMES_DEPLOY_PROMPT.md`. Zkontroluj a oprav, co nesedí.
+> Prepared from what Martin said about the project and from `index.html` and the archived deployment notes. Review and correct anything that does not fit.
 
 ## Platform
 
@@ -10,38 +10,38 @@ web
 
 ## Users
 
-Lidé, kteří si chtějí v klidu srovnat osobní peníze: samostatně, nebo na workshopech finanční gramotnosti.
+People who want to sort out their personal money calmly — on their own or in financial-literacy workshops.
 
 ## Product Purpose
 
-Aplikace pro finanční gramotnost: klidný plán peněz podle pravidla 50/30/20 (co je potřeba, co tě těší a co posíláš svému budoucímu já), cíle, tipy a reflexe.
+A financial-literacy app: a calm money plan based on the 50/30/20 rule (what you need, what brings you joy, what you send to your future self), goals, tips and reflections.
 
 ## Positioning
 
-Klidný plán peněz v jednom srozumitelném rámci (50/30/20) a data, která zůstávají v prohlížeči uživatele.
+A calm money plan in one understandable frame (50/30/20), with data that stays in the user's browser.
 
 ## Operating Context
 
-- Instalovatelná webová aplikace (PWA), na telefonu přes celou obrazovku, na výšku.
-- Záložky: Přehled, Plán, Cíle, Tipy, Reflexe, Více; při prvním spuštění onboarding.
-- Jazyky: čeština (výchozí), angličtina, polština, ukrajinština, španělština.
-- Vzhledy: Lesní a Kouzelnický.
+- Installable web app (PWA), full-screen on the phone, portrait.
+- Tabs: Overview, Plan, Goals, Tips, Reflection, More; onboarding on first launch.
+- Languages: English (default), Czech (original), Polish, Ukrainian, Spanish; the choice is stored on the device.
+- Themes: Forest Calm and Wizard.
 
 ## Capabilities and Constraints
 
-- Bez serveru a bez účtu; data zůstávají v prohlížeči. Zabezpečení PIN / Face ID, jemné připomínky, zálohy.
-- Statický web: zdrojem jsou moduly `fa-*.jsx`, `app.js` se z nich generuje (`npm run compile`), needitovat ho ručně.
-- Nasazení: Vercel projekt `vedome-utraceni`, statický kořen bez build kroku.
+- No server and no account; data stay in the browser. PIN / Face ID lock, gentle reminders, backups.
+- Static site: the `fa-*.jsx` modules are the source, `app.js` is generated from them (`npm run compile`) and must not be edited by hand.
+- Deployment: Vercel project `vedome-utraceni`, static root with no build step.
 
 ## Brand Commitments
 
-- Název „Vědomé utrácení“; texty v češtině oslovují uživatele „ty“.
+- Name "Vědomé utrácení" (English rendering "Mindful Spending" in metadata); the Czech texts address the user informally ("ty").
 
 ## Evidence on Hand
 
-- Žádné reference, citace uživatelů ani výsledky z workshopů neexistují; nevymýšlet je.
+- No references, user quotes or workshop results exist; do not invent them.
 
 ## Product Principles
 
-1. Klid: plán peněz má uklidňovat, ne stresovat.
-2. Soukromí: osobní finance zůstávají u uživatele.
+1. Calm: a money plan should soothe, not stress.
+2. Privacy: personal finances stay with the user.

@@ -1,8 +1,22 @@
 {
   "name": "vedome-utraceni",
   "private": true,
+  "version": "1.0.0",
   "type": "module",
-  "description": "Vědomé utrácení — static web app; JSX precompiled to app.js by `npm run compile`.",
+  "description": "Vědomé utrácení (Mindful Spending) — a calm, local-first 50/30/20 money-planning PWA; JSX precompiled to app.js by `npm run compile`.",
+  "license": "MIT",
+  "homepage": "https://vedome-utraceni.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usnea-communitas/vedome-utraceni.git"
+  },
+  "bugs": {
+    "url": "https://github.com/usnea-communitas/vedome-utraceni/issues"
+  },
+  "author": "Martin Pazderník",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "compile": "node scripts/compile.mjs"
   },
