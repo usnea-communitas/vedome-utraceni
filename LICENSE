@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This licence covers the source code of Vědomé utrácení: HTML, JavaScript,
-CSS and build scripts. The media in assets/ (ambient background videos, the
-app icon and other artwork) are licensed separately under CC BY-NC-SA 4.0 —
-see LICENSE-ASSETS.md. React (vendor/) and the web fonts loaded from Google
-Fonts keep their own licences (MIT and SIL OFL 1.1).
