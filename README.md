@@ -13,6 +13,12 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project of 
 
 ---
 
+<p align="center">
+  <img src="docs/screenshots/overview-phone.webp" alt="Overview: the forest money pie with Need, Fun and Future me, the goal tree and income sources" width="31%">
+  <img src="docs/screenshots/plan-phone.webp" alt="Plan: monthly income split into the three categories" width="31%">
+  <img src="docs/screenshots/goals-phone.webp" alt="Goals: the growing goal tree with named savings goals" width="31%">
+</p>
+
 ## What it does
 
 - **One plan, three jars.** Monthly income is split into *Need*, *Fun* and *Future me* with the proven 50/30/20 split as a starting point; the ratios are yours to adjust. The overview shows how much of the month is allocated and where each category stands.
