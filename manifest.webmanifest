@@ -1,7 +1,7 @@
 {
-  "name": "Vědomé utrácení",
-  "short_name": "Utrácení",
-  "description": "Vědomé utrácení — 50/30/20 plánování a cíle",
+  "name": "Vědomé utrácení — Mindful Spending",
+  "short_name": "Vědomé utrácení",
+  "description": "Mindful Spending — a calm 50/30/20 money plan with goals, tips and reflections. Data stays on your device.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

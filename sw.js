@@ -1,7 +1,7 @@
 // sw.js — lets the installed app open offline.
 // Pages: network first, cached copy when offline. Static files: served from the
 // cache and refreshed in the background. Videos are left to the browser (range requests).
-const CACHE = 'vedome-utraceni-v1';
+const CACHE = 'vedome-utraceni-v2';
 const CORE = ['./', './index.html', './app.js', './vendor/react.production.min.js', './vendor/react-dom.production.min.js', './manifest.webmanifest', './icon.png'];
 
 self.addEventListener('install', (event) => {

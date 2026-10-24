@@ -1,7 +1,11 @@
 // fa-i18n.jsx — lightweight localization for 5 languages.
-// Czech is the source/fallback. L(cs) returns the translation for the active
-// language; Lf(cs, vars) fills {placeholders}. Components keep Czech literals as
-// keys and wrap them in L()/Lf().
+// Czech literals are the dictionary keys (the app was written in Czech first);
+// L(cs) returns the translation for the active language and Lf(cs, vars) fills
+// {placeholders}. Components keep the Czech literal and wrap it in L()/Lf().
+//
+// English is the default UI language. The chosen language is persisted in
+// localStorage under 'fa.lang' (included in backups) and restored on load.
+// A string missing in the active language falls back to the Czech source.
 
 const FA_LANGS = [
   { code: 'cs', name: 'Čeština' },
@@ -10,10 +14,28 @@ const FA_LANGS = [
   { code: 'uk', name: 'Українська' },
   { code: 'es', name: 'Español' },
 ];
+const FA_LANG_DEFAULT = 'en';
+const FA_LANG_KEY = 'fa.lang';
 
-let FA_LANG = 'cs';
-function setFaLang(c) { FA_LANG = FA_LANGS.some(l => l.code === c) ? c : 'cs'; }
+function faIsLang(c) { return FA_LANGS.some(l => l.code === c); }
+
+// stored choice ('fa.lang'), otherwise English
+function loadFaLang() {
+  try {
+    const raw = localStorage.getItem(FA_LANG_KEY);
+    const code = raw == null ? null : String(raw).replace(/^"|"$/g, '');
+    return faIsLang(code) ? code : FA_LANG_DEFAULT;
+  } catch (e) { return FA_LANG_DEFAULT; }
+}
+function saveFaLang(c) {
+  try { if (faIsLang(c)) localStorage.setItem(FA_LANG_KEY, c); } catch (e) {}
+}
+
+let FA_LANG = loadFaLang();
+function setFaLang(c) { FA_LANG = faIsLang(c) ? c : FA_LANG_DEFAULT; }
 function getFaLang() { return FA_LANG; }
+// BCP-47 tag for Intl formatting and <html lang> — the language codes double as locales
+function getFaLocale() { return FA_LANG; }
 
 // dictionary: "czech source" → { en, pl, uk, es }
 const S = {
@@ -488,11 +510,33 @@ const S = {
   'Co mi tento měsíc udělalo radost, i když to stálo málo?': { en: 'What brought me joy this month even though it cost little?', pl: 'Co sprawiło mi w tym miesiącu radość, choć kosztowało niewiele?', uk: 'Що цього місяця потішило мене, хоча коштувало мало?', es: '¿Qué me dio alegría este mes aunque costó poco?' },
   'Který výdaj se mi teď zdá zbytečný — a co by mi za ty peníze udělalo větší radost?': { en: 'Which expense now seems pointless — and what would have made me happier for that money?', pl: 'Który wydatek wydaje mi się teraz zbędny — i co za te pieniądze dałoby mi więcej radości?', uk: 'Яка витрата тепер здається зайвою — і що за ці гроші потішило б мене більше?', es: '¿Qué gasto me parece ahora innecesario y qué me habría alegrado más con ese dinero?' },
   'Co dobrého se tento měsíc povedlo pro mé „budoucí já\"?': { en: 'What good did this month bring my \"future self\"?', pl: 'Co dobrego udało się w tym miesiącu dla mojego „przyszłego ja\"?', uk: 'Що доброго цього місяця вдалося для мого «майбутнього я»?', es: '¿Qué salió bien este mes para mi «yo futuro»?' },
+  // ── demo data, tweaks panel and misc labels ──
+  'spořák': { en: 'Savings account', pl: 'Konto oszczędnościowe', uk: 'Ощадний рахунок', es: 'Cuenta de ahorro' },
+  'Překročeno o 210 Kč.': { en: 'Over by 210 CZK.', pl: 'Przekroczono o 210 Kč.', uk: 'Перевищено на 210 Kč.', es: 'Superado en 210 Kč.' },
+  'Pod cílem o 140 Kč.': { en: 'Under target by 140 CZK.', pl: 'Poniżej celu o 140 Kč.', uk: 'Нижче цілі на 140 Kč.', es: 'Por debajo del objetivo en 140 Kč.' },
+  'Nájem, energie, jídlo a vše, bez čeho to nejde.': { en: 'Rent, utilities, food and everything you cannot do without.', pl: 'Czynsz, energia, jedzenie i wszystko, bez czego się nie da.', uk: 'Оренда, енергія, їжа і все, без чого не обійтися.', es: 'Alquiler, energía, comida y todo lo imprescindible.' },
+  'Téma': { en: 'Theme', pl: 'Motyw', uk: 'Тема', es: 'Tema' },
+  'Styl': { en: 'Style', pl: 'Styl', uk: 'Стиль', es: 'Estilo' },
+  'Pozadí': { en: 'Background', pl: 'Tło', uk: 'Тло', es: 'Fondo' },
+  'Scéna': { en: 'Scene', pl: 'Scena', uk: 'Сцена', es: 'Escena' },
+  'Pohyb': { en: 'Motion', pl: 'Ruch', uk: 'Рух', es: 'Movimiento' },
+  'Atmosféra': { en: 'Atmosphere', pl: 'Atmosfera', uk: 'Атмосфера', es: 'Atmósfera' },
+  'Karty': { en: 'Cards', pl: 'Karty', uk: 'Картки', es: 'Tarjetas' },
+  'Hloubka': { en: 'Depth', pl: 'Głębia', uk: 'Глибина', es: 'Profundidad' },
+  'Akcent': { en: 'Accent', pl: 'Akcent', uk: 'Акцент', es: 'Acento' },
+  'Data (náhled)': { en: 'Data (preview)', pl: 'Dane (podgląd)', uk: 'Дані (перегляд)', es: 'Datos (vista previa)' },
+  'Načíst ukázková data': { en: 'Load sample data', pl: 'Wczytaj przykładowe dane', uk: 'Завантажити зразкові дані', es: 'Cargar datos de ejemplo' },
+  'Smazat data → onboarding': { en: 'Delete data → onboarding', pl: 'Usuń dane → onboarding', uk: 'Видалити дані → онбординг', es: 'Borrar datos → onboarding' },
 };
 
+// Keys are matched exactly first, then with spaces and quotation marks normalised
+// (NBSP vs space, „“” vs ") so a component string always finds its entry.
+function faNormKey(s) { return String(s).replace(/\u00a0/g, ' ').replace(/[\u201e\u201c\u201d]/g, '"'); }
+const SN = {};
+for (const k in S) { const n = faNormKey(k); if (!(n in SN)) SN[n] = S[k]; }
 function L(cs) {
   if (FA_LANG === 'cs') return cs;
-  const e = S[cs];
+  const e = S[cs] || SN[faNormKey(cs)];
   return (e && e[FA_LANG]) || cs;
 }
 function Lf(cs, vars) {
@@ -501,4 +545,4 @@ function Lf(cs, vars) {
   return s;
 }
 
-Object.assign(window, { FA_LANGS, setFaLang, getFaLang, L, Lf });
+Object.assign(window, { FA_LANGS, FA_LANG_DEFAULT, setFaLang, getFaLang, getFaLocale, loadFaLang, saveFaLang, L, Lf });

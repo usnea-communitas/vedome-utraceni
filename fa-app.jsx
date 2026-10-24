@@ -26,7 +26,8 @@ const FOREST_VIDEO = 'assets/forest-ambient.mp4';
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [screen, setScreen] = useA('prehled');
-  const [lang, setLang] = useA('cs');
+  // English by default; a chosen language is kept in localStorage ('fa.lang') and restored on load
+  const [lang, setLang] = useA(loadFaLang);
   const [entered, setEntered] = useA(false);
   const scrollRef = useAR(null);
 
@@ -46,6 +47,10 @@ function App() {
   const deleteExpense = (ts) => setExpenses(list => list.filter(e => e.ts !== ts));
   const [toast, setToast] = useA(null);
   useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
+  useAE(() => {
+    saveFaLang(lang);
+    try { document.documentElement.lang = lang; } catch (e) {}
+  }, [lang]);
   useAE(() => { try { localStorage.setItem('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
   useAE(() => {
     const check = () => {
@@ -154,18 +159,18 @@ function App() {
         : <IOSDevice dark={isWizard}>{inner}</IOSDevice>}
 
       <TweaksPanel>
-        <TweakSection label="Téma" />
-        <TweakRadio label="Styl" value={theme} options={['lesní', 'kouzelnický']} onChange={v => { setTheme(v); setTweak('theme', v); }} />
-        <TweakSection label="Pozadí" />
-        {!isWizard && <TweakRadio label="Scéna" value={t.scene} options={['video', 'les']} onChange={v => setTweak('scene', v)} />}
-        <TweakRadio label="Pohyb" value={t.motion} options={['off', 'barely', 'gentle', 'living']} onChange={v => setTweak('motion', v)} />
-        <TweakSection label="Atmosféra" />
-        <TweakRadio label="Karty" value={t.card} options={['soft', 'layered']} onChange={v => setTweak('card', v)} />
-        {!isWizard && <TweakRadio label="Hloubka" value={t.depth} options={['cream', 'moss']} onChange={v => setTweak('depth', v)} />}
-        {!isWizard && <TweakRadio label="Akcent" value={t.accent} options={['classic', 'blossom', 'amber']} onChange={v => setTweak('accent', v)} />}
-        <TweakSection label="Data (náhled)" />
-        <TweakButton label="Načíst ukázková data" onClick={loadDemo} />
-        <TweakButton label="Smazat data → onboarding" onClick={resetAll} />
+        <TweakSection label={L('Téma')} />
+        <TweakRadio label={L('Styl')} value={theme} options={['lesní', 'kouzelnický']} onChange={v => { setTheme(v); setTweak('theme', v); }} />
+        <TweakSection label={L('Pozadí')} />
+        {!isWizard && <TweakRadio label={L('Scéna')} value={t.scene} options={['video', 'les']} onChange={v => setTweak('scene', v)} />}
+        <TweakRadio label={L('Pohyb')} value={t.motion} options={['off', 'barely', 'gentle', 'living']} onChange={v => setTweak('motion', v)} />
+        <TweakSection label={L('Atmosféra')} />
+        <TweakRadio label={L('Karty')} value={t.card} options={['soft', 'layered']} onChange={v => setTweak('card', v)} />
+        {!isWizard && <TweakRadio label={L('Hloubka')} value={t.depth} options={['cream', 'moss']} onChange={v => setTweak('depth', v)} />}
+        {!isWizard && <TweakRadio label={L('Akcent')} value={t.accent} options={['classic', 'blossom', 'amber']} onChange={v => setTweak('accent', v)} />}
+        <TweakSection label={L('Data (náhled)')} />
+        <TweakButton label={L('Načíst ukázková data')} onClick={loadDemo} />
+        <TweakButton label={L('Smazat data → onboarding')} onClick={resetAll} />
       </TweaksPanel>
     </div>
   );

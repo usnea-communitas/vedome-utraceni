@@ -238,7 +238,7 @@ function Tipy() {
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Laskavé rady')} title={L('Tipy')} />
       <div style={{ marginTop: 8 }}>
-        <SectionLabel>{faLabel('Síla složeného úročení', 'Kouzlo složeného úročení')}</SectionLabel>
+        <SectionLabel>{faLabel(L('Síla složeného úročení'), L('Kouzlo složeného úročení'))}</SectionLabel>
         <div className="fa-invest-note" style={{ marginTop: 0, marginBottom: 12 }}>
           <Icon name="bulb" size={15} stroke={1.7} />
           <p style={{ margin: 0 }}>
