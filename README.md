@@ -4,6 +4,7 @@
 
 [![Open the app](https://img.shields.io/badge/open-vedome--utraceni.vercel.app-3f6b4a)](https://vedome-utraceni.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/usnea-communitas/vedome-utraceni/actions/workflows/ci.yml/badge.svg)](https://github.com/usnea-communitas/vedome-utraceni/actions/workflows/ci.yml)
 [![Media: CC BY-NC-SA 4.0](https://img.shields.io/badge/media-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE-ASSETS.md)
 [![Languages](https://img.shields.io/badge/languages-5-8a6d3b)](#localisation)
 
