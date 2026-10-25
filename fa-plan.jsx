@@ -238,8 +238,8 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
   const update = (i, patch) => setList(list.map((it, k) => k === i ? { ...it, ...patch } : it));
   const remove = (i) => setList(list.filter((_, k) => k !== i));
   const add = (nm, amt, rec) => {
-    const a = parseInt(String(amt).replace(/\s/g, ''), 10);
-    if (!String(nm).trim() || !a || a <= 0) return false;
+    const a = faAmount(amt);
+    if (!String(nm).trim() || !a) return false;
     setList([...list, { name: String(nm).trim(), amount: a, recurring: rec !== false }]);
     return true;
   };
@@ -274,7 +274,7 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
 
       <div style={{ display: 'flex', gap: 7, marginTop: 4 }}>
         <input className="fa-input" value={name} placeholder={L('Název položky')} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1.4 }} />
-        <input className="fa-input" type="number" inputMode="numeric" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
+        <input className="fa-input" type="text" inputMode="decimal" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
         <button className="fa-input-btn" onClick={commit} style={{ ['--accent']: accentVar(accent) }}>{L('Přidat')}</button>
       </div>
     </div>

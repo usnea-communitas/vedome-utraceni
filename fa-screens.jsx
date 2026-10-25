@@ -99,11 +99,11 @@ function AddGoalForm({ onAdd, onClose }) {
   const [name, setName] = useS2('');
   const [target, setTarget] = useS2('');
   const pick = (g) => { setKey(g.key); setName(g.key === 'custom' ? '' : L(g.name)); };
-  const valid = key && name.trim() && (parseInt(String(target).replace(/\s/g, ''), 10) || 0) > 0;
+  const valid = key && name.trim() && faAmount(target) > 0;
   const commit = () => {
     if (!valid) return;
     const g = presets.find(x => x.key === key);
-    onAdd({ id: Date.now(), name: name.trim(), target: parseInt(String(target).replace(/\s/g, ''), 10), saved: 0, icon: g.icon, accent: g.accent, kind: g.kind });
+    onAdd({ id: Date.now(), name: name.trim(), target: faAmount(target), saved: 0, icon: g.icon, accent: g.accent, kind: g.kind });
     onClose();
   };
   return (
@@ -118,7 +118,7 @@ function AddGoalForm({ onAdd, onClose }) {
         <input className="fa-onb-input" type="text" value={name} maxLength={28} placeholder={L('Název cíle')}
           onChange={e => setName(e.target.value)} style={{ padding: '11px 13px', fontSize: 14.5 }} />
         <div className="fa-onb-money">
-          <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={target} placeholder={L('Cílová částka')}
+          <input className="fa-onb-input" type="text" inputMode="decimal" value={target} placeholder={L('Cílová částka')}
             onChange={e => setTarget(e.target.value)} style={{ textAlign: 'right', padding: '11px 13px', fontSize: 14.5 }} />
           <span>Kč</span>
         </div>
@@ -134,7 +134,7 @@ function AddGoalForm({ onAdd, onClose }) {
 function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
   const pct = g.target > 0 ? Math.round(g.saved / g.target * 100) : 0;
   const [amt, setAmt] = useS2('');
-  const commit = () => { const v = parseInt(String(amt).replace(/\s/g, ''), 10) || 0; if (v > 0) { onDeposit(v); setAmt(''); } };
+  const commit = () => { const v = faAmount(amt); if (v > 0) { onDeposit(v); setAmt(''); } };
   return (
     <Card pad={16} interactive onClick={real ? onToggle : undefined}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
@@ -151,7 +151,7 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
       <Bar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
       {real && open && (
         <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 8, marginTop: 13, alignItems: 'center' }}>
-          <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={amt} placeholder={L('Částka v Kč')}
+          <input className="fa-onb-input" type="text" inputMode="decimal" value={amt} placeholder={L('Částka v Kč')}
             onChange={e => setAmt(e.target.value)} style={{ flex: 1, padding: '9px 12px', fontSize: 14, minWidth: 0 }} />
           <button className="fa-ghostbtn" onClick={commit} style={{ flexShrink: 0 }}><Icon name="plus" size={14} stroke={2} /> {L('Vložit')}</button>
           <button className="fa-textbtn" onClick={onDelete} style={{ color: 'var(--clay)', flexShrink: 0 }}>{L('Smazat')}</button>

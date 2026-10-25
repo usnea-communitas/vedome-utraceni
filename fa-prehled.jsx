@@ -262,8 +262,8 @@ function YearGoals({ go }) {
   const goals = [...APP.reserves.goals, ...custom];
 
   const commit = () => {
-    const t = parseInt(String(target).replace(/\s/g, ''), 10);
-    if (!name.trim() || !t || t <= 0) return;
+    const t = faAmount(target);
+    if (!name.trim() || !t) return;
     const next = [...custom, { name: name.trim(), icon: 'shield', accent: accents[custom.length % accents.length], saved: 0, target: t, custom: true }];
     setCustom(next); ygSave(next);
     setName(''); setTarget(''); setAdding(false);
@@ -302,7 +302,7 @@ function YearGoals({ go }) {
           <input className="fa-input" autoFocus value={name} placeholder={L('Název cíle')}
             onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} />
           <div style={{ display: 'flex', gap: 8 }}>
-            <input className="fa-input" type="number" inputMode="numeric" value={target} placeholder={L('Cílová částka (Kč)')}
+            <input className="fa-input" type="text" inputMode="decimal" value={target} placeholder={L('Cílová částka (Kč)')}
               onChange={e => setTarget(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1 }} />
             <button className="fa-input-btn" onClick={commit}>{L('Uložit')}</button>
             <button className="fa-input-btn ghost" onClick={() => { setAdding(false); setName(''); setTarget(''); }}>{L('Zrušit')}</button>

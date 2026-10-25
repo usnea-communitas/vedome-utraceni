@@ -245,10 +245,10 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
     const stored = faLoad('fa.plan.income', []);
     setList(stored.length ? stored.map(x => ({ ...x })) : APP.incomeSources.map(s => ({ name: s.name, amount: s.amount, recurring: true })));
   }, [open]);
-  const total = list.reduce((s, x) => s + (+x.amount || 0), 0);
-  const setAmt = (i, v) => setList(l => l.map((x, j) => j === i ? { ...x, amount: v.replace(/[^\d]/g, '') } : x));
+  const total = list.reduce((s, x) => s + faAmount(x.amount), 0);
+  const setAmt = (i, v) => setList(l => l.map((x, j) => j === i ? { ...x, amount: v.replace(/[^\d.,\s]/g, '') } : x));
   const save = () => {
-    const clean = list.map(x => ({ ...x, amount: +x.amount || 0 })).filter(x => x.name);
+    const clean = list.map(x => ({ ...x, amount: faAmount(x.amount) })).filter(x => x.name);
     if (demo) {
       APP.income = total;
       APP.incomeSources = clean.map((x, i) => ({ name: x.name, amount: x.amount, accent: ['moss', 'honey', 'blush', 'sage'][i % 4] }));
@@ -263,7 +263,7 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
         {list.map((x, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(x.name)}</span>
-            <input className="fa-inc-input" type="text" inputMode="numeric" value={x.amount}
+            <input className="fa-inc-input" type="text" inputMode="decimal" value={x.amount}
               onChange={e => setAmt(i, e.target.value)} aria-label={L(x.name)} />
             <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)' }}>Kč</span>
           </div>

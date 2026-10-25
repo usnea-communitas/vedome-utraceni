@@ -27,7 +27,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
   const [goalTarget, setGoalTarget] = useOb('');
   const [theme, setTheme] = useOb('lesní'); // onboarding vždy startuje na Lesním klidu
 
-  const inc = parseInt(income, 10) || 0;
+  const inc = faAmount(income);
   const sum = r.nutne + r.budouci + r.radost;
   const setPart = (k, v) => setR(o => ({ ...o, [k]: v }));
 
@@ -42,7 +42,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
   const buildGoal = () => {
     if (!goalKey) return null;
     const g = OB_GOALS.find(x => x.key === goalKey);
-    const target = parseInt(String(goalTarget).replace(/\s/g, ''), 10) || 0;
+    const target = faAmount(goalTarget);
     const nm = goalName.trim();
     if (!nm || target <= 0) return null;
     return { id: Date.now(), name: nm, target, saved: 0, icon: g.icon, accent: g.accent, kind: g.kind };
@@ -90,7 +90,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
           <h2 className="fa-onb-h">{L('Tvůj měsíční příjem')}</h2>
           <p className="fa-onb-p">{L('Výplata a pravidelné přivýdělky dohromady. Později jde upravit v Plánu.')}</p>
           <div className="fa-onb-money">
-            <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={income}
+            <input className="fa-onb-input" type="text" inputMode="decimal" value={income}
               placeholder="0" onChange={e => setIncome(e.target.value)} style={{ textAlign: 'right' }} />
             <span>Kč</span>
           </div>
@@ -159,7 +159,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
                   placeholder={L('Název cíle')} onChange={e => setGoalName(e.target.value)} />
               )}
               <div className="fa-onb-money">
-                <input className="fa-onb-input" type="number" inputMode="numeric" min="0" value={goalTarget}
+                <input className="fa-onb-input" type="text" inputMode="decimal" value={goalTarget}
                   placeholder={L('Cílová částka')} onChange={e => setGoalTarget(e.target.value)} style={{ textAlign: 'right' }} />
                 <span>Kč</span>
               </div>

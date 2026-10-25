@@ -7,6 +7,29 @@ function fmt(n) {
 }
 function kc(n) { return fmt(n) + ' Kč'; }
 
+// ── Reading typed amounts ───────────────────────────────────────────────
+// One rule for every interface language, because people type the habit of
+// their own locale: spaces are ignored; a lone "," or "." followed by exactly
+// three digits groups thousands ("1,000", "1.000"), otherwise it is the
+// decimal mark ("12,50", "12.5"); with both marks the last one is decimal
+// ("1.234,50", "1,234.50"). Returns NaN for anything that is not a number.
+function faParseAmount(v) {
+  let s = String(v == null ? '' : v).replace(/[\s  '’]/g, '').replace(/(kč|kc|czk)$/i, '');
+  if (!/\d/.test(s) || /[^\d.,]/.test(s)) return NaN;
+  const dot = s.lastIndexOf('.'), comma = s.lastIndexOf(',');
+  if (dot >= 0 && comma >= 0) {
+    const dec = dot > comma ? '.' : ',';
+    s = s.split(dec === '.' ? ',' : '.').join('').replace(dec, '.');
+  } else if (dot >= 0 || comma >= 0) {
+    const parts = s.split(dot >= 0 ? '.' : ',');
+    const thousands = parts.length > 2 || (parts[1].length === 3 && /^[1-9]\d{0,2}$/.test(parts[0]));
+    s = thousands ? parts.join('') : parts[0] + '.' + parts[1];
+  }
+  return parseFloat(s);
+}
+// whole crowns (amounts are kept in whole Kč), or 0 when the text is not a positive amount
+function faAmount(v) { const n = Math.round(faParseAmount(v)); return n > 0 ? n : 0; }
+
 // ── Months: stored as 'YYYY-MM', labels are built on the fly ───────────
 const FA_MONTHS = ['Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
 function faPad2(n) { return String(n).padStart(2, '0'); }
@@ -191,7 +214,7 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 }
 
 Object.assign(window, {
-  fmt, kc, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel,
+  fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
   faMonthLabel, faExpenseDay, faExpenseMonth, faDayLabel,
 });

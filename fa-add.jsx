@@ -105,9 +105,9 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
   }).slice(0, 4);
   const curated = FA_SUGGESTED.filter(s => !seen.has(s.name)).slice(0, 8 - repeated.length);
 
-  const amt = Math.round(parseFloat(String(amount).replace(',', '.')) || 0);
+  const amt = faAmount(amount);
   const valid = amt > 0 && name.trim().length > 0;
-  const bump = (v) => setAmount(prev => String(Math.round(parseFloat(String(prev).replace(',', '.')) || 0) + v));
+  const bump = (v) => setAmount(prev => String(faAmount(prev) + v));
 
   const pick = (n, c2, a2) => {
     setName(n); setCat(c2);
@@ -136,7 +136,7 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
         <div className="fa-amount-row">
           <input ref={amountRef} className="fa-amount" type="text" inputMode="decimal" autoFocus
             placeholder="0" value={amount}
-            onChange={e => setAmount(e.target.value.replace(/[^\d.,]/g, ''))}
+            onChange={e => setAmount(e.target.value.replace(/[^\d.,\s]/g, ''))}
             onKeyDown={e => { if (e.key === 'Enter') save(); }} />
           <span className="fa-amount-unit">Kč</span>
         </div>
