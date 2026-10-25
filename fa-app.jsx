@@ -237,4 +237,36 @@ function BottomNav({ active, go }) {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// If rendering ever fails (for example on damaged data), show a calm page that
+// can still save the raw data to a file and start over, instead of a blank screen.
+class FaErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null, armed: false, msg: '' }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { try { console.error('Vědomé utrácení could not render', error, info && info.componentStack); } catch (e) {} }
+  render() {
+    if (!this.state.error) return this.props.children;
+    const save = () => {
+      const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
+      this.setState({ msg: ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.') });
+    };
+    const reset = () => {
+      if (!this.state.armed) { this.setState({ armed: true }); return; }
+      faResetAll();
+      location.reload();
+    };
+    return (
+      <div className="fa-crash" role="alert">
+        <div className="fa-crash-card">
+          <h1>{L('Něco se pokazilo')}</h1>
+          <p>{L('Aplikace se nedokázala zobrazit, nejspíš kvůli poškozeným datům. Data jsou pořád v tomto prohlížeči. Nejdřív si je ulož do souboru, pak můžeš začít znovu.')}</p>
+          <button className="fa-cta fa-cta-solid" onClick={save}>{L('Zálohovat data do souboru')}</button>
+          <button className="fa-crash-reset" onClick={reset}>{this.state.armed ? L('Opravdu smazat? Nejde vrátit') : L('Smazat data a začít znovu')}</button>
+          <button className="fa-textbtn" onClick={() => location.reload()}>{L('Zkusit znovu')}</button>
+          {this.state.msg && <p role="status">{this.state.msg}</p>}
+        </div>
+      </div>
+    );
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<FaErrorBoundary><App /></FaErrorBoundary>);

@@ -184,6 +184,12 @@ const S = {
   'Snížit – {n}': { en: 'Decrease – {n}', pl: 'Zmniejsz – {n}', uk: 'Зменшити – {n}', es: 'Reducir – {n}' },
   'Zvýšit – {n}': { en: 'Increase – {n}', pl: 'Zwiększ – {n}', uk: 'Збільшити – {n}', es: 'Aumentar – {n}' },
   'Hlavní navigace': { en: 'Main navigation', pl: 'Główna nawigacja', uk: 'Головна навігація', es: 'Navegación principal' },
+  // ── backup validation and the error page ──
+  'Záloha je poškozená nebo upravená. Data zůstala beze změny.': { en: 'This backup is damaged or was edited. Your data was left unchanged.', pl: 'Ta kopia jest uszkodzona lub zmieniona. Twoje dane pozostały bez zmian.', uk: 'Ця резервна копія пошкоджена або змінена. Твої дані не змінилися.', es: 'Esta copia está dañada o fue modificada. Tus datos no han cambiado.' },
+  'Něco se pokazilo': { en: 'Something went wrong', pl: 'Coś poszło nie tak', uk: 'Щось пішло не так', es: 'Algo salió mal' },
+  'Aplikace se nedokázala zobrazit, nejspíš kvůli poškozeným datům. Data jsou pořád v tomto prohlížeči. Nejdřív si je ulož do souboru, pak můžeš začít znovu.': { en: 'The app could not be displayed, most likely because of damaged data. Your data is still in this browser. Save it to a file first, then you can start over.', pl: 'Nie udało się wyświetlić aplikacji, najpewniej z powodu uszkodzonych danych. Dane wciąż są w tej przeglądarce. Najpierw zapisz je do pliku, potem możesz zacząć od nowa.', uk: 'Застосунок не вдалося показати, найімовірніше через пошкоджені дані. Дані досі в цьому браузері. Спершу збережи їх у файл, а тоді можеш почати знову.', es: 'No se pudo mostrar la app, probablemente por datos dañados. Tus datos siguen en este navegador. Guárdalos primero en un archivo y después podrás empezar de nuevo.' },
+  'Smazat data a začít znovu': { en: 'Delete data and start over', pl: 'Usuń dane i zacznij od nowa', uk: 'Видалити дані й почати знову', es: 'Borrar los datos y empezar de nuevo' },
+  'Zkusit znovu': { en: 'Try again', pl: 'Spróbuj ponownie', uk: 'Спробувати знову', es: 'Intentar de nuevo' },
   'Opakuje se měsíčně': { en: 'Repeats monthly', pl: 'Powtarza się co miesiąc', uk: 'Повторюється щомісяця', es: 'Se repite cada mes' },
   'Návrhy': { en: 'Suggestions', pl: 'Propozycje', uk: 'Пропозиції', es: 'Sugerencias' },
   'Co rozdělit': { en: 'What to split', pl: 'Co podzielić', uk: 'Що розподілити', es: 'Qué repartir' },

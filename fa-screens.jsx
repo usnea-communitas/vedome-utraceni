@@ -474,7 +474,9 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
     reader.onload = () => {
       const res = faImportData(String(reader.result || ''));
       if (res.ok) { setDataMsg(L('Data obnovena. Načítám…')); setTimeout(() => location.reload(), 700); }
-      else setDataMsg(L('Tenhle soubor nevypadá jako záloha Vědomého utrácení.'));
+      else setDataMsg(res.error === 'shape'
+        ? L('Záloha je poškozená nebo upravená. Data zůstala beze změny.')
+        : L('Tenhle soubor nevypadá jako záloha Vědomého utrácení.'));
     };
     reader.onerror = () => setDataMsg(L('Soubor se nepodařilo přečíst.'));
     reader.readAsText(f);

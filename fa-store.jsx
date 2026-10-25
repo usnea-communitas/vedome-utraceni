@@ -134,13 +134,44 @@ function faExportData() {
   return JSON.stringify({ app: 'vedome-utraceni', version: 1, exported: new Date().toISOString(), data }, null, 2);
 }
 
+// What each restored key must look like for the app to render. A damaged or
+// hand-edited backup is rejected as a whole, before anything is replaced.
+const faIsObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const faIsNum = v => typeof v === 'number' && isFinite(v);
+const faIsItem = x => faIsObj(x) && typeof x.name === 'string' && faIsNum(x.amount) && x.amount >= 0;
+const FA_BACKUP_CHECKS = {
+  'fa.profile': v => faIsObj(v) && (v.name == null || typeof v.name === 'string') && (v.income == null || faIsNum(v.income)),
+  'fa.plan.income': v => Array.isArray(v) && v.every(faIsItem),
+  'fa.plan.items': v => faIsObj(v) && ['nutne', 'budouci', 'radost'].every(k => v[k] == null || (Array.isArray(v[k]) && v[k].every(faIsItem))),
+  'fa.expenses': v => Array.isArray(v) && v.every(e => faIsObj(e) && typeof e.name === 'string' && faIsNum(e.amount) && e.amount >= 0
+    && typeof e.cat === 'string' && faIsNum(e.ts) && (e.day == null || /^\d{4}-\d{2}-\d{2}$/.test(e.day))),
+  'fa.goals': v => Array.isArray(v) && v.every(g => faIsObj(g) && typeof g.name === 'string' && faIsNum(g.target) && (g.saved == null || faIsNum(g.saved))),
+  'fa.yearGoals.custom': v => Array.isArray(v),
+  'fa.reflexe': faIsObj,
+  'fa.ratios': v => faIsObj(v) && ['nutne', 'budouci', 'radost'].every(k => faIsNum(v[k]) && v[k] >= 0 && v[k] <= 100),
+  'fa.month': v => typeof v === 'string',
+  'fa.reminders': faIsObj,
+};
+// these two are stored as plain strings, not JSON
+const FA_BACKUP_RAW_CHECKS = {
+  'fa.theme': v => v === 'lesní' || v === 'kouzelnický',
+  'fa.lang': v => FA_LANGS.some(l => l.code === v),
+};
+function faBackupValueOk(key, raw) {
+  if (FA_BACKUP_RAW_CHECKS[key]) return FA_BACKUP_RAW_CHECKS[key](raw);
+  let v;
+  try { v = JSON.parse(raw); } catch (e) { return false; }
+  return !FA_BACKUP_CHECKS[key] || FA_BACKUP_CHECKS[key](v);
+}
+
 function faImportData(text) {
   let obj;
   try { obj = JSON.parse(text); } catch (e) { return { ok: false, error: 'format' }; }
   if (!obj || obj.app !== 'vedome-utraceni' || !obj.data || typeof obj.data !== 'object') return { ok: false, error: 'app' };
   const keys = Object.keys(obj.data).filter(k => FA_BACKUP_KEYS.includes(k) && typeof obj.data[k] === 'string');
   if (!keys.includes('fa.profile')) return { ok: false, error: 'profile' };
-  try { JSON.parse(obj.data['fa.profile']); } catch (e) { return { ok: false, error: 'profile' }; }
+  const bad = keys.find(k => !faBackupValueOk(k, obj.data[k]));
+  if (bad) return { ok: false, error: 'shape', key: bad };
   FA_BACKUP_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
   keys.forEach(k => { try { localStorage.setItem(k, obj.data[k]); } catch (e) {} });
   return { ok: true, count: keys.length };
@@ -157,5 +188,5 @@ function faDerive() {
 Object.assign(window, {
   faLoad, faSave, loadFaGoals, saveFaGoals, loadFaReflexe, saveFaReflexe,
   faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive, faMigrateYearGoals,
-  FA_BACKUP_KEYS, faExportData, faImportData,
+  FA_BACKUP_KEYS, faExportData, faImportData, faBackupValueOk,
 });
