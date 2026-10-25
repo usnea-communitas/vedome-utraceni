@@ -55,11 +55,14 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
     return { id: Date.now(), name: nm, target, saved: 0, icon: g.icon, accent: g.accent, kind: g.kind };
   };
 
-  const finish = (skipGoal) => onFinish({
+  // "Skip" means no goal, even if one was highlighted before
+  const skipGoal = () => { setGoalKey(null); setGoalName(''); setGoalTarget(''); setStep(step + 1); };
+
+  const finish = () => onFinish({
     name: name.trim() || null,
     income: inc,
     ratios: r,
-    goal: skipGoal ? null : buildGoal(),
+    goal: buildGoal(),
     theme,
   });
 
@@ -148,7 +151,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
     // ── 4 · first goal (optional) ──
     {
       valid: buildGoal() != null, cta: L('Pokračovat'),
-      skip: true,
+      onSkip: skipGoal,
       body: (
         <div>
           <h1 className="fa-onb-h">{L('Tvůj první cíl')}</h1>
@@ -211,7 +214,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
 
   const s = steps[step];
   const last = step === steps.length - 1;
-  const advance = () => { if (!s.valid) return; if (last) finish(false); else setStep(step + 1); };
+  const advance = () => { if (!s.valid) return; if (last) finish(); else setStep(step + 1); };
 
   return (
     <main className="fa-onb">
@@ -229,8 +232,8 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
           onClick={advance}>
           {s.cta} <Icon name="chevron" size={16} stroke={2} />
         </button>
-        {s.skip && (
-          <button className="fa-textbtn" style={{ marginTop: 12, alignSelf: 'center' }} onClick={() => setStep(step + 1)}>
+        {s.onSkip && (
+          <button className="fa-textbtn" style={{ marginTop: 12, alignSelf: 'center' }} onClick={s.onSkip}>
             {L('Přeskočit — přidám později')}
           </button>
         )}

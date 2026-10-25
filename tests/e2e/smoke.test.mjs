@@ -103,6 +103,23 @@ for (const lang of ['en', 'cs']) {
   });
 }
 
+test('skipping the first goal adds no goal, even after highlighting one', async () => {
+  const { context, page, problems } = await phone();
+  await page.goto(base);
+  const next = page.locator('.fa-onb .fa-cta');
+  await next.click(); await next.click();                     // welcome, name (optional)
+  await page.locator('.fa-onb-input').fill('30000'); await next.click();
+  await next.click();                                         // 50 / 30 / 20
+  await page.locator('.fa-onb-goal').first().click();         // highlights the emergency fund with an amount
+  await page.locator('.fa-onb .fa-textbtn').click();          // Skip — I'll add it later
+  await next.click();                                         // theme → finish
+  await page.locator('.fa-nav .fa-tab').nth(2).click();
+  assert.equal(await page.locator('.fa-goal-head').count(), 0);
+  assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem('fa.goals') || '[]')), []);
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
 // headings a screen reader lists: one h1 per screen, and no level is skipped (h1 → h2 → h3)
 const outline = page => page.evaluate(() => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
   .filter(h => h.getClientRects().length && !h.closest('[aria-hidden="true"], [inert]'))
