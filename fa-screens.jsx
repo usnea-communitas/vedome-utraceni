@@ -410,7 +410,7 @@ function Reflexe({ month }) {
 
       {/* progress + result */}
       <div style={{ marginTop: 22 }}>
-        <SectionLabel>{L('Přehled minulého měsíce')}</SectionLabel>
+        <SectionLabel>{L('Shrnutí měsíce')}</SectionLabel>
         <Card pad={0} style={{ overflow: 'hidden' }}>
           {!done ? (
             <div style={{ padding: '26px 20px', textAlign: 'center' }}>
@@ -573,7 +573,7 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
           <Icon name="leaf" size={15} stroke={1.7} />
           <span className="fa-footer-name" style={{ fontFamily: 'var(--serif)', fontSize: 15, color: 'var(--ink-soft)', fontStyle: 'italic' }}>Vědomé utrácení</span>
         </div>
-        <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {L('verze 1.0')}</div>
+        <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {Lf('verze {v}', { v: FA_VERSION })}</div>
       </div>
 
       <IncomeSheet open={sheet === 'income'} onClose={() => setSheet(null)} onChanged={refresh} demo={!real} />

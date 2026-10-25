@@ -1,7 +1,7 @@
 {
   "name": "vedome-utraceni",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Vědomé utrácení (Mindful Spending) — a calm, local-first 50/30/20 money-planning PWA; JSX precompiled to app.js by `npm run compile`.",
   "license": "MIT",

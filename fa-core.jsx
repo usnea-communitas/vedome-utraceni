@@ -1,6 +1,9 @@
 // fa-core.jsx — data model, formatting helpers, and nature-inspired icons
 // for "Vědomé utrácení" (Conscious Spending) — forest-calm redesign.
 
+// app version, shown in More; keep in step with package.json (a test checks it)
+const FA_VERSION = '1.2.0';
+
 // ── Number / currency formatting ────────────────────────────────────────
 // Whole numbers grouped the way the interface language does it (16,000 ·
 // 16 000 · 16.000); amounts are always shown in Kč. The language codes
@@ -243,7 +246,7 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 }
 
 Object.assign(window, {
-  fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, accentText, Icon, ACCENTS, setFaTheme, faLabel,
+  FA_VERSION, fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, accentText, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
   faMonthLabel, faMonthName, faExpenseDay, faExpenseMonth, faDayLabel,
 });

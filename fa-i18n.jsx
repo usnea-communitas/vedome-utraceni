@@ -395,7 +395,7 @@ const S = {
   'Otázky měsíce': { en: 'Questions of the month', pl: 'Pytania miesiąca', uk: 'Питання місяця', es: 'Preguntas del mes' },
   // reflexe quiz
   'Odpověz na pár otázek a podívej se, jak ti tento měsíc bylo s penězi.': { en: 'Answer a few questions and see how money felt this month.', pl: 'Odpowiedz na kilka pytań i zobacz, jak było ci z pieniędzmi w tym miesiącu.', uk: 'Дай відповідь на кілька запитань і подивись, як тобі цього місяця велося з грошима.', es: 'Responde unas preguntas y mira cómo te fue con el dinero este mes.' },
-  'Přehled minulého měsíce': { en: 'Last month review', pl: 'Podsumowanie miesiąca', uk: 'Огляд минулого місяця', es: 'Resumen del mes' },
+  'Shrnutí měsíce': { en: 'Month summary', pl: 'Podsumowanie miesiąca', uk: 'Підсумок місяця', es: 'Resumen del mes' },
   'odpovězeno': { en: 'answered', pl: 'odpowiedzi', uk: 'відповідей', es: 'respondidas' },
   'Odpověz na všechny otázky a ukáže se tvé hodnocení i tip na příští měsíc.': { en: 'Answer all the questions to reveal your score and a tip for next month.', pl: 'Odpowiedz na wszystkie pytania, aby zobaczyć ocenę i wskazówkę na przyszły miesiąc.', uk: 'Дай відповідь на всі запитання, щоб побачити оцінку й пораду на наступний місяць.', es: 'Responde todas las preguntas para ver tu valoración y un consejo para el próximo mes.' },
   'Hodnocení': { en: 'Score', pl: 'Ocena', uk: 'Оцінка', es: 'Valoración' },
@@ -469,7 +469,7 @@ const S = {
   'Jazyk': { en: 'Language', pl: 'Język', uk: 'Мова', es: 'Idioma' },
   'Lesní klid': { en: 'Forest Calm', pl: 'Leśny spokój', uk: 'Лісовий спокій', es: 'Calma del bosque' },
   'Kouzelnický': { en: 'Wizardly', pl: 'Czarodziejski', uk: 'Чарівний', es: 'Mágico' },
-  'verze 1.0': { en: 'version 1.0', pl: 'wersja 1.0', uk: 'версія 1.0', es: 'versión 1.0' },
+  'verze {v}': { en: 'version {v}', pl: 'wersja {v}', uk: 'версія {v}', es: 'versión {v}' },
   // ── batch 2026-09: months, dates, backup, reminders, neutral wording ──
   'Datum': { en: 'Date', pl: 'Data', uk: 'Дата', es: 'Fecha' },
   'Celkem za {m}: {v}': { en: 'Total for {m}: {v}', pl: 'Razem za {m}: {v}', uk: 'Разом за {m}: {v}', es: 'Total de {m}: {v}' },
