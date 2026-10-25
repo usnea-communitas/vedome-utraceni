@@ -202,8 +202,6 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
     owl: <g {...p}><path d="M5.5 10 a6.5 6.5 0 0 1 13 0 v2.5 a6.5 6.5 0 0 1-13 0 Z"/><circle cx="9.3" cy="10.5" r="1.5"/><circle cx="14.7" cy="10.5" r="1.5"/><path d="M12 12.4 l-1.1 1.6 h2.2 z"/><path d="M6 6.4 L8.6 8.4 M18 6.4 L15.4 8.4"/><path d="M9.5 17.6 l1.2 1.8 M14.5 17.6 l-1.2 1.8"/></g>,
     wand: <g {...p}><path d="M4 20 L16 8"/><path d="M18 5.4 h2 M19 4.4 v2"/><path d="M20.4 9.4 h1.4 M21.1 8.7 v1.4"/></g>,
     key: <g {...p}><circle cx="7.5" cy="8" r="3.5"/><path d="M10 10.5 L19 19.5 M16 16.5 l2-2 M18.5 19 l1.5-1.5"/></g>,
-    // face-id frame (corners + face)
-    faceid: <g {...p}><path d="M4 8 V6 a2 2 0 0 1 2-2 h2 M16 4 h2 a2 2 0 0 1 2 2 v2 M20 16 v2 a2 2 0 0 1-2 2 h-2 M8 20 H6 a2 2 0 0 1-2-2 v-2"/><path d="M9 9.5 v1.4 M15 9.5 v1.4"/><path d="M12 9.5 v3 a0.8 0.8 0 0 1-0.9 0.8"/><path d="M9 15.4 a4.4 4.4 0 0 0 6 0"/></g>,
   };
   const resolved = (FA_THEME === 'wizard' && WIZ_ICON[name]) ? WIZ_ICON[name] : name;
   return (

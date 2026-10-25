@@ -2,8 +2,8 @@
 // While no profile exists, the app shows onboarding; once a profile is saved,
 // faHydrate() rewrites the shared APP model from the user's stores each render.
 // A profile with {demo:true} keeps the authored demo data (used for design
-// preview via Tweaks). All keys live in localStorage; in the real app these
-// map 1:1 to Supabase tables (see FUNCTIONAL_FEATURES.md).
+// preview via Tweaks). All keys live in this browser's localStorage; there is
+// no server, account or sync by design.
 
 const FA_STORE_KEYS = [
   'fa.profile', 'fa.plan.income', 'fa.plan.items', 'fa.expenses',

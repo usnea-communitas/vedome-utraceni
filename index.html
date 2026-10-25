@@ -965,7 +965,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 @media (prefers-reduced-motion: reduce) {
   .fa-sheet, .fa-sheet-backdrop { transition: none; }
   .fa-toast { animation: none; }
-  .fa-face-beam { animation: none !important; }
 }
 
 /* ════════ settings: security / reminders / income ════════ */
@@ -1045,23 +1044,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   background: var(--brand-soft); color: var(--brand);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand), transparent 75%);
 }
-.fa-face-btn {
-  position: relative; width: 108px; height: 108px; border-radius: 32px; margin: 22px auto 0;
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
-  border: 1.5px solid var(--card-line); background: var(--card); color: var(--brand);
-  cursor: pointer; box-shadow: var(--shadow-card);
-  transition: transform .15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.fa-face-btn:active { transform: scale(.95); }
-.fa-face-beam {
-  position: absolute; left: 10px; right: 10px; height: 2.5px; top: 14px; border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--brand), transparent);
-  opacity: 0; pointer-events: none;
-}
-.fa-face-btn.is-scan .fa-face-beam { opacity: 1; animation: faScan 1.05s ease-in-out; }
-@keyframes faScan { 0%{transform:translateY(0)} 50%{transform:translateY(78px)} 100%{transform:translateY(0)} }
-
 [data-theme="wizard"] .fa-lock { background: linear-gradient(180deg, #1B1D38 0%, #141528 60%, #0F101E 100%); }
 [data-theme="wizard"] .fa-lock::before { background: rgba(16,17,30,0.35); }
 [data-theme="wizard"] .fa-lock-inner > div { color: var(--wiz-gold, #D9B45C) !important; }
