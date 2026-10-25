@@ -23,6 +23,15 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 
 const FOREST_VIDEO = 'assets/forest-ambient.mp4';
 
+// Desktop preview: the phone frame (402 × 874) is scaled down to fit the window,
+// keeping the page's 28 px padding around it, so the whole app stays reachable
+// on laptop screens (1366 × 768, 1280 × 720).
+const FRAME_W = 402, FRAME_H = 874;
+function faFrameScale() {
+  const s = Math.min(1, (window.innerHeight - 56) / FRAME_H, (window.innerWidth - 56) / FRAME_W);
+  return Math.max(0.5, Math.floor(s * 1000) / 1000);
+}
+
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [screen, setScreen] = useA('prehled');
@@ -34,6 +43,7 @@ function App() {
   // On a real phone (or installed to home screen) drop the device bezel and
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
+  const [frameScale, setFrameScale] = useA(faFrameScale);
   const [profile, setProfile] = useA(() => { faMigrateYearGoals(); return loadFaProfile(); });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
@@ -58,6 +68,7 @@ function App() {
       const iosStandalone = window.navigator.standalone === true;
       const touchPhone = window.matchMedia && window.matchMedia('(max-width: 620px) and (pointer: coarse)').matches;
       setBare(standalone || iosStandalone || touchPhone);
+      setFrameScale(faFrameScale());
     };
     check();
     window.addEventListener('resize', check);
@@ -156,7 +167,13 @@ function App() {
     <div className="fa-root" data-bare={bare ? 'true' : 'false'} {...rootAttrs}>
       {bare
         ? <div className="fa-bare">{inner}</div>
-        : <IOSDevice dark={isWizard}>{inner}</IOSDevice>}
+        : (
+          <div style={{ width: FRAME_W * frameScale, height: FRAME_H * frameScale }}>
+            <div style={{ width: FRAME_W, transform: frameScale < 1 ? `scale(${frameScale})` : undefined, transformOrigin: '0 0' }}>
+              <IOSDevice dark={isWizard}>{inner}</IOSDevice>
+            </div>
+          </div>
+        )}
 
       <TweaksPanel>
         <TweakSection label={L('Téma')} />

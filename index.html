@@ -278,6 +278,8 @@ body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   display: flex; align-items: center; justify-content: center;
+  /* never centre past the top/left edge, where content could not be scrolled to */
+  align-items: safe center; justify-content: safe center;
   min-height: 100vh; padding: 28px;
 }
 .stage { position: relative; }
