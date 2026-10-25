@@ -513,6 +513,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   display: inline-flex; align-items: center; justify-content: center; transition: all .2s;
 }
 .fa-item-del:hover { background: var(--clay-soft); color: var(--clay); }
+/* plan item amount, edited in place */
+.fa-item-amt {
+  display: inline-flex; align-items: baseline; gap: 4px; flex-shrink: 0;
+  font-family: var(--serif); font-size: 15px; color: var(--ink); white-space: nowrap;
+}
+.fa-item-amt input {
+  font: inherit; color: inherit; background: transparent; min-width: 3ch;
+  border: none; border-bottom: 1px dashed color-mix(in oklab, var(--ink-soft), transparent 55%);
+  border-radius: 0; padding: 0 1px; text-align: right; cursor: text;
+}
+.fa-item-amt input:focus { border-bottom-color: var(--brand); }
 .fa-chip {
   display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
   border: 1px dashed var(--card-line); background: var(--card);

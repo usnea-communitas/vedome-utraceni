@@ -186,6 +186,7 @@ const S = {
   'Přidat položku': { en: 'Add item', pl: 'Dodaj pozycję', uk: 'Додати позицію', es: 'Añadir partida' },
   'Název položky': { en: 'Item name', pl: 'Nazwa pozycji', uk: 'Назва позиції', es: 'Nombre de la partida' },
   'Částka (Kč)': { en: 'Amount (Kč)', pl: 'Kwota (Kč)', uk: 'Сума (Kč)', es: 'Importe (Kč)' },
+  'Částka – {n}': { en: 'Amount – {n}', pl: 'Kwota – {n}', uk: 'Сума – {n}', es: 'Importe – {n}' },
   'Opakuje se měsíčně': { en: 'Repeats monthly', pl: 'Powtarza się co miesiąc', uk: 'Повторюється щомісяця', es: 'Se repite cada mes' },
   'Návrhy': { en: 'Suggestions', pl: 'Propozycje', uk: 'Пропозиції', es: 'Sugerencias' },
   'Co rozdělit': { en: 'What to split', pl: 'Co podzielić', uk: 'Що розподілити', es: 'Qué repartir' },

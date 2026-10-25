@@ -235,6 +235,10 @@ function StructureBar({ items, accent }) {
 function ItemEditor({ list, setList, accent, suggest, addLabel }) {
   const [name, setName] = usePl('');
   const [amount, setAmount] = usePl('');
+  // the suggestion picked from the chips; while its name is left as suggested the
+  // Czech key is stored, so the item keeps following the interface language
+  const [picked, setPicked] = usePl(null);
+  const amountRef = React.useRef(null);
   const update = (i, patch) => setList(list.map((it, k) => k === i ? { ...it, ...patch } : it));
   const remove = (i) => setList(list.filter((_, k) => k !== i));
   const add = (nm, amt, rec) => {
@@ -243,9 +247,19 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
     setList([...list, { name: String(nm).trim(), amount: a, recurring: rec !== false }]);
     return true;
   };
-  const commit = () => { if (add(name, amount, true)) { setName(''); setAmount(''); } };
+  const commit = () => {
+    const nm = picked && name.trim() === L(picked) ? picked : name;
+    if (add(nm, amount, true)) { setName(''); setAmount(''); setPicked(null); }
+  };
+  const pickSuggestion = (s) => {
+    // Suggestions are labels, not fixed-price presets. Let the user enter the
+    // real amount instead of auto-adding a default like 90 Kč.
+    setName(L(s)); setPicked(s);
+    setAmount('');
+    setTimeout(() => amountRef.current && amountRef.current.focus(), 0);
+  };
   const used = new Set(list.map(it => it.name));
-  const chips = (suggest || []).filter(s => !used.has(s));
+  const chips = (suggest || []).filter(s => !used.has(s) && !used.has(L(s)));
 
   return (
     <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -256,7 +270,7 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
             onClick={() => update(i, { recurring: !it.recurring })}>
             <Icon name="repeat" size={13} stroke={2} />
           </button>
-          <span style={{ fontFamily: 'var(--serif)', fontSize: 15, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{kc(it.amount)}</span>
+          <PlanAmount value={it.amount} label={Lf('Částka – {n}', { n: L(it.name) })} onChange={v => update(i, { amount: v })} />
           <button className="fa-item-del" onClick={() => remove(i)} aria-label="x"><Icon name="trash" size={15} stroke={1.7} /></button>
         </div>
       ))}
@@ -265,7 +279,7 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 2 }}>
           <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', alignSelf: 'center' }}>{L('Návrhy')}:</span>
           {chips.map(s => (
-            <button key={s} className="fa-chip" onClick={() => add(s, defaultFor(s), true)}>
+            <button key={s} className="fa-chip" onClick={() => pickSuggestion(s)}>
               <Icon name="plus" size={11} stroke={2.4} /> {L(s)}
             </button>
           ))}
@@ -274,17 +288,38 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
 
       <div style={{ display: 'flex', gap: 7, marginTop: 4 }}>
         <input className="fa-input" value={name} placeholder={L('Název položky')} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1.4 }} />
-        <input className="fa-input" type="text" inputMode="decimal" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
+        <input ref={amountRef} className="fa-input" type="text" inputMode="decimal" value={amount} placeholder={L('Částka (Kč)')} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
         <button className="fa-input-btn" onClick={commit} style={{ ['--accent']: accentVar(accent) }}>{L('Přidat')}</button>
       </div>
     </div>
   );
 }
 
-// sensible default amount for a suggested item
-function defaultFor(name) {
-  const map = { 'Telefon a internet': 90, 'Doprava': 90, 'Jídlo': 280, 'Energie': 360, 'Rezerva': 200, 'Investice': 150, 'Spoření': 230, 'Dárky': 100, 'Výlety': 200, 'Předplatné': 120, 'Kavárna': 180 };
-  return map[name] || 100;
+// amount of a plan item, edited in place: tap it, type, then Enter or leave the field (Esc cancels)
+function PlanAmount({ value, label, onChange }) {
+  const [draft, setDraft] = usePl(null);
+  const cancelRef = React.useRef(false);
+  const shown = draft != null ? draft : fmt(value);
+  const save = () => {
+    const v = faAmount(draft);
+    if (!cancelRef.current && draft != null && v > 0 && v !== value) onChange(v);
+    cancelRef.current = false;
+    setDraft(null);
+  };
+  return (
+    <span className="fa-item-amt">
+      <input type="text" inputMode="decimal" aria-label={label} value={shown}
+        style={{ width: (Math.max(String(shown).length, 3) + 0.5) + 'ch' }}
+        onFocus={e => { const el = e.target; setDraft(String(value)); setTimeout(() => el.select(), 0); }}
+        onChange={e => setDraft(e.target.value.replace(/[^\d.,\s]/g, ''))}
+        onBlur={save}
+        onKeyDown={e => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') { cancelRef.current = true; e.currentTarget.blur(); }
+        }} />
+      Kč
+    </span>
+  );
 }
 
 Object.assign(window, { Plan, PlanRibbon, StructureBar, ItemEditor });
