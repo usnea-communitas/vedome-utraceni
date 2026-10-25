@@ -31,7 +31,7 @@ Before opening a pull request:
 1. `npm run compile` and commit the regenerated `app.js`.
 2. Open the app in a phone-sized viewport and on a desktop; check both themes if you touched styling.
 3. If you changed any text, check at least English and Czech.
-4. If you changed `index.html`, `app.js`, the manifest or the service worker, bump the `CACHE` name in `sw.js`.
+4. Commit `index.html` and `sw.js` too if `npm run compile` changed them (it stamps the new `app.js?v=<hash>`). Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
 5. Keep privacy intact: no network calls with user data, no analytics, no accounts.
 
 ## Pull requests

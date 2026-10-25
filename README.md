@@ -82,7 +82,7 @@ Open the site in a browser; on a phone-sized viewport the app fills the screen, 
 
 ## Deployment
 
-The repository root is deployed as-is to Vercel (framework preset *Other*, no build, install or output settings). Any static host works the same way. Bump the `CACHE` name in `sw.js` when you ship a change so installed copies refresh their offline cache.
+The repository root is deployed as-is to Vercel (framework preset *Other*, no build, install or output settings). Any static host works the same way. `npm run compile` stamps a content hash into the script URL in `index.html` (`app.js?v=…`) and into `sw.js`, and the service worker loads the page and the app shell network-first, so a returning visitor gets the new deploy on the next visit and never a mix of old and new files; the cache is only the offline fallback. Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
 
 ## Status
 
