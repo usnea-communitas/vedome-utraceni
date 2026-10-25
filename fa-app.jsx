@@ -34,7 +34,7 @@ function App() {
   // On a real phone (or installed to home screen) drop the device bezel and
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
-  const [profile, setProfile] = useA(loadFaProfile);
+  const [profile, setProfile] = useA(() => { faMigrateYearGoals(); return loadFaProfile(); });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });

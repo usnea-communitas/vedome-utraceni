@@ -2,7 +2,7 @@
 // (income + balance + "Lesní koláč peněz" donut), then the three 50/30/20
 // category cards, reserves and extra-income cards.
 
-function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) {
+function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, profile, setProfile }) {
   const a = APP;
   const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent), label: L(c.name) }));
   // unallocated slice
@@ -124,7 +124,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
 
       {/* ── Roční cíle (Year goals) — naplňující se „hadi" ──────── */}
       <SectionLabel action={L('Detail')} onAction={() => go('cile')}>{L('Roční cíle')}</SectionLabel>
-      <YearGoals go={go} />
+      <YearGoals go={go} real={!!(profile && !profile.demo)} onChanged={() => setProfile && setProfile(loadFaProfile())} />
     </div>
   );
 }
@@ -246,50 +246,42 @@ function SnakeBar({ pct, color, h = 13, delay = 140 }) {
   );
 }
 
-// Year goals — functional: base goals auto-pulled from Cíle (APP.reserves.goals),
-// plus user-added custom goals persisted to localStorage. Real add form.
-const YG_STORE = 'fa.yearGoals.custom';
-function ygLoad() { try { return JSON.parse(localStorage.getItem(YG_STORE)) || []; } catch (e) { return []; } }
-function ygSave(list) { try { localStorage.setItem(YG_STORE, JSON.stringify(list)); } catch (e) {} }
-
-function YearGoals({ go }) {
-  const [custom, setCustom] = React.useState(ygLoad);
+// Year goals — the same goals as on the Cíle screen (fa.goals), shown as filling
+// "snakes". Tapping one opens Cíle, where deposits are made; a new goal added here
+// is a real goal too. (Older versions kept these in a separate store that could
+// never grow; faMigrateYearGoals() moves them into fa.goals.)
+function YearGoals({ go, real, onChanged }) {
   const [adding, setAdding] = React.useState(false);
   const [name, setName] = React.useState('');
   const [target, setTarget] = React.useState('');
   const accents = ['blush', 'sage', 'honey', 'moss'];
 
-  const goals = [...APP.reserves.goals, ...custom];
+  const goals = APP.reserves.goals;
 
   const commit = () => {
     const t = faAmount(target);
     if (!name.trim() || !t) return;
-    const next = [...custom, { name: name.trim(), icon: 'shield', accent: accents[custom.length % accents.length], saved: 0, target: t, custom: true }];
-    setCustom(next); ygSave(next);
+    const list = loadFaGoals();
+    saveFaGoals([...list, { id: Date.now(), name: name.trim(), target: t, saved: 0, icon: 'mountain', accent: accents[list.length % accents.length], kind: 'custom' }]);
     setName(''); setTarget(''); setAdding(false);
+    if (onChanged) onChanged();
   };
-  const remove = (idx) => { const next = custom.filter((_, i) => i !== idx); setCustom(next); ygSave(next); };
+  const open = (e) => { if (e.type === 'click' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('cile'); } };
 
   return (
     <Card pad={0} style={{ overflow: 'hidden', marginBottom: 8 }}>
       {goals.map((g, i) => {
-        const pct = Math.min(Math.round(g.saved / g.target * 100), 999);
+        const pct = g.target > 0 ? Math.min(Math.round(g.saved / g.target * 100), 999) : 0;
         const done = pct >= 100;
-        const customIdx = g.custom ? custom.indexOf(g) : -1;
         return (
-          <div key={g.name + i} className="fa-listrow" onClick={() => !g.custom && go('cile')}
-            style={{ borderTop: i ? '1px solid var(--card-line)' : 'none', cursor: g.custom ? 'default' : 'pointer' }}>
+          <div key={(g.id || g.name) + '|' + i} className="fa-listrow" role="button" tabIndex={0} onClick={open} onKeyDown={open}
+            style={{ borderTop: i ? '1px solid var(--card-line)' : 'none', cursor: 'pointer' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <Medallion icon={g.icon} accent={g.accent} size={34} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(g.name)}</div>
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 1, whiteSpace: 'nowrap' }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
               </div>
-              {g.custom && (
-                <button className="fa-goal-x" onClick={(e) => { e.stopPropagation(); remove(customIdx); }} aria-label="x">
-                  <Icon name="plus" size={14} stroke={2.2} style={{ transform: 'rotate(45deg)' }} />
-                </button>
-              )}
               <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: done ? 'var(--moss-deep)' : accentVar(g.accent), whiteSpace: 'nowrap' }}>{pct}&nbsp;%</div>
             </div>
             <SnakeBar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
@@ -297,23 +289,23 @@ function YearGoals({ go }) {
         );
       })}
 
-      {adding ? (
-        <div style={{ borderTop: '1px dashed var(--card-line)', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {real && (adding ? (
+        <div style={{ borderTop: goals.length ? '1px dashed var(--card-line)' : 'none', padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <input className="fa-input" autoFocus value={name} placeholder={L('Název cíle')}
             onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} />
           <div style={{ display: 'flex', gap: 8 }}>
             <input className="fa-input" type="text" inputMode="decimal" value={target} placeholder={L('Cílová částka (Kč)')}
-              onChange={e => setTarget(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1 }} />
+              onChange={e => setTarget(e.target.value)} onKeyDown={e => e.key === 'Enter' && commit()} style={{ flex: 1, minWidth: 0 }} />
             <button className="fa-input-btn" onClick={commit}>{L('Uložit')}</button>
             <button className="fa-input-btn ghost" onClick={() => { setAdding(false); setName(''); setTarget(''); }}>{L('Zrušit')}</button>
           </div>
         </div>
       ) : (
-        <button className="fa-addgoal" onClick={(e) => { e.stopPropagation(); setAdding(true); }}>
+        <button className="fa-addgoal" onClick={() => setAdding(true)}>
           <span className="fa-addgoal-plus"><Icon name="plus" size={15} stroke={2.2} /></span>
           {L('Přidat cíl, který chceš sledovat')}
         </button>
-      )}
+      ))}
     </Card>
   );
 }

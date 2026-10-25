@@ -31,6 +31,24 @@ function loadFaReflexe() {
 }
 function saveFaReflexe(obj) { faSave('fa.reflexe', obj); }
 
+// ── one-time data upgrades, run before the first render ─────────────────
+// Overview "year goals" used to live in their own store ('fa.yearGoals.custom')
+// with no way to deposit into them. They become ordinary goals in 'fa.goals'.
+function faMigrateYearGoals() {
+  const old = faLoad('fa.yearGoals.custom', null);
+  if (old == null) return;
+  const valid = Array.isArray(old) ? old.filter(g => g && typeof g.name === 'string' && g.name.trim() && +g.target > 0) : [];
+  if (valid.length) {
+    const goals = loadFaGoals();
+    const base = Date.now();
+    saveFaGoals((Array.isArray(goals) ? goals : []).concat(valid.map((g, i) => ({
+      id: base + i, name: g.name.trim(), target: Math.round(+g.target), saved: Math.max(0, Math.round(+g.saved || 0)),
+      icon: g.icon || 'mountain', accent: g.accent || 'sage', kind: 'custom',
+    }))));
+  }
+  try { localStorage.removeItem('fa.yearGoals.custom'); } catch (e) {}
+}
+
 // ── wipe everything (Více → „Smazat všechna data") ──────────────────────
 function faResetAll() {
   FA_STORE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
@@ -43,7 +61,6 @@ function faSeedFreshUser(p) {
   faSave('fa.plan.income', [{ name: L('Hlavní příjem'), amount: p.income, recurring: true }]);
   faSave('fa.plan.items', { nutne: [], budouci: [], radost: [] });
   faSave('fa.expenses', []);
-  faSave('fa.yearGoals.custom', []);
   faSave('fa.reflexe', {});
   faSave('fa.ratios', p.ratios);
   saveFaGoals(p.goal ? [p.goal] : []);
@@ -135,6 +152,6 @@ function faDerive() {
 
 Object.assign(window, {
   faLoad, faSave, loadFaGoals, saveFaGoals, loadFaReflexe, saveFaReflexe,
-  faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive,
+  faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive, faMigrateYearGoals,
   FA_BACKUP_KEYS, faExportData, faImportData,
 });
