@@ -510,8 +510,6 @@ const S = {
   'Co dobrého se tento měsíc povedlo pro mé „budoucí já\"?': { en: 'What good did this month bring my \"future self\"?', pl: 'Co dobrego udało się w tym miesiącu dla mojego „przyszłego ja\"?', uk: 'Що доброго цього місяця вдалося для мого «майбутнього я»?', es: '¿Qué salió bien este mes para mi «yo futuro»?' },
   // ── demo data, tweaks panel and misc labels ──
   'spořák': { en: 'Savings account', pl: 'Konto oszczędnościowe', uk: 'Ощадний рахунок', es: 'Cuenta de ahorro' },
-  'Překročeno o 210 Kč.': { en: 'Over by 210 CZK.', pl: 'Przekroczono o 210 Kč.', uk: 'Перевищено на 210 Kč.', es: 'Superado en 210 Kč.' },
-  'Pod cílem o 140 Kč.': { en: 'Under target by 140 CZK.', pl: 'Poniżej celu o 140 Kč.', uk: 'Нижче цілі на 140 Kč.', es: 'Por debajo del objetivo en 140 Kč.' },
   'Nájem, energie, jídlo a vše, bez čeho to nejde.': { en: 'Rent, utilities, food and everything you cannot do without.', pl: 'Czynsz, energia, jedzenie i wszystko, bez czego się nie da.', uk: 'Оренда, енергія, їжа і все, без чого не обійтися.', es: 'Alquiler, energía, comida y todo lo imprescindible.' },
   'Téma': { en: 'Theme', pl: 'Motyw', uk: 'Тема', es: 'Tema' },
   'Styl': { en: 'Style', pl: 'Styl', uk: 'Стиль', es: 'Estilo' },

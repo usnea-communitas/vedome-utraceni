@@ -13,15 +13,15 @@ function plSave(key, val) { try { localStorage.setItem(key, JSON.stringify(val))
 
 // ── seed data (used until the user edits; mirrors APP totals) ──
 const PLAN_INCOME0 = [
-  { name: 'Hlavní práce', amount: 1900, recurring: true },
-  { name: 'Coaching', amount: 430, recurring: true },
-  { name: 'Podpora', amount: 180, recurring: true },
-  { name: 'Drobné brigády', amount: 90, recurring: false },
+  { name: 'Hlavní práce', amount: 33000, recurring: true },
+  { name: 'Coaching', amount: 5500, recurring: true },
+  { name: 'Podpora', amount: 2000, recurring: true },
+  { name: 'Drobné brigády', amount: 1500, recurring: false },
 ];
 const PLAN_ITEMS0 = {
-  nutne:   [ { name: 'Nájem', amount: 780, recurring: true }, { name: 'Energie', amount: 360, recurring: true }, { name: 'Jídlo', amount: 280, recurring: true }, { name: 'Doprava', amount: 90, recurring: true } ],
-  budouci: [ { name: 'Spoření', amount: 230, recurring: true }, { name: 'Investice', amount: 150, recurring: true } ],
-  radost:  [ { name: 'Kavárna', amount: 210, recurring: true }, { name: 'Výlety', amount: 200, recurring: false }, { name: 'Předplatné', amount: 120, recurring: true } ],
+  nutne:   [ { name: 'Nájem', amount: 13500, recurring: true }, { name: 'Energie', amount: 3800, recurring: true }, { name: 'Jídlo', amount: 5500, recurring: true }, { name: 'Doprava', amount: 1600, recurring: true } ],
+  budouci: [ { name: 'Spoření', amount: 3500, recurring: true }, { name: 'Investice', amount: 2500, recurring: true } ],
+  radost:  [ { name: 'Kavárna', amount: 2800, recurring: true }, { name: 'Výlety', amount: 4500, recurring: false }, { name: 'Předplatné', amount: 1300, recurring: true } ],
 };
 const PLAN_SUGGEST = {
   nutne:   ['Telefon a internet', 'Doprava', 'Jídlo', 'Energie'],
