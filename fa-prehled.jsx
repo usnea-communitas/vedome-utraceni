@@ -22,7 +22,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
         <div style={{ position: 'relative', padding: '18px 20px 16px' }}>
           <div className="fa-hero-glow" />
           <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '6px 10px', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <Icon name="leaf" size={18} stroke={1.7} color="var(--brand)" />
                 <h3 className="fa-cardtitle" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>{faLabel(L('Lesní koláč peněz'), L('Kouzelný měšec'))}</h3>
@@ -36,22 +36,25 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense }) 
                 return <Chip tone={tone}><Icon name={icon} size={13} stroke={2.2} /> {label}</Chip>;
               })()}
             </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* the legend sits beside the donut and wraps below it when the card is too narrow */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
             <Donut segments={segs} size={150} thickness={21} centerTop={L('Rozděleno')} centerMain={a.plannedPct + '\u00A0%'} centerSub={L('z příjmu')} />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ flex: '1 1 140px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {a.categories.map(c => (
-                <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0 }} />
+                <div key={c.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0, marginTop: 6 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', fontWeight: 600 }}>{L(c.name)}</div>
-                    <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{Lf('{a} z {b}', { a: kc(c.actual), b: kc(c.target) })}</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+                      <span style={{ minWidth: 0, fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', fontWeight: 600 }}>{L(c.name)}</span>
+                      <span style={{ fontFamily: 'var(--serif)', fontSize: 17, color: c.tone === 'over' ? 'var(--clay)' : 'var(--ink)', whiteSpace: 'nowrap' }}>{c.ofTarget}&nbsp;%</span>
+                    </div>
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-soft)' }}>{Lf('{a} z {b}', { a: kc(c.actual), b: kc(c.target) })}</div>
                   </div>
-                  <span style={{ fontFamily: 'var(--serif)', fontSize: 17, color: c.tone === 'over' ? 'var(--clay)' : 'var(--ink)', whiteSpace: 'nowrap' }}>{c.ofTarget}&nbsp;%</span>
                 </div>
               ))}
             </div>
           </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 16, fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 14px', marginTop: 16, fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)' }}>
               <span>{L('Rozděleno')} <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{kc(a.allocated)}</strong></span>
               <span style={{ opacity: 0.4 }}>·</span>
               <span>{L('Zbývá rozdělit')} <strong style={{ color: 'var(--moss-deep)', fontWeight: 600 }}>{kc(a.remaining)}</strong></span>

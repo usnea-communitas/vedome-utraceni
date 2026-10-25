@@ -130,7 +130,7 @@ function Donut({ segments, size = 168, thickness = 22, centerTop, centerMain, ce
           </React.Fragment>
         ) : (
           <React.Fragment>
-            {centerTop && <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, letterSpacing: 1.4, textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: 2 }}>{centerTop}</div>}
+            {centerTop && <div style={{ fontFamily: 'var(--sans)', fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: 'var(--ink-soft)', marginBottom: 2, whiteSpace: 'nowrap' }}>{centerTop}</div>}
             <div style={{ fontFamily: 'var(--serif)', fontSize: 34, lineHeight: 1, color: 'var(--ink)', fontWeight: 500 }}>{centerMain}</div>
             {centerSub && <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 4 }}>{centerSub}</div>}
           </React.Fragment>
