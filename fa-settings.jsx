@@ -282,10 +282,11 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
 }
 
 // ── Lock screen — shown on launch when a PIN is set ─────────────────────
-function LockScreen({ security, userName, onUnlock }) {
+function LockScreen({ security, userName, onUnlock, onReset }) {
   const [entry, setEntry] = useSt('');
   const [err, setErr] = useSt(false);
   const [busy, setBusy] = useSt(false);
+  const [forgot, setForgot] = useSt(false); // the PIN cannot be recovered: offer an honest fresh start
 
   const digit = (d) => {
     if (busy || entry.length >= 4) return;
@@ -316,10 +317,21 @@ function LockScreen({ security, userName, onUnlock }) {
         <div style={{ fontFamily: 'var(--serif)', fontSize: 24, color: 'var(--ink)', fontWeight: 500 }}>
           {userName ? Lf('Vítej zpět, {n}', { n: userName }) : L('Vítej zpět')}
         </div>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Zadej PIN')}</div>
-        <div style={{ marginTop: 18 }}><PinDots len={entry.length} error={err} /></div>
-        {err && <div role="alert" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('Špatný PIN')}</div>}
-        <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} disabled={busy} />
+        {forgot ? (
+          <div className="fa-lock-forgot">
+            <p>{L('PIN nejde obnovit. Můžeš smazat všechna data v tomto prohlížeči a začít znovu — plán, výdaje, cíle i reflexe zmizí. Pokud máš zálohu, obnovíš ji potom ve Více → Data.')}</p>
+            <button type="button" className="fa-lock-reset" onClick={onReset}>{L('Smazat data a začít znovu')}</button>
+            <button type="button" className="fa-textbtn" onClick={() => setForgot(false)}>{L('Zpět k PINu')}</button>
+          </div>
+        ) : (
+          <React.Fragment>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Zadej PIN')}</div>
+            <div style={{ marginTop: 18 }}><PinDots len={entry.length} error={err} /></div>
+            {err && <div role="alert" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('Špatný PIN')}</div>}
+            <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} disabled={busy} />
+            {onReset && <button type="button" className="fa-textbtn fa-lock-forgot-link" onClick={() => setForgot(true)}>{L('Nepamatuješ si PIN?')}</button>}
+          </React.Fragment>
+        )}
       </div>
     </div>
   );

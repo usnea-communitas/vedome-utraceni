@@ -1045,10 +1045,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 }
 .fa-crash-card h1 { font-family: var(--serif); font-size: 26px; font-weight: 500; margin: 0; }
 .fa-crash-card p { margin: 0 0 4px; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
-.fa-crash-reset {
+.fa-crash-reset, .fa-lock-reset {
   border: 1px solid var(--card-line); background: transparent; border-radius: 20px; padding: 13px;
   font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--clay); cursor: pointer;
 }
+
+/* lock screen: forgotten PIN */
+.fa-lock-forgot { display: flex; flex-direction: column; align-items: stretch; gap: 10px; max-width: 290px; margin: 16px auto 0; }
+.fa-lock-forgot p { margin: 0 0 4px; font-family: var(--sans); font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+.fa-lock-forgot-link { margin-top: 10px; }
 
 /* lock screen overlay */
 .fa-lock {
@@ -1071,7 +1076,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 [data-theme="wizard"] .fa-lock { background: linear-gradient(180deg, #1B1D38 0%, #141528 60%, #0F101E 100%); }
 [data-theme="wizard"] .fa-lock::before { background: rgba(16,17,30,0.35); }
 [data-theme="wizard"] .fa-lock-inner > div { color: var(--wiz-gold, #D9B45C) !important; }
-[data-theme="wizard"] .fa-pin-key { background: var(--card); }</style>
+[data-theme="wizard"] .fa-pin-key { background: var(--card); }
+[data-theme="wizard"] .fa-lock-forgot p { color: #D8CCB0; }
+[data-theme="wizard"] .fa-lock .fa-textbtn { color: #D9B45C; }
+[data-theme="wizard"] .fa-lock-reset { color: #F2A48B; border-color: rgba(217,180,92,0.35); }</style>
 </head>
 <body>
   <div class="stage">

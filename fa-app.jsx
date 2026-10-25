@@ -184,7 +184,8 @@ function App() {
       </div>
       )}
       {profile && locked && (
-        <LockScreen security={loadFaSecurity()} userName={profile.name} onUnlock={() => setLocked(false)} />
+        <LockScreen security={loadFaSecurity()} userName={profile.name} onUnlock={() => setLocked(false)}
+          onReset={() => { resetAll(); setLocked(false); }} />
       )}
     </div>
   );

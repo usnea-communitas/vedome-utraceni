@@ -134,6 +134,8 @@ function AddGoalForm({ onAdd, onClose }) {
 function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
   const pct = g.target > 0 ? Math.round(g.saved / g.target * 100) : 0;
   const [amt, setAmt] = useS2('');
+  const [armed, setArmed] = useS2(false); // deleting a goal asks once more
+  React.useEffect(() => { if (!open) setArmed(false); }, [open]);
   const commit = () => { const v = faAmount(amt); if (v > 0) { onDeposit(v); setAmt(''); } };
   return (
     <Card pad={16}>
@@ -159,7 +161,13 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
           <input className="fa-onb-input" type="text" inputMode="decimal" value={amt} placeholder={L('Částka v Kč')}
             onChange={e => setAmt(e.target.value)} style={{ flex: 1, padding: '9px 12px', fontSize: 14, minWidth: 0 }} />
           <button className="fa-ghostbtn" onClick={commit} style={{ flexShrink: 0 }}><Icon name="plus" size={14} stroke={2} /> {L('Vložit')}</button>
-          <button className="fa-textbtn" onClick={onDelete} style={{ color: 'var(--clay)', flexShrink: 0 }}>{L('Smazat')}</button>
+          {!armed && <button className="fa-textbtn" onClick={() => setArmed(true)} style={{ color: 'var(--clay)', flexShrink: 0 }}>{L('Smazat')}</button>}
+        </div>
+      )}
+      {real && open && armed && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
+          <button className="fa-textbtn" onClick={onDelete} style={{ color: 'var(--clay)' }}>{L('Opravdu smazat? Nejde vrátit')}</button>
+          <button className="fa-textbtn" onClick={() => setArmed(false)}>{L('Zrušit')}</button>
         </div>
       )}
     </Card>
