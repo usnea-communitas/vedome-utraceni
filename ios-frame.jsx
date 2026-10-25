@@ -211,12 +211,12 @@ function IOSDevice({
       WebkitFontSmoothing: 'antialiased',
     }}>
       {/* dynamic island */}
-      <div style={{
+      <div aria-hidden="true" style={{
         position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
         width: 126, height: 37, borderRadius: 24, background: '#000', zIndex: 50,
       }} />
       {/* status bar (absolute) */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+      <div aria-hidden="true" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
         <IOSStatusBar dark={dark} />
       </div>
       {/* nav + content */}
@@ -226,7 +226,7 @@ function IOSDevice({
         {keyboard && <IOSKeyboard dark={dark} />}
       </div>
       {/* home indicator — always on top */}
-      <div style={{
+      <div aria-hidden="true" style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 60,
         height: 34, display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
         paddingBottom: 8, pointerEvents: 'none',

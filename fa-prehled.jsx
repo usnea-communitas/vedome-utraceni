@@ -282,7 +282,7 @@ function YearGoals({ go, real, onChanged }) {
                 <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(g.name)}</div>
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 1, whiteSpace: 'nowrap' }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
               </div>
-              <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: done ? 'var(--moss-deep)' : accentVar(g.accent), whiteSpace: 'nowrap' }}>{pct}&nbsp;%</div>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: done ? 'var(--moss-deep)' : accentText(g.accent), whiteSpace: 'nowrap' }}>{pct}&nbsp;%</div>
             </div>
             <SnakeBar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
           </div>

@@ -38,15 +38,15 @@
 
   /* ink — deep forest */
   --ink: #2C3826;
-  --ink-soft: #6A7360;
-  --ink-faint: #9DA28D;
+  --ink-soft: #5F6755;   /* ≥ 4.5:1 on card and cream */
+  --ink-faint: #676C58;  /* tertiary text, still ≥ 4.5:1 on card and cream */
 
   /* botanical accents */
-  --moss: #5E7A4F;  --moss-deep: #3D5235;  --moss-soft: #E1EAD4;
-  --honey: #C29A3D; --honey-deep: #927019; --honey-soft: #F0E7C7;
-  --blush: #9A6E94; --blush-deep: #6E4A6A; --blush-soft: #EBDEEA;
+  --moss: #567049;  --moss-deep: #3D5235;  --moss-soft: #E1EAD4;
+  --honey: #C29A3D; --honey-deep: #806316; --honey-soft: #F0E7C7;
+  --blush: #94678E; --blush-deep: #6E4A6A; --blush-soft: #EBDEEA;
   --sage: #8AA17E;  --sage-soft: #DCE6D0;
-  --clay: #BC6A45;  --clay-soft: #F2DCCE;
+  --clay: #985035;  --clay-soft: #F2DCCE;
 
   --unalloc: #D8CFBB;
   --bar-track: rgba(74,86,58,0.13);
@@ -69,7 +69,7 @@
   --tree-bark: #7A5E36; --tree-ground: #B9A77E;
 
   /* brand accent (re-tintable via Tweaks) */
-  --brand: #5E7A4F; --brand-soft: var(--moss-soft);
+  --brand: #567049; --brand-soft: var(--moss-soft);  /* moss, brand, honey-deep and clay text ≥ 4.5:1 on card */
 
   /* forest backdrop */
   --canopy-base: #E7E0D0;
@@ -122,7 +122,7 @@
   /* sepia ink */
   --ink: #2C2412;
   --ink-soft: #6A5A3C;
-  --ink-faint: #9C8A64;
+  --ink-faint: #6F6247;  /* ≥ 4.5:1 on parchment card and cream */
 
   /* jewel & metal accents */
   --moss: #2C7A5B;  --moss-deep: #1C5740;  --moss-soft: #CFE2D6;   /* emerald  */
@@ -237,7 +237,7 @@
 }
 .fa-ratio-pill {
   font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
-  color: var(--moss); padding: 4px 10px; border-radius: 999px; background: var(--moss-soft);
+  color: var(--moss-deep); padding: 4px 10px; border-radius: 999px; background: var(--moss-soft);
   white-space: nowrap; -webkit-tap-highlight-color: transparent;
 }
 .fa-month-pop {
@@ -340,7 +340,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 .fa-cta {
   width: 100%; border: none; cursor: pointer;
   background: var(--brand-soft);
-  color: var(--brand);
+  color: color-mix(in oklab, var(--brand), #000 35%);
   font-family: var(--sans); font-size: 14px; font-weight: 600;
   padding: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;
   transition: filter .2s, background .2s; white-space: nowrap;
@@ -356,7 +356,7 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 
 .fa-textbtn {
   border: none; background: none; cursor: pointer;
-  font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--brand);
+  font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: color-mix(in oklab, var(--brand), #000 22%);
   padding: 2px 4px; border-radius: 8px; transition: background .2s;
 }
 .fa-textbtn:hover { background: var(--brand-soft); }
@@ -387,7 +387,14 @@ body:has(.fa-root[data-bare="true"]) .caption { display: none; }
 /* settings row */
 .fa-row { display: flex; align-items: center; gap: 13px; padding: 13px 16px; }
 .fa-row-btn { width: 100%; border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; }
-.fa-row:focus-visible, .fa-card:focus-visible, .fa-sec-row:focus-visible, .fa-quiz-opt:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.fa-row:focus-visible, .fa-card:focus-visible, .fa-sec-row:focus-visible, .fa-quiz-opt:focus-visible,
+.fa-listrow:focus-visible, .fa-goal-head:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.fa-flip:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 26px; }
+.fa-danger-btn {
+  flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 4px 0; cursor: pointer;
+  font-family: var(--sans); font-size: 14.5px; font-weight: 600; color: var(--clay);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-tap-highlight-color: transparent;
+}
 button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 /* interactive list row inside a merged card */
@@ -419,7 +426,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 .fa-flip[data-flipped="true"]:active .fa-flip-inner { transform: scale(.985) rotateY(180deg); }
 .fa-flip-hint {
   display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
-  font-family: var(--sans); font-size: 11.5px; font-weight: 600; color: var(--brand);
+  font-family: var(--sans); font-size: 11.5px; font-weight: 600; color: color-mix(in oklab, var(--brand), #000 22%);
 }
 
 /* segmented control (invest sim) */
@@ -1054,7 +1061,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 </head>
 <body>
   <div class="stage">
-    <div class="caption">Vědomé utrácení</div>
+    <div class="caption" aria-hidden="true">Vědomé utrácení</div>
     <div id="root"></div>
   </div>
 

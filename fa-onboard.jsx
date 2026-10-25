@@ -128,6 +128,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
                 <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)' }}>{r[c.key]} % · {kc(Math.round(inc * r[c.key] / 100))}</span>
               </div>
               <input type="range" className="fa-range" min={0} max={100} step={5} value={r[c.key]}
+                aria-label={L(c.name)} aria-valuetext={r[c.key] + ' %'}
                 style={{ ['--accent']: accentVar(c.accent) }}
                 onChange={e => setPart(c.key, +e.target.value)} />
             </div>
@@ -208,7 +209,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
   const advance = () => { if (!s.valid) return; if (last) finish(false); else setStep(step + 1); };
 
   return (
-    <div className="fa-onb">
+    <main className="fa-onb">
       <div className="fa-onb-card">
         {step > 0 && (
           <button className="fa-onb-back" onClick={() => setStep(step - 1)} aria-label={L('Zpět')}>
@@ -229,7 +230,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
           </button>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 

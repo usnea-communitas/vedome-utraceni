@@ -164,6 +164,8 @@ const ACCENTS = {
 };
 function accentVar(name)  { return `var(${(ACCENTS[name] || ACCENTS.moss).v})`; }
 function accentSoft(name) { return `var(${(ACCENTS[name] || ACCENTS.moss).soft})`; }
+// accent colour for text: a darker mix, so honey or sage words stay readable on light cards
+function accentText(name) { return `color-mix(in oklab, ${accentVar(name)}, #000 32%)`; }
 
 // ── Theme-aware icons ──────────────────────────────────────────────────
 // The app has two skins; in "wizard" the same icon names resolve to magical
@@ -241,7 +243,7 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 }
 
 Object.assign(window, {
-  fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel,
+  fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, accentText, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
   faMonthLabel, faMonthName, faExpenseDay, faExpenseMonth, faDayLabel,
 });

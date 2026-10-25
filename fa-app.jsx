@@ -166,7 +166,7 @@ function App() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
         {...(locked ? { inert: '', 'aria-hidden': 'true' } : {})}>
         {/* scrollable content */}
-        <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+        <main ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen + '|' + month} className={'fa-stage' + (entered ? ' is-in' : '')}>
               <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} />
@@ -174,7 +174,7 @@ function App() {
           </div>
           {/* sync APP.month so static reads stay in step */}
           {(() => { APP.month = month; return null; })()}
-        </div>
+        </main>
         {/* add expense: floating + button & sheet */}
         <AddFab onClick={() => setAddOpen(true)} />
         <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} month={month} />
@@ -221,19 +221,19 @@ function App() {
 
 function BottomNav({ active, go }) {
   return (
-    <div className="fa-nav">
+    <nav className="fa-nav" aria-label={L('Hlavní navigace')}>
       <div className="fa-nav-inner">
         {NAV.map(n => {
           const on = active === n.key;
           return (
-            <button key={n.key} className="fa-tab" data-on={on} onClick={() => go(n.key)}>
+            <button key={n.key} className="fa-tab" data-on={on} aria-current={on ? 'page' : undefined} onClick={() => go(n.key)}>
               <span className="fa-tab-ico"><Icon name={n.icon} size={22} stroke={on ? 1.9 : 1.6} /></span>
               <span className="fa-tab-label">{L(n.label)}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }
 

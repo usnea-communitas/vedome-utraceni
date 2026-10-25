@@ -234,7 +234,7 @@ function RecentExpenses({ expenses, onDelete, go, month }) {
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)' }}>{L(c.name)} · {faDayLabel(faExpenseDay(e))}</div>
               </div>
               <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', whiteSpace: 'nowrap' }}>−{kc(e.amount)}</span>
-              <button className="fa-exp-del" onClick={() => onDelete(e.ts)} aria-label={L('Smazat')}>✕</button>
+              <button className="fa-exp-del" onClick={() => onDelete(e.ts)} aria-label={Lf('Smazat – {n}', { n: faDataLabel(e.name) })}>✕</button>
             </div>
           );
         })}

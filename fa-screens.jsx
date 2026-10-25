@@ -136,7 +136,11 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
   const [amt, setAmt] = useS2('');
   const commit = () => { const v = faAmount(amt); if (v > 0) { onDeposit(v); setAmt(''); } };
   return (
-    <Card pad={16} interactive onClick={real ? onToggle : undefined}>
+    <Card pad={16}>
+      <div className="fa-goal-head" role={real ? 'button' : undefined} tabIndex={real ? 0 : undefined} aria-expanded={real ? !!open : undefined}
+        onClick={real ? onToggle : undefined}
+        onKeyDown={real ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }) : undefined}
+        style={{ cursor: real ? 'pointer' : 'default' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
         <PlantStage pct={pct} accent={g.accent} icon={g.icon} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -144,13 +148,14 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
           <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: 20, color: accentVar(g.accent), lineHeight: 1 }}>{pct} %</div>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 20, color: accentText(g.accent), lineHeight: 1 }}>{pct} %</div>
           <div style={{ fontFamily: 'var(--sans)', fontSize: 10.5, color: 'var(--ink-faint)', marginTop: 4, whiteSpace: 'nowrap' }}>{Lf('zbývá {v}', { v: kc(Math.max(g.target - g.saved, 0)) })}</div>
         </div>
       </div>
       <Bar pct={pct} color={accentVar(g.accent)} delay={160 + i * 90} />
+      </div>
       {real && open && (
-        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 8, marginTop: 13, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 13, alignItems: 'center' }}>
           <input className="fa-onb-input" type="text" inputMode="decimal" value={amt} placeholder={L('Částka v Kč')}
             onChange={e => setAmt(e.target.value)} style={{ flex: 1, padding: '9px 12px', fontSize: 14, minWidth: 0 }} />
           <button className="fa-ghostbtn" onClick={commit} style={{ flexShrink: 0 }}><Icon name="plus" size={14} stroke={2} /> {L('Vložit')}</button>
@@ -282,11 +287,13 @@ function Tipy() {
 function TipFlip({ t }) {
   const [flipped, setFlipped] = useS2(false);
   const faceBase = { padding: 18 };
+  const toggle = () => setFlipped(f => !f);
   return (
-    <div className="fa-flip" data-flipped={flipped} onClick={() => setFlipped(f => !f)} style={{ height: 172 }}>
+    <div className="fa-flip" data-flipped={flipped} role="button" tabIndex={0} aria-pressed={flipped}
+      onClick={toggle} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }} style={{ height: 172 }}>
       <div className="fa-flip-inner" style={{ transform: `rotateY(${flipped ? 180 : 0}deg)` }}>
         {/* front */}
-        <div className="fa-flip-face fa-flip-front" style={{ ...faceBase, justifyContent: 'center', gap: 15, opacity: flipped ? 0 : 1, background: 'var(--card)', border: '1px solid var(--card-line)', boxShadow: 'var(--shadow-card)' }}>
+        <div className="fa-flip-face fa-flip-front" aria-hidden={flipped ? 'true' : undefined} style={{ ...faceBase, justifyContent: 'center', gap: 15, opacity: flipped ? 0 : 1, background: 'var(--card)', border: '1px solid var(--card-line)', boxShadow: 'var(--shadow-card)' }}>
           <div style={{ display: 'flex', gap: 14 }}>
             <Medallion icon={t.icon} accent={t.accent} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -297,15 +304,15 @@ function TipFlip({ t }) {
           <div className="fa-flip-hint"><Icon name="arrow" size={15} stroke={1.9} /> {L('Otoč pro zajímavost')}</div>
         </div>
         {/* back */}
-        <div className="fa-flip-face fa-flip-back" style={{ ...faceBase, justifyContent: 'space-between', opacity: flipped ? 1 : 0, background: accentSoft(t.accent), border: '1px solid color-mix(in oklab, ' + accentVar(t.accent) + ', transparent 72%)', boxShadow: 'var(--shadow-card)' }}>
+        <div className="fa-flip-face fa-flip-back" aria-hidden={flipped ? undefined : 'true'} style={{ ...faceBase, justifyContent: 'space-between', opacity: flipped ? 1 : 0, background: accentSoft(t.accent), border: '1px solid color-mix(in oklab, ' + accentVar(t.accent) + ', transparent 72%)', boxShadow: 'var(--shadow-card)' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 9 }}>
               <Icon name="bulb" size={19} stroke={1.7} color={accentVar(t.accent)} />
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', color: accentVar(t.accent) }}>{L(t.factTitle)}</span>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase', color: accentText(t.accent) }}>{L(t.factTitle)}</span>
             </div>
             <p style={{ fontFamily: 'var(--serif)', fontSize: 16.5, lineHeight: 1.5, color: 'var(--ink)', margin: 0 }}>{L(t.fact)}</p>
           </div>
-          <div className="fa-flip-hint" style={{ color: accentVar(t.accent) }}><Icon name="leaf" size={15} stroke={1.8} /> {L('Zpět na tip')}</div>
+          <div className="fa-flip-hint" style={{ color: accentText(t.accent) }}><Icon name="leaf" size={15} stroke={1.8} /> {L('Zpět na tip')}</div>
         </div>
       </div>
     </div>
@@ -410,7 +417,7 @@ function Reflexe({ month }) {
                 <div style={{ position: 'relative' }}>
                   <Donut segments={reflexSegments(score, maxScore)} size={132} thickness={16}
                     centerTop={L('Hodnocení')} centerMain={pct + '\u00A0%'} centerSub={L(band.label)} />
-                  <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 15px', borderRadius: 999, background: accentSoft(band.accent), color: accentVar(band.accent) }}>
+                  <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 15px', borderRadius: 999, background: accentSoft(band.accent), color: accentText(band.accent) }}>
                     <span style={{ width: 10, height: 10, borderRadius: 999, background: accentVar(band.accent) }} />
                     <span style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600 }}>{L('Tento měsíc:')} {L(band.label)}</span>
                   </div>
@@ -570,14 +577,10 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
 function DangerRow({ label, confirmLabel, onConfirm }) {
   const [armed, setArmed] = useS2(false);
   return (
-    <div className="fa-row" style={{ cursor: 'pointer' }} role="button" tabIndex={0}
-      onClick={() => armed ? onConfirm() : setArmed(true)}
-      onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); armed ? onConfirm() : setArmed(true); } }}>
+    <div className="fa-row">
       <Medallion icon="alert" accent="blush" size={36} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 14.5, fontWeight: 600, color: 'var(--clay)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{armed ? confirmLabel : label}</div>
-      </div>
-      {armed && <button className="fa-textbtn" onClick={e => { e.stopPropagation(); setArmed(false); }}>{L('Zrušit')}</button>}
+      <button type="button" className="fa-danger-btn" onClick={() => armed ? onConfirm() : setArmed(true)}>{armed ? confirmLabel : label}</button>
+      {armed && <button type="button" className="fa-textbtn" onClick={() => setArmed(false)}>{L('Zrušit')}</button>}
       <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
     </div>
   );
@@ -611,9 +614,9 @@ function RatioEditor({ ratios, setRatios }) {
             <span style={{ width: 11, height: 11, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0 }} />
             <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(c.name)}</span>
             <div className="fa-step">
-              <button onClick={() => set(c.key, (ratios[c.key] || 0) - 5)} aria-label="minus">−</button>
+              <button onClick={() => set(c.key, (ratios[c.key] || 0) - 5)} aria-label={Lf('Snížit – {n}', { n: L(c.name) })}>−</button>
               <span style={{ minWidth: 46, textAlign: 'center', fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--ink)' }}>{ratios[c.key] || 0}&nbsp;%</span>
-              <button onClick={() => set(c.key, (ratios[c.key] || 0) + 5)} aria-label="plus">+</button>
+              <button onClick={() => set(c.key, (ratios[c.key] || 0) + 5)} aria-label={Lf('Zvýšit – {n}', { n: L(c.name) })}>+</button>
             </div>
           </div>
         ))}

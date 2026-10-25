@@ -308,7 +308,7 @@ function LockScreen({ security, userName, onUnlock }) {
   };
 
   return (
-    <div className="fa-lock" data-screen-label="Zámek">
+    <div className="fa-lock" data-screen-label="Zámek" role="dialog" aria-modal="true" aria-label={L('Zadej PIN')}>
       <div className="fa-lock-inner">
         <div className="fa-lock-mark">
           <Icon name="key" size={30} stroke={1.5} />

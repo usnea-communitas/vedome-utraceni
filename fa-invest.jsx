@@ -133,7 +133,7 @@ function InvestSim() {
         </svg>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5, fontFamily: 'var(--sans)', fontSize: 10.5, color: 'var(--ink-faint)' }}>
           <span>{L('dnes')}</span>
-          <span style={{ opacity: 0.75 }}>{L('táhni prstem po grafu')}</span>
+          <span>{L('táhni prstem po grafu')}</span>
           <span>{Lf('za {y} let', { y: years })}</span>
         </div>
       </div>
@@ -153,7 +153,7 @@ function InvestSim() {
           <div className="fa-seg">
             {rateOpts.map(o => (
               <button key={o.k} data-on={rateKey === o.k} onClick={() => setRateKey(o.k)}>
-                {o.label}<span style={{ display: 'block', fontSize: 10.5, opacity: 0.8, fontWeight: 700 }}>{o.pct}</span>
+                {o.label}<span style={{ display: 'block', fontSize: 10.5, fontWeight: 700 }}>{o.pct}</span>
               </button>
             ))}
           </div>
@@ -184,7 +184,7 @@ function Slider({ label, value, min, max, step, v, set }) {
         <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{label}</span>
         <span style={{ fontFamily: 'var(--display)', fontSize: 16, fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap' }}>{value}</span>
       </div>
-      <input type="range" className="fa-range" min={min} max={max} step={step} value={v}
+      <input type="range" className="fa-range" min={min} max={max} step={step} value={v} aria-label={label} aria-valuetext={value}
         style={{ ['--accent']: 'var(--brand)' }}
         onChange={e => set(+e.target.value)} />
     </div>

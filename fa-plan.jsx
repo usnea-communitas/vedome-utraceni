@@ -50,8 +50,9 @@ function Plan({ go, month, setMonth, ratios }) {
   const allocated = cats.reduce((s, c) => s + catTotal(c.key), 0);
   const remaining = incomeTotal - allocated;
 
-  const segs = cats.map(c => ({ value: catTotal(c.key), color: accentVar(c.accent) }));
-  if (remaining > 0) segs.push({ value: remaining, color: 'var(--unalloc)', light: true });
+  // dark labels on the light segments (honey, unallocated), white on the dark ones
+  const segs = cats.map(c => ({ value: catTotal(c.key), color: accentVar(c.accent), ink: c.accent === 'honey' }));
+  if (remaining > 0) segs.push({ value: remaining, color: 'var(--unalloc)', ink: true });
 
   const setCatItems = (k, next) => setItems({ ...items, [k]: next });
 
@@ -193,7 +194,7 @@ function PlanRibbon({ segments, h = 16 }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden',
           }}>
             {pct >= 14 && (
-              <span style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fontWeight: 700, color: s.light ? 'var(--ink-soft)' : 'rgba(255,255,255,0.92)', whiteSpace: 'nowrap' }}>{pct} %</span>
+              <span style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fontWeight: 700, color: s.ink ? 'var(--ink)' : '#fff', whiteSpace: 'nowrap' }}>{pct} %</span>
             )}
           </div>
         );
@@ -269,12 +270,12 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
       {list.map((it, i) => (
         <div key={i} className="fa-item">
           <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(it.name)}</span>
-          <button className={'fa-rec' + (it.recurring ? ' on' : '')} title={L('Opakuje se měsíčně')}
+          <button className={'fa-rec' + (it.recurring ? ' on' : '')} title={L('Opakuje se měsíčně')} aria-label={L('Opakuje se měsíčně')} aria-pressed={!!it.recurring}
             onClick={() => update(i, { recurring: !it.recurring })}>
             <Icon name="repeat" size={13} stroke={2} />
           </button>
           <PlanAmount value={it.amount} label={Lf('Částka – {n}', { n: faDataLabel(it.name) })} onChange={v => update(i, { amount: v })} />
-          <button className="fa-item-del" onClick={() => remove(i)} aria-label="x"><Icon name="trash" size={15} stroke={1.7} /></button>
+          <button className="fa-item-del" onClick={() => remove(i)} aria-label={Lf('Smazat – {n}', { n: faDataLabel(it.name) })}><Icon name="trash" size={15} stroke={1.7} /></button>
         </div>
       ))}
 
