@@ -124,7 +124,7 @@ function AddGoalForm({ onAdd, onClose }) {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 9, marginTop: 13 }}>
-        <button className="fa-cta fa-cta-solid" style={{ flex: 1, opacity: valid ? 1 : 0.45, pointerEvents: valid ? 'auto' : 'none' }} onClick={commit}>{L('Přidat')}</button>
+        <button className="fa-cta fa-cta-solid" style={{ flex: 1 }} disabled={!valid} onClick={commit}>{L('Přidat')}</button>
         <button className="fa-ghostbtn" onClick={onClose}>{L('Zrušit')}</button>
       </div>
     </Card>

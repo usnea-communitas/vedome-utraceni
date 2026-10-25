@@ -196,7 +196,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
 
   const s = steps[step];
   const last = step === steps.length - 1;
-  const advance = () => last ? finish(false) : setStep(step + 1);
+  const advance = () => { if (!s.valid) return; if (last) finish(false); else setStep(step + 1); };
 
   return (
     <div className="fa-onb">
@@ -210,7 +210,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
           {steps.map((_, i) => <span key={i} data-on={i === step}></span>)}
         </div>
         {s.body}
-        <button className="fa-cta fa-cta-solid" style={{ marginTop: 20, opacity: s.valid ? 1 : 0.45, pointerEvents: s.valid ? 'auto' : 'none' }}
+        <button className="fa-cta fa-cta-solid" style={{ marginTop: 20 }} disabled={!s.valid}
           onClick={advance}>
           {s.cta} <Icon name="chevron" size={16} stroke={2} />
         </button>

@@ -203,7 +203,7 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
           </div>
         )}
 
-        <button className="fa-cta fa-cta-solid" style={{ marginTop: 16, opacity: valid ? 1 : 0.45, pointerEvents: valid ? 'auto' : 'none' }} onClick={save}>
+        <button className="fa-cta fa-cta-solid" style={{ marginTop: 16 }} disabled={!valid} onClick={save}>
           {L('Přidat výdaj')}{valid ? ' · ' + kc(amt) : ''}
         </button>
       </div>
