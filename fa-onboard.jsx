@@ -72,7 +72,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
           <div style={{ width: 74, height: 74, margin: '0 auto 18px', borderRadius: '38%', background: 'var(--moss-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--moss)' }}>
             <Icon name="sprout" size={40} stroke={1.5} />
           </div>
-          <h2 className="fa-onb-h">{L('Vítej ve vědomém utrácení')}</h2>
+          <h1 className="fa-onb-h">{L('Vítej ve vědomém utrácení')}</h1>
           <p className="fa-onb-p">{L('Žádné odříkání — jen jasný plán: co je potřeba, co tě těší a co posíláš svému budoucímu já.')}</p>
           {setLang && (
             <div className="fa-lang fa-onb-lang" role="group" aria-label={L('Jazyk')}>
@@ -89,7 +89,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       valid: true, cta: L('Pokračovat'),
       body: (
         <div>
-          <h2 className="fa-onb-h">{L('Jak ti máme říkat?')}</h2>
+          <h1 className="fa-onb-h">{L('Jak ti máme říkat?')}</h1>
           <p className="fa-onb-p">{L('Jen pro pozdravy uvnitř appky. Klidně přeskoč.')}</p>
           <input className="fa-onb-input" type="text" value={name} maxLength={24}
             placeholder={L('např. Anička')} onChange={e => setName(e.target.value)} />
@@ -101,7 +101,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       valid: inc > 0, cta: L('Pokračovat'),
       body: (
         <div>
-          <h2 className="fa-onb-h">{L('Tvůj měsíční příjem')}</h2>
+          <h1 className="fa-onb-h">{L('Tvůj měsíční příjem')}</h1>
           <p className="fa-onb-p">{L('Výplata a pravidelné přivýdělky dohromady. Později jde upravit v Plánu.')}</p>
           <div className="fa-onb-money">
             <input className="fa-onb-input" type="text" inputMode="decimal" value={income}
@@ -116,7 +116,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       valid: sum === 100 && inc > 0, cta: L('Pokračovat'),
       body: (
         <div>
-          <h2 className="fa-onb-h">{L('Rozděl si příjem')}</h2>
+          <h1 className="fa-onb-h">{L('Rozděl si příjem')}</h1>
           <p className="fa-onb-p">{L('Osvědčený základ je 50 / 30 / 20 — uprav si ho podle sebe.')}</p>
           <div style={{ display: 'flex', gap: 7, margin: '4px 0 16px', flexWrap: 'wrap' }}>
             {OB_PRESETS.map(p => {
@@ -151,7 +151,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       skip: true,
       body: (
         <div>
-          <h2 className="fa-onb-h">{L('Tvůj první cíl')}</h2>
+          <h1 className="fa-onb-h">{L('Tvůj první cíl')}</h1>
           <p className="fa-onb-p">{L('Pojmenovaný cíl se plní snáz. Vyber, na co šetříš — nebo přeskoč a přidej později.')}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
             {OB_GOALS.map(g => (
@@ -188,7 +188,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       valid: true, cta: L('Dokončit'),
       body: (
         <div>
-          <h2 className="fa-onb-h">{L('Vyber si vzhled')}</h2>
+          <h1 className="fa-onb-h">{L('Vyber si vzhled')}</h1>
           <p className="fa-onb-p">{L('Kdykoliv jde změnit ve Více → Vzhled.')}</p>
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="fa-onb-theme" data-on={theme === 'lesní'} onClick={() => setTheme('lesní')}>

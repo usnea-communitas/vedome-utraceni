@@ -30,7 +30,7 @@ function Cile({ go, month, setMonth, ratios, profile }) {
           <div className="fa-hero-glow" />
           <div style={{ position: 'relative' }}>
             <GoalTree goals={[]} size={150} />
-            <h3 className="fa-cardtitle" style={{ marginTop: 8 }}>{L('Zasaď svůj první cíl')}</h3>
+            <h2 className="fa-cardtitle" style={{ marginTop: 8 }}>{L('Zasaď svůj první cíl')}</h2>
             <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', margin: '8px auto 0', maxWidth: 250, lineHeight: 1.5 }}>{L('Každý cíl je větev tvého stromu. S každou naspořenou korunou poroste.')}</p>
             {real && !adding && (
               <button className="fa-cta fa-cta-solid" style={{ marginTop: 16 }} onClick={() => setAdding(true)}>
@@ -390,7 +390,7 @@ function Reflexe({ month }) {
           <Card key={qi} pad={18}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 13 }}>
               <Medallion icon={q.icon} accent={q.accent} size={38} />
-              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 17.5, color: 'var(--ink)', fontWeight: 500, margin: '2px 0 0', lineHeight: 1.3 }}>{L(q.q)}</h3>
+              <h2 style={{ fontFamily: 'var(--serif)', fontSize: 17.5, color: 'var(--ink)', fontWeight: 500, margin: '2px 0 0', lineHeight: 1.3 }}>{L(q.q)}</h2>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {q.opts.map((o, oi) => {

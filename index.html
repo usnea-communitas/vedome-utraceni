@@ -1075,7 +1075,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 }
 [data-theme="wizard"] .fa-lock { background: linear-gradient(180deg, #1B1D38 0%, #141528 60%, #0F101E 100%); }
 [data-theme="wizard"] .fa-lock::before { background: rgba(16,17,30,0.35); }
-[data-theme="wizard"] .fa-lock-inner > div { color: var(--wiz-gold, #D9B45C) !important; }
+[data-theme="wizard"] .fa-lock-inner > :is(div, h1) { color: var(--wiz-gold, #D9B45C) !important; }
 [data-theme="wizard"] .fa-pin-key { background: var(--card); }
 [data-theme="wizard"] .fa-lock-forgot p { color: #D8CCB0; }
 [data-theme="wizard"] .fa-lock .fa-textbtn { color: #D9B45C; }
@@ -1090,7 +1090,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=2aa8a482d9"></script>
+  <script src="app.js?v=8075b9fe68"></script>
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
       window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });

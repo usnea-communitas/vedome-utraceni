@@ -140,11 +140,11 @@ function Donut({ segments, size = 168, thickness = 22, centerTop, centerMain, ce
   );
 }
 
-// ── Section label (eyebrow above a group) ──────────────────────────────
+// ── Section label (eyebrow above a group) — the group's h2 under the screen's h1 ──
 function SectionLabel({ children, action, onAction }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '2px 4px 10px' }}>
-      <div className="fa-seclabel" style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{children}</div>
+      <h2 className="fa-seclabel" style={{ margin: 0, fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 600, letterSpacing: 1.6, textTransform: 'uppercase', color: 'var(--ink-soft)', whiteSpace: 'nowrap' }}>{children}</h2>
       {action && <button className="fa-textbtn" onClick={onAction}>{action}</button>}
     </div>
   );

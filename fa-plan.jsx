@@ -66,7 +66,7 @@ function Plan({ go, month, setMonth, ratios }) {
           <div className="fa-hero-glow" />
           <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
-              <h3 className="fa-cardtitle" style={{ fontSize: 18, whiteSpace: 'nowrap' }}>{L('Co rozdělit')}</h3>
+              <h2 className="fa-cardtitle" style={{ fontSize: 18, whiteSpace: 'nowrap' }}>{L('Co rozdělit')}</h2>
               <span style={{ fontFamily: 'var(--title)', fontSize: 22, fontWeight: 600, color: 'var(--ink)' }}>{Math.round(allocated / (incomeTotal || 1) * 100)}&nbsp;%</span>
             </div>
             <PlanRibbon segments={segs} h={18} />

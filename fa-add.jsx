@@ -134,7 +134,7 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
       <div className="fa-sheet" role="dialog" aria-label={L('Nový výdaj')}>
         <div className="fa-sheet-grip"></div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h3 className="fa-cardtitle" style={{ fontSize: 21 }}>{L('Nový výdaj')}</h3>
+          <h2 className="fa-cardtitle" style={{ fontSize: 21 }}>{L('Nový výdaj')}</h2>
           <button className="fa-sheet-x" onClick={onClose} aria-label={L('Zrušit')}>✕</button>
         </div>
 

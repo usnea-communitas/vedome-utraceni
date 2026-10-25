@@ -103,6 +103,34 @@ for (const lang of ['en', 'cs']) {
   });
 }
 
+// headings a screen reader lists: one h1 per screen, and no level is skipped (h1 → h2 → h3)
+const outline = page => page.evaluate(() => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+  .filter(h => h.getClientRects().length && !h.closest('[aria-hidden="true"], [inert]'))
+  .map(h => +h.tagName[1]));
+const assertOutline = (levels, where) => {
+  assert.equal(levels.filter(l => l === 1).length, 1, `${where}: one h1 (${levels})`);
+  levels.forEach((l, i) => assert.ok(i === 0 ? l === 1 : l <= levels[i - 1] + 1, `${where}: no skipped level (${levels})`));
+};
+
+test('every screen has one h1 and no skipped heading levels', async () => {
+  const { context, page, problems } = await phone();
+  await page.goto(base);
+  assertOutline(await outline(page), 'welcome');
+  await page.evaluate(() => {
+    localStorage.setItem('fa.profile', JSON.stringify({ name: 'Jana', income: 32000 }));
+    localStorage.setItem('fa.plan.income', JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]));
+    localStorage.setItem('fa.goals', JSON.stringify([{ id: 1, name: 'Nouzová rezerva', target: 48000, saved: 5000, kind: 'rezerva' }]));
+    localStorage.setItem('fa.expenses', JSON.stringify([{ name: 'Káva', amount: 95, cat: 'radost', ts: 1, day: new Date().toISOString().slice(0, 10) }]));
+  });
+  await page.reload();
+  for (const [i, name] of ['overview', 'plan', 'goals', 'tips', 'reflection', 'more'].entries()) {
+    await page.locator('.fa-nav .fa-tab').nth(i).click();
+    assertOutline(await outline(page), name);
+  }
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
 test('the overview legend stays inside its card from 360 to 430 px', async () => {
   for (const width of [360, 375, 390, 414, 430]) {
     const { context, page } = await phone(width);

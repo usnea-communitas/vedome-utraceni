@@ -90,7 +90,7 @@ function SettingsSheet({ open, title, onClose, children }) {
       <div className="fa-sheet" role="dialog" aria-label={title}>
         <div className="fa-sheet-grip"></div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h3 className="fa-cardtitle" style={{ fontSize: 21 }}>{title}</h3>
+          <h2 className="fa-cardtitle" style={{ fontSize: 21 }}>{title}</h2>
           <button className="fa-sheet-x" onClick={onClose} aria-label={L('Zrušit')}>✕</button>
         </div>
         {children}
@@ -314,9 +314,9 @@ function LockScreen({ security, userName, onUnlock, onReset }) {
         <div className="fa-lock-mark">
           <Icon name="key" size={30} stroke={1.5} />
         </div>
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 24, color: 'var(--ink)', fontWeight: 500 }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--serif)', fontSize: 24, color: 'var(--ink)', fontWeight: 500 }}>
           {userName ? Lf('Vítej zpět, {n}', { n: userName }) : L('Vítej zpět')}
-        </div>
+        </h1>
         {forgot ? (
           <div className="fa-lock-forgot">
             <p>{L('PIN nejde obnovit. Můžeš smazat všechna data v tomto prohlížeči a začít znovu — plán, výdaje, cíle i reflexe zmizí. Pokud máš zálohu, obnovíš ji potom ve Více → Data.')}</p>

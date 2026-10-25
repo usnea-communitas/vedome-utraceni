@@ -25,7 +25,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '6px 10px', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <Icon name="leaf" size={18} stroke={1.7} color="var(--brand)" />
-                <h3 className="fa-cardtitle" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>{faLabel(L('Lesní koláč peněz'), L('Kouzelný měšec'))}</h3>
+                <h2 className="fa-cardtitle" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>{faLabel(L('Lesní koláč peněz'), L('Kouzelný měšec'))}</h2>
               </div>
               {(() => {
                 const anyOver = a.categories.some(c => c.ofTarget > 100);
@@ -84,7 +84,7 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
       <Card onClick={() => go('cile')} style={{ marginBottom: 22, paddingTop: 14, paddingBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Icon name="sprout" size={17} stroke={1.7} color="var(--brand)" />
-          <h3 className="fa-cardtitle" style={{ fontSize: 17, whiteSpace: 'nowrap' }}>{faLabel(L('Strom cílů'), L('Strom přání'))}</h3>
+          <h2 className="fa-cardtitle" style={{ fontSize: 17, whiteSpace: 'nowrap' }}>{faLabel(L('Strom cílů'), L('Strom přání'))}</h2>
           <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" style={{ marginLeft: 'auto' }} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
