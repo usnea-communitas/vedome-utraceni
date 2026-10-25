@@ -5,6 +5,18 @@
 
 const { useState: useInvState, useMemo: useInvMemo, useEffect: useInvEffect } = React;
 
+// value after each whole year of a fixed monthly deposit, compounded monthly
+function faInvestProjection(monthly, years, rate) {
+  const i = rate / 12;
+  const pts = [];
+  for (let y = 0; y <= years; y++) {
+    const n = y * 12;
+    const fv = i > 0 ? monthly * ((Math.pow(1 + i, n) - 1) / i) : monthly * n;
+    pts.push({ y, fv, contributed: monthly * n });
+  }
+  return pts;
+}
+
 function InvestSim() {
   const [monthly, setMonthly] = useInvState(500);
   const [years, setYears] = useInvState(20);
@@ -13,16 +25,7 @@ function InvestSim() {
   const r = RATES[rateKey];
 
   // year-by-year projection (monthly deposits, monthly compounding)
-  const data = useInvMemo(() => {
-    const i = r / 12;
-    const pts = [];
-    for (let y = 0; y <= years; y++) {
-      const n = y * 12;
-      const fv = i > 0 ? monthly * ((Math.pow(1 + i, n) - 1) / i) : monthly * n;
-      pts.push({ y, fv, contributed: monthly * n });
-    }
-    return pts;
-  }, [monthly, years, r]);
+  const data = useInvMemo(() => faInvestProjection(monthly, years, r), [monthly, years, r]);
 
   const final = data[data.length - 1];
   const contributed = final.contributed;
@@ -191,4 +194,4 @@ function Slider({ label, value, min, max, step, v, set }) {
   );
 }
 
-Object.assign(window, { InvestSim });
+Object.assign(window, { InvestSim, faInvestProjection });

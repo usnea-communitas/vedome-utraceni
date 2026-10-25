@@ -19,6 +19,8 @@ Requirements: Node.js 20+ and npm.
 ```sh
 npm ci
 npm run compile       # after every change to a .jsx file
+npm test              # unit, translation and build checks (a second or two)
+npm run test:e2e      # smoke test in Chromium; first run: npx playwright install chromium
 npx serve .           # any static server works
 ```
 
@@ -28,9 +30,9 @@ The one rule that matters most:
 
 Before opening a pull request:
 
-1. `npm run compile` and commit the regenerated `app.js`.
+1. `npm run compile` and commit the regenerated `app.js`; run `npm test` (and `npm run test:e2e` for changes to screens).
 2. Open the app in a phone-sized viewport and on a desktop; check both themes if you touched styling.
-3. If you changed any text, check at least English and Czech.
+3. If you changed any text, check at least English and Czech. Every dictionary entry needs all five languages; `npm test` fails otherwise.
 4. Commit `index.html` and `sw.js` too if `npm run compile` changed them (it stamps the new `app.js?v=<hash>`). Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
 5. Keep privacy intact: no network calls with user data, no analytics, no accounts.
 

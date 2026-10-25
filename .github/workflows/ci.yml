@@ -26,3 +26,19 @@ jobs:
         run: |
           node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8'))"
           node --check sw.js
+      - name: Unit, translation and build tests
+        run: npm test
+
+  e2e:
+    name: Smoke test in Chromium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Onboarding, plan, expense and goals in English and Czech
+        run: npm run test:e2e

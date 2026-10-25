@@ -19,6 +19,11 @@ const OB_GOALS = [
 // preset goal names are stored in the onboarding language; let them follow later language changes
 faRegisterDataNames(OB_GOALS.filter(g => g.key !== 'custom').map(g => g.name));
 
+// emergency reserve suggestion: three months of essentials, rounded to thousands (at least 1 000 Kč)
+function faReserveSuggestion(income, needPct) {
+  return Math.max(1000, Math.round(income * needPct / 100 * 3 / 1000) * 1000);
+}
+
 function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
   const [step, setStep] = useOb(0);
   const [name, setName] = useOb('');
@@ -38,7 +43,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
     setGoalName(g.key === 'custom' ? '' : L(g.name));
     // emergency reserve: suggest three months of essentials, rounded to thousands
     if (g.key === 'rezerva' && !goalTarget && inc > 0) {
-      setGoalTarget(String(Math.max(1000, Math.round(inc * r.nutne / 100 * 3 / 1000) * 1000)));
+      setGoalTarget(String(faReserveSuggestion(inc, r.nutne)));
     }
   };
   const buildGoal = () => {
@@ -239,4 +244,4 @@ function loadFaProfile() { try { return JSON.parse(localStorage.getItem('fa.prof
 function saveFaProfile(p) { try { localStorage.setItem('fa.profile', JSON.stringify(p)); } catch (e) {} }
 function clearFaProfile() { try { localStorage.removeItem('fa.profile'); } catch (e) {} }
 
-Object.assign(window, { Onboarding, loadFaProfile, saveFaProfile, clearFaProfile, OB_GOALS });
+Object.assign(window, { Onboarding, loadFaProfile, saveFaProfile, clearFaProfile, OB_GOALS, faReserveSuggestion });

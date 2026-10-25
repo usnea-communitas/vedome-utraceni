@@ -1,6 +1,7 @@
 # sources and tooling — the site is served from index.html, app.js, vendor/ and assets/
 *.jsx
 scripts/
+tests/
 node_modules/
 package.json
 package-lock.json

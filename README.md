@@ -75,6 +75,8 @@ git clone https://github.com/usnea-communitas/vedome-utraceni.git
 cd vedome-utraceni
 npm ci
 npm run compile          # rebuilds app.js and vendor/ from the .jsx sources
+npm test                 # unit, translation and build checks
+npm run test:e2e         # Chromium smoke test (first run: npx playwright install chromium)
 npx serve .              # or any static server; then open the printed URL
 ```
 
