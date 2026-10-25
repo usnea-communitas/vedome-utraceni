@@ -27,6 +27,14 @@ const FOREST_VIDEO = 'assets/forest-ambient.mp4';
 // keeping the page's 28 px padding around it, so the whole app stays reachable
 // on laptop screens (1366 × 768, 1280 × 720).
 const FRAME_W = 402, FRAME_H = 874;
+
+// "Reduce motion" and Save-Data both turn the ambient background into a still
+// scene: no 0.6 MB video, no floating animation. Both are read live.
+function faMotionPrefs() {
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const saveData = !!(navigator.connection && navigator.connection.saveData);
+  return { reduce, saveData };
+}
 function faFrameScale() {
   const s = Math.min(1, (window.innerHeight - 56) / FRAME_H, (window.innerWidth - 56) / FRAME_W);
   return Math.max(0.5, Math.floor(s * 1000) / 1000);
@@ -56,6 +64,18 @@ function App() {
   const addExpense = (e) => { setExpenses(list => [...list, e]); setToast(e); };
   const deleteExpense = (ts) => setExpenses(list => list.filter(e => e.ts !== ts));
   const [toast, setToast] = useA(null);
+  const [prefs, setPrefs] = useA(faMotionPrefs);
+  useAE(() => {
+    const update = () => setPrefs(faMotionPrefs());
+    const mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const conn = navigator.connection;
+    if (mq && mq.addEventListener) mq.addEventListener('change', update);
+    if (conn && conn.addEventListener) conn.addEventListener('change', update);
+    return () => {
+      if (mq && mq.removeEventListener) mq.removeEventListener('change', update);
+      if (conn && conn.removeEventListener) conn.removeEventListener('change', update);
+    };
+  }, []);
   useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
   useAE(() => {
     saveFaLang(lang);
@@ -109,6 +129,11 @@ function App() {
   };
 
   const isWizard = theme === 'kouzelnický';
+  const still = prefs.reduce || prefs.saveData;
+  const motion = still ? 'off' : t.motion;
+  // the forest video loads only after onboarding and never in the still scene;
+  // the scene attribute follows what is shown (the video scene lightens the titles)
+  const scene = t.scene === 'video' && profile && !still ? 'video' : 'les';
   // apply editable 50/30/20 ratios onto the shared data model before render
   APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
   // real-data mode: rewrite APP from the user's stores (no-op for demo profile)
@@ -124,7 +149,7 @@ function App() {
   // apply theme tweaks to the root
   const rootAttrs = {
     'data-theme': isWizard ? 'wizard' : 'forest',
-    'data-scene': isWizard ? 'video' : t.scene,
+    'data-scene': isWizard ? 'video' : scene,
     'data-depth': t.depth, 'data-card': t.card, 'data-accent': t.accent,
   };
 
@@ -133,8 +158,8 @@ function App() {
   const inner = (
     <div style={{ position: 'absolute', inset: 0 }}>
       {isWizard
-        ? <WizardBackground motion={t.motion} />
-        : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
+        ? <WizardBackground motion={motion} />
+        : <ForestBackground motion={motion} videoSrc={scene === 'video' ? FOREST_VIDEO : null} />}
       {!profile ? (
         <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} lang={lang} setLang={setLang} />
       ) : (
