@@ -110,6 +110,30 @@ function PinDots({ len, max = 4, error }) {
   );
 }
 
+// a physical keyboard works on the PIN screens too: digits type, Backspace deletes.
+// The PIN confirms itself at the fourth digit, as on the keypad, so Enter has nothing
+// to submit; it only must not press a focused keypad key a second time.
+function useFaPinKeys(active, onDigit, onBack) {
+  const latest = useStR(null);
+  // layout effects, so the keys work from the moment the screen is shown
+  React.useLayoutEffect(() => { latest.current = { onDigit, onBack }; });
+  React.useLayoutEffect(() => {
+    if (!active) return;
+    const onKey = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      // the number row, or the numeric keypad even with Num Lock off
+      const d = /^[0-9]$/.test(e.key) ? e.key : /^Numpad[0-9]$/.test(e.code) ? e.code.slice(6) : null;
+      if (d) { e.preventDefault(); latest.current.onDigit(d); }
+      else if (e.key === 'Backspace') { e.preventDefault(); latest.current.onBack(); }
+      else if (e.key === 'Enter' && t && t.classList && t.classList.contains('fa-pin-key')) e.preventDefault();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [active]);
+}
+
 function PinPad({ onDigit, onBack, disabled }) {
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'];
   return (
@@ -149,6 +173,8 @@ function SecuritySheet({ open, onClose, onChanged }) {
       else { setErr(true); setTimeout(() => { setErr(false); setEntry(''); setFirst(''); setStage('pin1'); }, 650); }
     }, 160);
   };
+  const back = () => setEntry(e => e.slice(0, -1));
+  useFaPinKeys(open && stage !== 'menu', digit, back);
 
   const Row = ({ icon, label, sub, on, onClick }) => (
     <button className="fa-sec-row" data-on={on} onClick={onClick}>
@@ -178,7 +204,7 @@ function SecuritySheet({ open, onClose, onChanged }) {
           </p>
           <PinDots len={entry.length} error={err} />
           {err && <div style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('PINy se neshodují, zkus to znovu')}</div>}
-          <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} />
+          <PinPad onDigit={digit} onBack={back} />
           <button className="fa-textbtn" style={{ marginTop: 4 }} onClick={() => setStage('menu')}>{L('Zrušit')}</button>
         </div>
       )}
@@ -307,6 +333,8 @@ function LockScreen({ security, userName, onUnlock, onReset }) {
       else { setErr(true); setTimeout(() => { setErr(false); setEntry(''); }, 600); }
     }, 160);
   };
+  const back = () => { if (!busy) setEntry(e => e.slice(0, -1)); };
+  useFaPinKeys(!forgot, digit, back);
 
   return (
     <div className="fa-lock" data-screen-label="Zámek" role="dialog" aria-modal="true" aria-label={L('Zadej PIN')}>
@@ -328,7 +356,7 @@ function LockScreen({ security, userName, onUnlock, onReset }) {
             <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', marginTop: 4 }}>{L('Zadej PIN')}</div>
             <div style={{ marginTop: 18 }}><PinDots len={entry.length} error={err} /></div>
             {err && <div role="alert" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--clay)', marginTop: 8 }}>{L('Špatný PIN')}</div>}
-            <PinPad onDigit={digit} onBack={() => setEntry(entry.slice(0, -1))} disabled={busy} />
+            <PinPad onDigit={digit} onBack={back} disabled={busy} />
             {onReset && <button type="button" className="fa-textbtn fa-lock-forgot-link" onClick={() => setForgot(true)}>{L('Nepamatuješ si PIN?')}</button>}
           </React.Fragment>
         )}

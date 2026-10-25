@@ -5,6 +5,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { chromium } from 'playwright';
@@ -116,6 +117,48 @@ test('skipping the first goal adds no goal, even after highlighting one', async 
   await page.locator('.fa-nav .fa-tab').nth(2).click();
   assert.equal(await page.locator('.fa-goal-head').count(), 0);
   assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem('fa.goals') || '[]')), []);
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
+const pinHash = pin => createHash('sha256').update('vedome-utraceni:' + pin).digest('hex');
+
+test('the PIN works from a physical keyboard as well as the keypad', async () => {
+  const { context, page, problems } = await phone();
+  await page.addInitScript(hash => {
+    if (sessionStorage.getItem('seeded')) return;
+    localStorage.setItem('fa.profile', JSON.stringify({ name: 'Jana', income: 32000 }));
+    localStorage.setItem('fa.plan.income', JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]));
+    localStorage.setItem('fa.security', JSON.stringify({ mode: 'pin', hash }));
+    sessionStorage.setItem('seeded', '1');
+  }, pinHash('2580'));
+  await page.goto(base);
+  await page.locator('.fa-lock').waitFor();
+  const dots = page.locator('.fa-pin-dot[data-on="true"]');
+  await page.keyboard.type('25'); assert.equal(await dots.count(), 2);
+  await page.keyboard.press('Backspace'); assert.equal(await dots.count(), 1);
+  await page.locator('.fa-pin-key', { hasText: '9' }).click();  // the keypad still works…
+  await page.keyboard.press('Enter');                             // …and Enter does not press the focused key again
+  assert.equal(await dots.count(), 2);
+  await page.keyboard.type('99');                                 // 2-9-9-9 is wrong
+  await page.locator('.fa-lock [role="alert"]').waitFor();
+  await page.waitForFunction(() => !document.querySelector('.fa-pin-dot[data-on="true"]'));
+  await page.keyboard.type('2580');
+  await page.locator('.fa-lock').waitFor({ state: 'detached' });
+
+  // a new PIN, typed twice on the keyboard, opens the app after a reload
+  await page.locator('.fa-nav .fa-tab').nth(5).click();
+  await page.getByRole('button', { name: /^Security/ }).click();
+  await page.locator('.fa-sec-row').nth(1).click();
+  await page.keyboard.type('1357');
+  await page.waitForFunction(() => !document.querySelector('.fa-pin-dot[data-on="true"]')); // "Repeat PIN"
+  await page.keyboard.type('1357');
+  await page.locator('.fa-sheet').waitFor({ state: 'detached' });
+  assert.equal(JSON.parse(await page.evaluate(() => localStorage.getItem('fa.security'))).hash, pinHash('1357'));
+  await page.reload();
+  await page.locator('.fa-lock').waitFor();
+  await page.keyboard.type('1357');
+  await page.locator('.fa-lock').waitFor({ state: 'detached' });
   assert.deepEqual(problems, []);
   await context.close();
 });
