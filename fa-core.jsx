@@ -1,9 +1,20 @@
 // fa-core.jsx — data model, formatting helpers, and nature-inspired icons
 // for "Vědomé utrácení" (Conscious Spending) — forest-calm redesign.
 
-// ── Number / currency formatting (Czech: space thousands sep) ───────────
+// ── Number / currency formatting ────────────────────────────────────────
+// Whole numbers grouped the way the interface language does it (16,000 ·
+// 16 000 · 16.000); amounts are always shown in Kč. The language codes
+// double as locales (getFaLocale).
+const FA_NUMBER_FORMATS = {};
 function fmt(n) {
-  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const v = Math.round(n);
+  try {
+    const loc = getFaLocale();
+    const nf = FA_NUMBER_FORMATS[loc] || (FA_NUMBER_FORMATS[loc] = new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }));
+    return nf.format(v);
+  } catch (e) {
+    return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
 }
 function kc(n) { return fmt(n) + ' Kč'; }
 
@@ -47,7 +58,21 @@ function faMonthFromLabel(v) {
 }
 function faParseMonth(v) { return faMonthFromLabel(v) || faCurrentMonth(); }
 function faMonthParts(key) { const [y, m] = faParseMonth(key).split('-').map(Number); return { y, m }; }
-function faMonthLabel(key) { const p = faMonthParts(key); return L(FA_MONTHS[p.m - 1]) + ' ' + p.y; }
+// month and day labels follow the interface language (Intl), e.g. "October 2026" ·
+// "Říjen 2026" · "Octubre de 2026" and "10/25" · "25. 10." · "25.10"
+function faCap(s) { return s ? s.charAt(0).toLocaleUpperCase(getFaLocale()) + s.slice(1) : s; }
+function faDateFormat(opts) {
+  try { return new Intl.DateTimeFormat(getFaLocale(), opts); } catch (e) { return null; }
+}
+function faMonthName(m) { // m: 1–12
+  const f = faDateFormat({ month: 'long' });
+  return f ? faCap(f.format(new Date(2000, m - 1, 1))) : L(FA_MONTHS[m - 1]);
+}
+function faMonthLabel(key) {
+  const p = faMonthParts(key);
+  const f = faDateFormat({ month: 'long', year: 'numeric' });
+  return f ? faCap(f.format(new Date(p.y, p.m - 1, 1))) : L(FA_MONTHS[p.m - 1]) + ' ' + p.y;
+}
 // the day an expense belongs to ('YYYY-MM-DD'); older records only have a timestamp
 function faExpenseDay(e) {
   if (e && e.day) return e.day;
@@ -55,7 +80,11 @@ function faExpenseDay(e) {
   return faMonthKey(d) + '-' + faPad2(d.getDate());
 }
 function faExpenseMonth(e) { return faExpenseDay(e).slice(0, 7); }
-function faDayLabel(iso) { const p = String(iso).split('-'); return (+p[2]) + '. ' + (+p[1]) + '.'; }
+function faDayLabel(iso) {
+  const p = String(iso).split('-').map(Number);
+  const f = faDateFormat({ day: 'numeric', month: 'numeric' });
+  return f ? f.format(new Date(p[0], p[1] - 1, p[2])) : p[2] + '. ' + p[1] + '.';
+}
 
 // ── App data — mirrors the live structure exactly ──────────────────────
 const APP = {
@@ -214,5 +243,5 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 Object.assign(window, {
   fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
-  faMonthLabel, faExpenseDay, faExpenseMonth, faDayLabel,
+  faMonthLabel, faMonthName, faExpenseDay, faExpenseMonth, faDayLabel,
 });

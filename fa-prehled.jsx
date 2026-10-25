@@ -209,7 +209,7 @@ function MonthPill({ month, setMonth, ratios, go }) {
             {FA_MONTHS.map((mn, i) => {
               const key = year + '-' + String(i + 1).padStart(2, '0');
               return (
-                <button key={mn} data-on={key === shown} data-now={key === current} onClick={() => pick(key)}>{L(mn)}</button>
+                <button key={mn} data-on={key === shown} data-now={key === current} onClick={() => pick(key)}>{faMonthName(i + 1)}</button>
               );
             })}
             {shown !== current && (
