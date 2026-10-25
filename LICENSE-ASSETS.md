@@ -2,7 +2,7 @@
 
 The **code** of Vědomé utrácení is released under the [MIT License](LICENSE). This file covers the media that are not code:
 
-- the ambient background videos `assets/forest-ambient.mp4` (Forest Calm theme) and `assets/castle-ambient.mp4` (Wizard theme);
+- the ambient background video `assets/forest-ambient.mp4` (Forest Calm theme; the Wizard theme's night scene is drawn in code);
 - the app icon `icon.png`;
 - any other artwork, illustrations or audio added to `assets/`.
 

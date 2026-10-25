@@ -33,11 +33,11 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project of 
 
 ## Localisation
 
-English is the default interface language. The app also speaks **Czech** (the original language of the project), **Polish**, **Ukrainian** and **Spanish**; switch under *More → Language*. The choice is stored on the device and included in backups.
+English is the default interface language. The app also speaks **Czech** (the original language of the project), **Polish**, **Ukrainian** and **Spanish**; choose it on the welcome screen or later under *More → Language*. The choice is stored on the device and included in backups.
 
 Strings live in [`fa-i18n.jsx`](fa-i18n.jsx): the Czech source text is the dictionary key and `L('…')` / `Lf('…', vars)` return the active language, falling back to Czech. Lookups tolerate the usual typographic differences (non-breaking spaces, „“ vs " quotes). To add a language, add its code to `FA_LANGS` and a translation to every entry; to fix a string, edit the entry and run `npm run compile`.
 
-Amounts are shown in Czech crowns (Kč); the app was designed for Czech households and workshops.
+Numbers, days and months are formatted for the chosen language; amounts are always in Czech crowns (Kč), as the app was designed for Czech households and workshops.
 
 ## Tech stack and architecture
 
@@ -59,10 +59,12 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | `fa-onboard.jsx` | First-run onboarding: welcome → name → income → ratios → first goal → theme. |
 | `fa-forest.jsx`, `fa-wizard.jsx` | The two ambient backdrops. |
 | `fa-ui.jsx` | Shared UI primitives and micro-interactions. |
-| `fa-app.jsx` | App shell: navigation, screen transitions, Tweaks panel, mount. |
+| `fa-app.jsx` | App shell: navigation, screen transitions, motion preferences, Tweaks panel, error page, mount. |
 | `ios-frame.jsx`, `tweaks-panel.jsx` | Device frame for desktop preview and the developer Tweaks panel. |
-| `scripts/compile.mjs` | Precompiles the JSX sources into `app.js` and vendors React. |
-| `sw.js`, `manifest.webmanifest` | Offline cache and PWA manifest. |
+| `scripts/compile.mjs` | Precompiles the JSX sources into `app.js`, vendors React and stamps the `app.js?v=<hash>` cache key into `index.html` and `sw.js`. |
+| `sw.js`, `manifest.webmanifest` | Offline cache (network first) and PWA manifest. |
+| `tests/` | `node:test` unit, translation and build checks; a Playwright smoke test in `tests/e2e/`. |
+| `vercel.json` | Security headers for the Vercel deployment (no build settings). |
 
 `app.js` and `vendor/` are generated and committed; **never edit `app.js` by hand** — change the `.jsx` sources and run `npm run compile`.
 
@@ -80,7 +82,7 @@ npm run test:e2e         # Chromium smoke test (first run: npx playwright instal
 npx serve .              # or any static server; then open the printed URL
 ```
 
-Open the site in a browser; on a phone-sized viewport the app fills the screen, on a desktop it sits inside a device frame. The developer *Tweaks* panel lets you switch themes, motion and load the sample profile.
+Open the site in a browser; on a phone-sized viewport the app fills the screen, on a desktop it sits inside a device frame scaled to the window. The developer *Tweaks* panel (themes, motion, the sample profile) belongs to the Claude Design preview and stays hidden in the app; to open it, run `window.postMessage({ type: '__activate_edit_mode' }, '*')` in the browser console.
 
 ## Deployment
 

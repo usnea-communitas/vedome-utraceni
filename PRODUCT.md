@@ -24,12 +24,12 @@ A calm money plan in one understandable frame (50/30/20), with data that stays i
 
 - Installable web app (PWA), full-screen on the phone, portrait.
 - Tabs: Overview, Plan, Goals, Tips, Reflection, More; onboarding on first launch.
-- Languages: English (default), Czech (original), Polish, Ukrainian, Spanish; the choice is stored on the device.
+- Languages: English (default), Czech (original), Polish, Ukrainian, Spanish; chosen on the welcome screen or under More → Language and stored on the device.
 - Themes: Forest Calm and Wizard.
 
 ## Capabilities and Constraints
 
-- No server and no account; data stay in the browser. PIN / Face ID lock, gentle reminders, backups.
+- No server and no account; data stay in the browser. Optional PIN lock (a convenience lock, not encryption), gentle reminders as a calendar file, backups.
 - Static site: the `fa-*.jsx` modules are the source, `app.js` is generated from them (`npm run compile`) and must not be edited by hand.
 - Deployment: Vercel project `vedome-utraceni`, static root with no build step.
 
