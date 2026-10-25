@@ -24,6 +24,9 @@ const FA_SUGGESTED = [
   { name: 'Spoření',        cat: 'budouci', icon: 'shield' },
 ];
 
+// picked suggestions are stored in the language of the moment (see faDataLabel)
+faRegisterDataNames(FA_SUGGESTED.map(s => s.name));
+
 // ── apply expenses onto the shared APP model (after ratios!) ───────────
 function applyFaExpenses(expenses) {
   if (!APP._baseActuals) APP._baseActuals = APP.categories.map(c => c.actual);
@@ -186,7 +189,7 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
                 <div className="fa-chips">
                   {repeated.map(e => (
                     <button key={e.name} className="fa-chipbtn" data-acc="true" onClick={() => pick(e.name, e.cat)}>
-                      {e.name} · {kc(e.amount)}
+                      {faDataLabel(e.name)} · {kc(e.amount)}
                     </button>
                   ))}
                 </div>
@@ -227,7 +230,7 @@ function RecentExpenses({ expenses, onDelete, go, month }) {
             <div key={e.ts} className="fa-exp-row" style={{ borderTop: i ? '1px solid var(--card-line)' : 'none' }}>
               <span className="fa-exp-dot" style={{ background: accentVar(c.accent) }}></span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}</div>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(e.name)}</div>
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)' }}>{L(c.name)} · {faDayLabel(faExpenseDay(e))}</div>
               </div>
               <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', whiteSpace: 'nowrap' }}>−{kc(e.amount)}</span>
@@ -256,7 +259,7 @@ function FaToast({ toast, onUndo, onHide }) {
   return (
     <div className="fa-toast" key={toast.ts}>
       <Icon name="check" size={15} stroke={2.2} />
-      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{toast.name} · −{kc(toast.amount)}</span>
+      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{faDataLabel(toast.name)} · −{kc(toast.amount)}</span>
       <button onClick={() => { onUndo(toast.ts); onHide(); }}>{L('Zpět')}</button>
     </div>
   );

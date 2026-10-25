@@ -92,8 +92,9 @@ function TipBubble({ branch, goal }) {
   const [inn, setInn] = useTr(false);
   useTrE(() => { const t = setTimeout(() => setInn(true), 15); return () => clearTimeout(t); }, []);
   const pct = goal.target > 0 ? Math.round(goal.saved / goal.target * 100) : 0;
-  const name = goal.name.length > 16 ? goal.name.slice(0, 15) + '…' : goal.name;
-  const line2 = `${kc(goal.saved)} z ${kc(goal.target)}`;
+  const label = faDataLabel(goal.name);
+  const name = label.length > 16 ? label.slice(0, 15) + '…' : label;
+  const line2 = Lf('{a} z {b}', { a: kc(goal.saved), b: kc(goal.target) });
   const w = Math.max(name.length, line2.length) * 6.4 + 26;
   const x = Math.max(8 + w / 2, Math.min(212 - w / 2, branch.fx));
   const above = branch.fy > 56;
@@ -108,7 +109,7 @@ function TipBubble({ branch, goal }) {
         fill="var(--card)" stroke="var(--card-line)" strokeWidth="1" />
       <text x={x} y={y + 14} textAnchor="middle"
         style={{ fontFamily: 'var(--sans)', fontSize: 10.5, fontWeight: 700, fill: 'var(--ink)' }}>
-        {L(name)} · {pct} %
+        {name} · {pct} %
       </text>
       <text x={x} y={y + 26.5} textAnchor="middle"
         style={{ fontFamily: 'var(--sans)', fontSize: 9.5, fill: 'var(--ink-soft)' }}>

@@ -279,7 +279,7 @@ function YearGoals({ go, real, onChanged }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <Medallion icon={g.icon} accent={g.accent} size={34} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(g.name)}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(g.name)}</div>
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 1, whiteSpace: 'nowrap' }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
               </div>
               <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: done ? 'var(--moss-deep)' : accentVar(g.accent), whiteSpace: 'nowrap' }}>{pct}&nbsp;%</div>
@@ -348,7 +348,7 @@ function SourceBars({ sources, maxA }) {
                 <span className="fa-bar-cap" />
               </div>
             </div>
-            <span className="fa-bar-name">{L(s.name)}</span>
+            <span className="fa-bar-name">{faDataLabel(s.name)}</span>
             <span className="fa-bar-amt" style={on ? { color: 'var(--brand)', fontWeight: 700 } : null}>
               {on ? `${fmt(s.amount)}\u00A0${L('Kč/měs')}` : `${fmt(s.amount * 12)}\u00A0Kč`}
             </span>

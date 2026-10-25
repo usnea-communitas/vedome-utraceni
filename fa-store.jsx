@@ -5,6 +5,9 @@
 // preview via Tweaks). All keys live in this browser's localStorage; there is
 // no server, account or sync by design.
 
+// earlier versions stored the seeded income name translated ("Main income")
+faRegisterDataNames(['Hlavní příjem']);
+
 const FA_STORE_KEYS = [
   'fa.profile', 'fa.plan.income', 'fa.plan.items', 'fa.expenses',
   'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe', 'fa.ratios', 'fa.month',
@@ -58,7 +61,8 @@ function faResetAll() {
 function faSeedFreshUser(p) {
   // p: { name, income, ratios, goal|null, theme }
   saveFaProfile({ name: p.name, income: p.income, created: Date.now() });
-  faSave('fa.plan.income', [{ name: L('Hlavní příjem'), amount: p.income, recurring: true }]);
+  // the Czech key is stored, so the name follows the interface language
+  faSave('fa.plan.income', [{ name: 'Hlavní příjem', amount: p.income, recurring: true }]);
   faSave('fa.plan.items', { nutne: [], budouci: [], radost: [] });
   faSave('fa.expenses', []);
   faSave('fa.reflexe', {});

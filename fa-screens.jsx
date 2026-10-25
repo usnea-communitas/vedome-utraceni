@@ -140,7 +140,7 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
         <PlantStage pct={pct} accent={g.accent} icon={g.icon} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{L(g.name)}</h3>
+          <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--ink)', fontWeight: 500, margin: 0 }}>{faDataLabel(g.name)}</h3>
           <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{Lf('{a} z {b}', { a: kc(g.saved), b: kc(g.target) })}</div>
         </div>
         <div style={{ textAlign: 'right' }}>

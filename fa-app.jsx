@@ -136,7 +136,7 @@ function App() {
         ? <WizardBackground motion={t.motion} />
         : <ForestBackground motion={t.motion} videoSrc={t.scene === 'video' ? FOREST_VIDEO : null} />}
       {!profile ? (
-        <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} />
+        <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} lang={lang} setLang={setLang} />
       ) : (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
         {...(locked ? { inert: '', 'aria-hidden': 'true' } : {})}>

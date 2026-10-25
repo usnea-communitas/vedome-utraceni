@@ -16,8 +16,10 @@ const OB_GOALS = [
   { key: 'travel',  name: 'Dovolená',        icon: 'sun',    accent: 'blush', kind: 'travel',  hint: 'zážitek, na který se těšíš' },
   { key: 'custom',  name: 'Vlastní cíl',     icon: 'mountain', accent: 'sage', kind: 'custom', hint: 'cokoliv se jménem' },
 ];
+// preset goal names are stored in the onboarding language; let them follow later language changes
+faRegisterDataNames(OB_GOALS.filter(g => g.key !== 'custom').map(g => g.name));
 
-function Onboarding({ onFinish, defaultRatios, initialTheme }) {
+function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
   const [step, setStep] = useOb(0);
   const [name, setName] = useOb('');
   const [income, setIncome] = useOb('');
@@ -67,6 +69,13 @@ function Onboarding({ onFinish, defaultRatios, initialTheme }) {
           </div>
           <h2 className="fa-onb-h">{L('Vítej ve vědomém utrácení')}</h2>
           <p className="fa-onb-p">{L('Žádné odříkání — jen jasný plán: co je potřeba, co tě těší a co posíláš svému budoucímu já.')}</p>
+          {setLang && (
+            <div className="fa-lang fa-onb-lang" role="group" aria-label={L('Jazyk')}>
+              {FA_LANGS.map(l => (
+                <button key={l.code} lang={l.code} data-on={lang === l.code} aria-pressed={lang === l.code} onClick={() => setLang(l.code)}>{l.name}</button>
+              ))}
+            </div>
+          )}
         </div>
       ),
     },

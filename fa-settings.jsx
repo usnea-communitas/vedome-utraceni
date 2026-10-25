@@ -262,9 +262,9 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 8 }}>
         {list.map((x, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(x.name)}</span>
+            <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(x.name)}</span>
             <input className="fa-inc-input" type="text" inputMode="decimal" value={x.amount}
-              onChange={e => setAmt(i, e.target.value)} aria-label={L(x.name)} />
+              onChange={e => setAmt(i, e.target.value)} aria-label={faDataLabel(x.name)} />
             <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)' }}>Kč</span>
           </div>
         ))}

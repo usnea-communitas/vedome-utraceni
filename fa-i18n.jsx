@@ -529,4 +529,27 @@ function Lf(cs, vars) {
   return s;
 }
 
-Object.assign(window, { FA_LANGS, FA_LANG_DEFAULT, setFaLang, getFaLang, getFaLocale, loadFaLang, saveFaLang, L, Lf });
+// Default names that end up in the user's data (the seeded main income, goal
+// presets, plan and expense suggestions) may have been stored in whichever
+// language was active at the time. Modules register those Czech keys, and
+// faDataLabel() maps a stored name in any language back to its key, so the
+// name always shows in the interface language. Names the user typed are shown
+// as typed (through L, as before).
+const FA_DATA_NAMES = new Set();
+let FA_DATA_REV = null;
+function faRegisterDataNames(keys) { keys.forEach(k => FA_DATA_NAMES.add(k)); FA_DATA_REV = null; }
+function faDataLabel(name) {
+  if (name == null) return '';
+  if (!FA_DATA_REV) {
+    FA_DATA_REV = {};
+    FA_DATA_NAMES.forEach(k => {
+      FA_DATA_REV[k] = k;
+      const e = S[k] || SN[faNormKey(k)];
+      if (e) for (const lang in e) FA_DATA_REV[e[lang]] = k;
+    });
+  }
+  const s = String(name);
+  return L(FA_DATA_REV[s.trim()] || s);
+}
+
+Object.assign(window, { FA_LANGS, FA_LANG_DEFAULT, setFaLang, getFaLang, getFaLocale, loadFaLang, saveFaLang, L, Lf, faRegisterDataNames, faDataLabel });

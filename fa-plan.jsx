@@ -28,6 +28,9 @@ const PLAN_SUGGEST = {
   budouci: ['Rezerva', 'Investice', 'Spoření'],
   radost:  ['Dárky', 'Výlety', 'Předplatné', 'Kavárna'],
 };
+// suggestion names end up in the plan, possibly in another language (see faDataLabel)
+faRegisterDataNames([].concat(...Object.values(PLAN_SUGGEST)));
+
 const PLAN_DESC = {
   nutne: 'Nájem, energie a jídlo — základ, bez kterého se neobejdeš.',
   budouci: 'Spoření a investice, které pěstuješ pro sebe.',
@@ -223,7 +226,7 @@ function StructureBar({ items, accent }) {
       {active && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 7, fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)' }}>
           <span style={{ width: 8, height: 8, borderRadius: 3, background: `color-mix(in oklab, ${base}, #fff ${(sel % 4) * 13}%)`, flexShrink: 0 }}></span>
-          <span style={{ fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(active.name)}</span>
+          <span style={{ fontWeight: 600, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(active.name)}</span>
           <span style={{ whiteSpace: 'nowrap' }}>· {kc(active.amount)} · {Math.round((+active.amount || 0) / total * 100)} %</span>
         </div>
       )}
@@ -265,12 +268,12 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
     <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 9 }}>
       {list.map((it, i) => (
         <div key={i} className="fa-item">
-          <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{L(it.name)}</span>
+          <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(it.name)}</span>
           <button className={'fa-rec' + (it.recurring ? ' on' : '')} title={L('Opakuje se měsíčně')}
             onClick={() => update(i, { recurring: !it.recurring })}>
             <Icon name="repeat" size={13} stroke={2} />
           </button>
-          <PlanAmount value={it.amount} label={Lf('Částka – {n}', { n: L(it.name) })} onChange={v => update(i, { amount: v })} />
+          <PlanAmount value={it.amount} label={Lf('Částka – {n}', { n: faDataLabel(it.name) })} onChange={v => update(i, { amount: v })} />
           <button className="fa-item-del" onClick={() => remove(i)} aria-label="x"><Icon name="trash" size={15} stroke={1.7} /></button>
         </div>
       ))}
