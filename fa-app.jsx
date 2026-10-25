@@ -138,7 +138,8 @@ function App() {
       {!profile ? (
         <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} />
       ) : (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
+        {...(locked ? { inert: '', 'aria-hidden': 'true' } : {})}>
         {/* scrollable content */}
         <div ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
