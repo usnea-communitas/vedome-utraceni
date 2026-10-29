@@ -958,11 +958,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   transition: background .15s;
 }
 .fa-toast button:active { background: rgba(255,255,255,0.26); }
+.fa-toast button:focus-visible { outline-color: #F4F1E6; } /* the brand green would vanish on the dark toast */
 @keyframes faToastIn { from { opacity: 0; transform: translateX(-50%) translateY(14px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .fa-root[data-bare="true"] .fa-toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
 .fa-root[data-theme="wizard"] .fa-toast { background: #2A2118; color: #EDDFB8; box-shadow: 0 10px 28px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(201,162,62,0.35); }
 .fa-root[data-theme="wizard"] .fa-toast svg { color: #C9A23E; }
 .fa-root[data-theme="wizard"] .fa-toast button { background: rgba(201,162,62,0.22); color: #EDDFB8; }
+.fa-root[data-theme="wizard"] .fa-toast button:focus-visible { outline-color: #EDDFB8; }
 
 /* budget-left hint inside category picker */
 .fa-cat-left {
@@ -1090,7 +1092,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=3c7c58d5b7"></script>
+  <script src="app.js?v=017cf4b3af"></script>
   <script>
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
       window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });

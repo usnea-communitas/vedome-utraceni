@@ -61,8 +61,15 @@ function App() {
   const [expenses, setExpenses] = useA(loadFaExpenses);
   const [addOpen, setAddOpen] = useA(false);
   useAE(() => { saveFaExpenses(expenses); }, [expenses]);
-  const addExpense = (e) => { setExpenses(list => [...list, e]); setToast(e); };
-  const deleteExpense = (ts) => setExpenses(list => list.filter(e => e.ts !== ts));
+  const addExpense = (e) => { setExpenses(list => [...list, e]); setToast({ kind: 'added', expense: e }); };
+  // deleting offers Undo, which puts the exact expense back in its place
+  const deleteExpense = (ts, fromKeyboard) => {
+    const { list, undo } = faRemoveExpense(expenses, ts);
+    if (!undo) return;
+    setExpenses(list);
+    setToast({ ...undo, focus: !!fromKeyboard });
+  };
+  const undoToast = (t) => setExpenses(list => faUndoExpense(list, t));
   const [toast, setToast] = useA(null);
   const [prefs, setPrefs] = useA(faMotionPrefs);
   useAE(() => {
@@ -118,6 +125,7 @@ function App() {
   const resetAll = () => {
     faResetAll();
     setExpenses([]);
+    setToast(null);
     setRatios({ nutne: 50, budouci: 20, radost: 30 });
     setProfile(null);
     setScreen('prehled');
@@ -125,6 +133,7 @@ function App() {
   const loadDemo = () => {
     faLoadDemo();
     setExpenses([]);
+    setToast(null);
     setProfile(loadFaProfile());
   };
 
@@ -178,7 +187,7 @@ function App() {
         {/* add expense: floating + button & sheet */}
         <AddFab onClick={() => setAddOpen(true)} />
         <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} month={month} />
-        <FaToast toast={toast} onUndo={deleteExpense} onHide={() => setToast(null)} />
+        <FaToast toast={toast} onUndo={undoToast} onHide={() => setToast(null)} />
         {/* bottom nav */}
         <BottomNav active={screen} go={go} lang={lang} />
       </div>

@@ -234,7 +234,7 @@ function RecentExpenses({ expenses, onDelete, go, month }) {
                 <div style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)' }}>{L(c.name)} · {faDayLabel(faExpenseDay(e))}</div>
               </div>
               <span style={{ fontFamily: 'var(--serif)', fontSize: 16, color: 'var(--ink)', whiteSpace: 'nowrap' }}>−{kc(e.amount)}</span>
-              <button className="fa-exp-del" onClick={() => onDelete(e.ts)} aria-label={Lf('Smazat – {n}', { n: faDataLabel(e.name) })}>✕</button>
+              <button className="fa-exp-del" data-ts={e.ts} onClick={ev => onDelete(e.ts, ev.detail === 0)} aria-label={Lf('Smazat – {n}', { n: faDataLabel(e.name) })}>✕</button>
             </div>
           );
         })}
@@ -248,21 +248,60 @@ function RecentExpenses({ expenses, onDelete, go, month }) {
   );
 }
 
-// ── toast with undo (shown after adding an expense) ──────────────────
+// deleting an expense keeps what Undo needs to put it back unchanged, in its place
+function faRemoveExpense(list, ts) {
+  const index = list.findIndex(e => e.ts === ts);
+  if (index < 0) return { list, undo: null };
+  return { list: list.filter((_, i) => i !== index), undo: { kind: 'deleted', expense: list[index], index } };
+}
+// Undo on the toast: an added expense goes away again; a deleted one comes back
+// exactly as it was, where it was, and never twice
+function faUndoExpense(list, t) {
+  if (t.kind === 'added') return list.filter(e => e.ts !== t.expense.ts);
+  if (list.some(e => e.ts === t.expense.ts)) return list;
+  const i = Math.min(t.index, list.length);
+  return [...list.slice(0, i), t.expense, ...list.slice(i)];
+}
+
+// ── toast with undo, after adding or deleting an expense ──────────────
+// A polite live region announces it. It stays 6 s, and as long as it is pointed
+// at or focused. A delete made from the keyboard moves focus to Undo (the row is
+// gone), and Undo from the keyboard brings focus back to the restored row.
 function FaToast({ toast, onUndo, onHide }) {
+  const [hold, setHold] = useX(false);
+  const undoRef = useXR(null);
   useXE(() => {
-    if (!toast) return;
-    const id = setTimeout(onHide, 4500);
-    return () => clearTimeout(id);
+    setHold(false);
+    if (toast && toast.focus && undoRef.current) undoRef.current.focus();
   }, [toast]);
-  if (!toast) return null;
+  useXE(() => {
+    if (!toast || hold) return;
+    const id = setTimeout(onHide, 6000);
+    return () => clearTimeout(id);
+  }, [toast, hold]);
+  const undo = (ev) => {
+    const fromKeyboard = ev.detail === 0;
+    onUndo(toast); onHide();
+    if (fromKeyboard && toast.kind === 'deleted') requestAnimationFrame(() => {
+      const row = document.querySelector('.fa-exp-del[data-ts="' + toast.expense.ts + '"]');
+      if (row) row.focus();
+    });
+  };
+  const e = toast && toast.expense;
+  const what = e && faDataLabel(e.name) + ' · −' + kc(e.amount);
   return (
-    <div className="fa-toast" key={toast.ts}>
-      <Icon name="check" size={15} stroke={2.2} />
-      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{faDataLabel(toast.name)} · −{kc(toast.amount)}</span>
-      <button onClick={() => { onUndo(toast.ts); onHide(); }}>{L('Zpět')}</button>
+    <div role="status" aria-live="polite" aria-atomic="true">
+      {toast && (
+        <div className="fa-toast" key={toast.kind + e.ts}
+          onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}
+          onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
+          <Icon name={toast.kind === 'deleted' ? 'trash' : 'check'} size={15} stroke={2.2} />
+          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{toast.kind === 'deleted' ? Lf('Smazáno: {n}', { n: what }) : what}</span>
+          <button ref={undoRef} onClick={undo}>{L('Zpět')}</button>
+        </div>
+      )}
     </div>
   );
 }
 
-Object.assign(window, { loadFaExpenses, saveFaExpenses, applyFaExpenses, faCatNote, AddFab, AddSheet, RecentExpenses, FaToast, FA_SUGGESTED });
+Object.assign(window, { loadFaExpenses, saveFaExpenses, applyFaExpenses, faCatNote, faRemoveExpense, faUndoExpense, AddFab, AddSheet, RecentExpenses, FaToast, FA_SUGGESTED });

@@ -262,6 +262,7 @@ const S = {
   'Smazat': { en: 'Delete', pl: 'Usuń', uk: 'Видалити', es: 'Eliminar' },
   'Celkem tento měsíc {v}': { en: 'Total this month {v}', pl: 'Razem w tym miesiącu {v}', uk: 'Усього цього місяця {v}', es: 'Total este mes {v}' },
   'Zpět': { en: 'Undo', pl: 'Cofnij', uk: 'Скасувати', es: 'Deshacer' },
+  'Smazáno: {n}': { en: 'Deleted: {n}', pl: 'Usunięto: {n}', uk: 'Видалено: {n}', es: 'Eliminado: {n}' },
   'zbývá {v}': { en: '{v} left', pl: 'zostało {v}', uk: 'залишилось {v}', es: 'quedan {v}' },
   'přes o {v}': { en: '{v} over', pl: 'przekroczono o {v}', uk: 'перевищено на {v}', es: '{v} de más' },
   'Nákup potravin': { en: 'Groceries', pl: 'Zakupy spożywcze', uk: 'Продукти', es: 'Compra' },

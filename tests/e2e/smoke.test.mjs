@@ -40,11 +40,13 @@ async function phone(width = 390) {
   page.on('console', m => { if (m.type() === 'error') problems.push('console: ' + m.text()); });
   return { context, page, problems };
 }
+// today in the browser's own calendar (the app counts this month's expenses)
+const today = () => { const d = new Date(); return [d.getFullYear(), d.getMonth() + 1, d.getDate()].map(n => String(n).padStart(2, '0')).join('-'); };
 const money = (lang, n) => new Intl.NumberFormat(lang, { maximumFractionDigits: 0 }).format(n) + ' Kč';
 
 const TEXT = {
-  en: { welcome: 'Welcome to conscious spending', add: 'Add', deposit: 'Deposit' },
-  cs: { welcome: 'Vítej ve vědomém utrácení', add: 'Přidat', deposit: 'Vložit' },
+  en: { welcome: 'Welcome to conscious spending', add: 'Add', deposit: 'Deposit', del: 'Delete', deleted: 'Deleted', undo: 'Undo' },
+  cs: { welcome: 'Vítej ve vědomém utrácení', add: 'Přidat', deposit: 'Vložit', del: 'Smazat', deleted: 'Smazáno', undo: 'Zpět' },
 };
 
 for (const lang of ['en', 'cs']) {
@@ -163,6 +165,48 @@ test('the PIN works from a physical keyboard as well as the keypad', async () =>
   await context.close();
 });
 
+for (const lang of ['en', 'cs']) {
+  test(`Undo brings back a deleted expense, by mouse and by keyboard (${lang})`, async () => {
+    const { context, page, problems } = await phone();
+    const t = TEXT[lang];
+    const expenses = [['Bakery', 85, 'radost'], ['Bike repair', 640, 'nutne'], ['Jazz night', 350, 'radost']]
+      .map(([name, amount, cat], i) => ({ name, amount, cat, ts: 1000 + i, day: today() }));
+    await page.addInitScript(([list, lang]) => {
+      if (sessionStorage.getItem('seeded')) return;
+      localStorage.setItem('fa.profile', JSON.stringify({ name: 'Jana', income: 32000 }));
+      localStorage.setItem('fa.plan.income', JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]));
+      localStorage.setItem('fa.expenses', JSON.stringify(list));
+      localStorage.setItem('fa.lang', lang);
+      sessionStorage.setItem('seeded', '1');
+    }, [expenses, lang]);
+    await page.goto(base);
+    const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('fa.expenses')));
+    const toast = page.locator('[role="status"] .fa-toast');   // inside a polite live region
+    const del = name => page.getByRole('button', { name: `${t.del} – ${name}` });
+    const focused = page => page.evaluate(() => document.activeElement.getAttribute('aria-label') || document.activeElement.textContent);
+
+    // by mouse: the message names the expense, Undo restores it exactly
+    await del('Bike repair').click();
+    assert.ok((await toast.innerText()).includes(`${t.deleted}: Bike repair · −${money(lang, 640)}`), await toast.innerText());
+    assert.deepEqual((await stored()).map(e => e.name), ['Bakery', 'Jazz night']);
+    await toast.getByRole('button', { name: t.undo }).click();
+    assert.deepEqual(await stored(), expenses);
+    assert.equal(await toast.count(), 0);
+
+    // by keyboard: Enter deletes and lands on Undo, Enter there restores and returns to the row
+    await del('Jazz night').focus();
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(undo => document.activeElement.textContent === undo, t.undo);
+    assert.deepEqual((await stored()).map(e => e.name), ['Bakery', 'Bike repair']);
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(label => document.activeElement.getAttribute('aria-label') === label, `${t.del} – Jazz night`);
+    assert.deepEqual(await stored(), expenses);
+    assert.equal(await focused(page), `${t.del} – Jazz night`);
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
+
 // headings a screen reader lists: one h1 per screen, and no level is skipped (h1 → h2 → h3)
 const outline = page => page.evaluate(() => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
   .filter(h => h.getClientRects().length && !h.closest('[aria-hidden="true"], [inert]'))
@@ -176,12 +220,12 @@ test('every screen has one h1 and no skipped heading levels', async () => {
   const { context, page, problems } = await phone();
   await page.goto(base);
   assertOutline(await outline(page), 'welcome');
-  await page.evaluate(() => {
+  await page.evaluate(day => {
     localStorage.setItem('fa.profile', JSON.stringify({ name: 'Jana', income: 32000 }));
     localStorage.setItem('fa.plan.income', JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]));
     localStorage.setItem('fa.goals', JSON.stringify([{ id: 1, name: 'Nouzová rezerva', target: 48000, saved: 5000, kind: 'rezerva' }]));
-    localStorage.setItem('fa.expenses', JSON.stringify([{ name: 'Káva', amount: 95, cat: 'radost', ts: 1, day: new Date().toISOString().slice(0, 10) }]));
-  });
+    localStorage.setItem('fa.expenses', JSON.stringify([{ name: 'Káva', amount: 95, cat: 'radost', ts: 1, day }]));
+  }, today());
   await page.reload();
   for (const [i, name] of ['overview', 'plan', 'goals', 'tips', 'reflection', 'more'].entries()) {
     await page.locator('.fa-nav .fa-tab').nth(i).click();

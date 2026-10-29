@@ -1,4 +1,4 @@
-// Backups, data upgrades and default names (fa-store.jsx, fa-i18n.jsx)
+// Backups, data upgrades, default names and undo (fa-store.jsx, fa-i18n.jsx, fa-add.jsx)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, plain } from '../harness.mjs';
@@ -68,4 +68,33 @@ test('a fresh profile stores the income name by its key', () => {
   app.setFaLang('en');
   app.faSeedFreshUser({ name: 'Jana', income: 30000, ratios: { nutne: 50, budouci: 20, radost: 30 }, goal: null });
   assert.equal(JSON.parse(app.localStorage.getItem('fa.plan.income'))[0].name, 'Hlavní příjem');
+});
+
+test('Undo puts a deleted expense back exactly where it was, and only once', () => {
+  const app = loadApp();
+  const list = [
+    { name: 'Káva', amount: 95, cat: 'radost', ts: 1, day: '2026-10-01' },
+    { name: 'Nájem', amount: 12000, cat: 'nutne', ts: 2, day: '2026-10-02', note: 'kept as is' },
+    { name: 'Kino', amount: 250, cat: 'radost', ts: 3, day: '2026-10-03' },
+  ];
+  const { list: after, undo } = app.faRemoveExpense(list, 2);
+  assert.deepEqual(plain(after.map(e => e.ts)), [1, 3]);
+  assert.deepEqual(plain(undo), { kind: 'deleted', expense: list[1], index: 1 });
+  const back = app.faUndoExpense(after, undo);
+  assert.deepEqual(plain(back), list);
+  assert.equal(back[1], list[1]);                     // the same expense, not a copy
+  assert.equal(app.faUndoExpense(back, undo), back);  // a second Undo changes nothing
+  // an expense added in the meantime stays; the restored one takes its old place
+  const later = [...after, { name: 'Bus', amount: 30, cat: 'nutne', ts: 4, day: '2026-10-04' }];
+  assert.deepEqual(plain(app.faUndoExpense(later, undo).map(e => e.ts)), [1, 2, 3, 4]);
+  // fewer expenses than before: it goes to the end
+  assert.deepEqual(plain(app.faUndoExpense([], undo).map(e => e.ts)), [2]);
+  assert.deepEqual(plain(app.faRemoveExpense(list, 99)), { list, undo: null });
+});
+
+test('Undo after adding an expense removes just that one', () => {
+  const app = loadApp();
+  const added = { name: 'Káva', amount: 95, cat: 'radost', ts: 7, day: '2026-10-07' };
+  const list = [{ name: 'Nájem', amount: 12000, cat: 'nutne', ts: 2, day: '2026-10-02' }, added];
+  assert.deepEqual(plain(app.faUndoExpense(list, { kind: 'added', expense: added })), [list[0]]);
 });
