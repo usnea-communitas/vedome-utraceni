@@ -40,5 +40,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Onboarding, plan, expense and goals in English and Czech
+      - name: Onboarding, plan, expenses, goals, PIN and headings in English and Czech
         run: npm run test:e2e

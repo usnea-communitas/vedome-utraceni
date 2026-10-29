@@ -43,5 +43,5 @@ When you change screens, look at a phone width (360–430 px) and a laptop windo
 
 - Small, focused commits with a short imperative English subject ("Fit the phone frame to laptop screens") and the reason in the body.
 - No drive-by refactors or reformatting of untouched code.
-- Accessibility is part of done: controls reachable by keyboard with visible focus, named inputs, text contrast of at least 4.5:1, and `prefers-reduced-motion` respected.
+- Accessibility is part of done: controls reachable by keyboard with visible focus, named inputs, text contrast of at least 4.5:1, one h1 per screen with no skipped heading level (section labels are h2; the smoke test checks it), and `prefers-reduced-motion` respected.
 - Design work: the Impeccable design skill is installed for Claude Code (`.claude/skills/`) and Codex (`.agents/skills/`) with hooks that check UI edits; [PRODUCT.md](PRODUCT.md) is its brief.
