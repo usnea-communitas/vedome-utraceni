@@ -274,7 +274,7 @@ function Tipy() {
         <SectionLabel>{L('Tři kategorie, tři role')}</SectionLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {APP.categories.map(c => (
-            <Card key={c.key} pad={18} interactive>
+            <Card key={c.key} pad={18}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 11 }}>
                 <Medallion icon={c.icon} accent={c.accent} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -515,7 +515,7 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
                     <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.raw ? row.t : L(row.t)}</div>
                   </div>
                   <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', whiteSpace: 'nowrap', flexShrink: 0 }}>{row.raw ? row.d : L(row.d)}</span>
-                  <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />
+                  {row.open && <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />}
                 </div>
               ))}
             </Card>

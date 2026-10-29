@@ -3,9 +3,9 @@
 const { useState, useEffect, useRef } = React;
 
 // ── Card — rounded, layered, with tactile tap state ────────────────────
-function Card({ children, onClick, style = {}, pad = 18, tone = 'surface', interactive }) {
+function Card({ children, onClick, style = {}, pad = 18, tone = 'surface' }) {
   const [press, setPress] = useState(false);
-  const clickable = !!onClick || interactive;
+  const clickable = !!onClick; // only a card that does something looks pressable
   return (
     <div
       onClick={onClick}

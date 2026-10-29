@@ -5,7 +5,7 @@
 // compile` stamps the same hash below, so a new app.js also brings a new service
 // worker with its own cache. Fonts are cache first (their URLs never change);
 // videos are left to the browser (range requests).
-const BUILD = 'a0a96d01b9'; // stamped by scripts/compile.mjs
+const BUILD = 'a062734136'; // stamped by scripts/compile.mjs
 const REACT = '18.3.1'; // stamped by scripts/compile.mjs
 const CACHE = 'vedome-utraceni-v3-' + BUILD;
 const CORE = [
