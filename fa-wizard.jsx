@@ -6,11 +6,12 @@
 // real castle loop later). Honors prefers-reduced-motion.
 
 function WizardCastle({ animate, dur }) {
-  // warm windows — a few flicker (class wz-win), staggered via inline delay
+  // warm windows — a few flicker (class wz-win), staggered via inline delay; all
+  // stay lit and still when motion is off
   const win = (x, y, w, h, flicker, delay) => (
     <rect x={x} y={y} width={w} height={h} rx={Math.min(w, h) * 0.3}
-      fill="#F4C45A" className={flicker ? 'wz-win' : undefined}
-      style={flicker ? { animationDelay: `${delay}s` } : undefined} />
+      fill="#F4C45A" className={flicker && animate ? 'wz-win' : undefined}
+      style={flicker && animate ? { animationDelay: `${delay}s` } : undefined} />
   );
   return (
     <div style={{ position: 'absolute', left: '-3%', right: '-3%', bottom: 0, height: '52%' }}>
@@ -79,19 +80,19 @@ function WizardBackground({ motion = 'gentle', videoSrc = null }) {
   const mul = motion === 'barely' ? 1.5 : motion === 'living' ? 0.82 : 1;
   const dur = (s) => `${(s * mul).toFixed(1)}s`;
 
-  // deterministic stars in the upper ~58% (above the castle)
-  const stars = lvl >= 1
-    ? Array.from({ length: lvl >= 3 ? 48 : 34 }).map((_, i) => {
-        const x = (i * 53 + 11) % 100;
-        const y = (i * 27 + 6) % 56;
-        const sz = i % 7 === 0 ? 2.6 : i % 3 === 0 ? 1.7 : 1.1;
-        return <span key={i} className="wz-star" style={{
-          left: `${x}%`, top: `${y}%`, width: sz, height: sz,
-          animationDuration: dur(2.6 + (i % 5)),
-          animationDelay: `${-(i % 7) * 0.6}s`,
-        }} />;
-      })
-    : null;
+  // deterministic stars in the upper ~58% (above the castle); in the calm scene
+  // (motion off: reduced motion, Save-Data or the Tweaks panel) they stay, still
+  const stars = Array.from({ length: lvl >= 3 ? 48 : 34 }).map((_, i) => {
+    const x = (i * 53 + 11) % 100;
+    const y = (i * 27 + 6) % 56;
+    const sz = i % 7 === 0 ? 2.6 : i % 3 === 0 ? 1.7 : 1.1;
+    return <span key={i} className="wz-star" style={{
+      left: `${x}%`, top: `${y}%`, width: sz, height: sz,
+      ...(animate
+        ? { animationDuration: dur(2.6 + (i % 5)), animationDelay: `${-(i % 7) * 0.6}s` }
+        : { animation: 'none', opacity: 0.45 + (i % 4) * 0.15 }),
+    }} />;
+  });
 
   const embers = lvl >= 3
     ? Array.from({ length: 7 }).map((_, i) => (
