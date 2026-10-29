@@ -75,7 +75,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
           <div style={{ width: 74, height: 74, margin: '0 auto 18px', borderRadius: '38%', background: 'var(--moss-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--moss)' }}>
             <Icon name="sprout" size={40} stroke={1.5} />
           </div>
-          <h1 className="fa-onb-h">{L('Vítej ve vědomém utrácení')}</h1>
+          <h1 className="fa-onb-h">{L('Vítej ve Vědomém utrácení')}</h1>
           <p className="fa-onb-p">{L('Žádné odříkání — jen jasný plán: co je potřeba, co tě těší a co posíláš svému budoucímu já.')}</p>
           {setLang && (
             <div className="fa-lang fa-onb-lang" role="group" aria-label={L('Jazyk')}>

@@ -40,7 +40,7 @@ function getFaLocale() { return FA_LANG; }
 // dictionary: "czech source" → { en, pl, uk, es }
 const S = {
   // ── onboarding + real-data mode ──
-  'Vítej ve vědomém utrácení': { en: 'Welcome to conscious spending', pl: 'Witaj w świadomym wydawaniu', uk: 'Ласкаво просимо до свідомих витрат', es: 'Te damos la bienvenida al gasto consciente' },
+  'Vítej ve Vědomém utrácení': { en: 'Welcome to Mindful\u00a0Spending', pl: 'Witaj w Świadomym\u00a0wydawaniu', uk: 'Ласкаво просимо до Усвідомлених\u00a0витрат', es: 'Te damos la bienvenida a Gasto\u00a0Consciente' }, // the name stays on one line
   'Žádné odříkání — jen jasný plán: co je potřeba, co tě těší a co posíláš svému budoucímu já.': { en: 'No deprivation — just a clear plan: what you need, what brings you joy, and what you send to your future self.', pl: 'Żadnych wyrzeczeń — tylko jasny plan: co jest potrzebne, co cię cieszy i co wysyłasz swojemu przyszłemu ja.', uk: 'Жодних обмежень — лише чіткий план: що потрібно, що тебе тішить і що ти відкладаєш для майбутнього себе.', es: 'Sin privaciones: solo un plan claro de lo que necesitas, lo que te alegra y lo que envías a tu yo futuro.' },
   'Začít': { en: 'Start', pl: 'Zacznij', uk: 'Почати', es: 'Empezar' },
   'Pokračovat': { en: 'Continue', pl: 'Dalej', uk: 'Далі', es: 'Continuar' },
@@ -465,6 +465,7 @@ const S = {
   'Pravidlo 50 / 30 / 20': { en: '50 / 30 / 20 rule', pl: 'Zasada 50 / 30 / 20', uk: 'Правило 50 / 30 / 20', es: 'Regla 50 / 30 / 20' },
   'Upravit poměry': { en: 'Edit ratios', pl: 'Edytuj proporcje', uk: 'Змінити пропорції', es: 'Editar proporciones' },
   'Jemné připomínky': { en: 'Gentle reminders', pl: 'Łagodne przypomnienia', uk: 'Делікатні нагадування', es: 'Recordatorios suaves' },
+  'Vědomé utrácení': { en: 'Mindful Spending', pl: 'Świadome wydawanie', uk: 'Усвідомлені витрати', es: 'Gasto Consciente' },
   'Zapnuto': { en: 'On', pl: 'Włączone', uk: 'Увімкнено', es: 'Activado' },
   'Vzhled': { en: 'Appearance', pl: 'Wygląd', uk: 'Вигляд', es: 'Apariencia' },
   'Jazyk': { en: 'Language', pl: 'Język', uk: 'Мова', es: 'Idioma' },

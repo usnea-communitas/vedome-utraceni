@@ -45,8 +45,8 @@ const today = () => { const d = new Date(); return [d.getFullYear(), d.getMonth(
 const money = (lang, n) => new Intl.NumberFormat(lang, { maximumFractionDigits: 0 }).format(n) + ' Kč';
 
 const TEXT = {
-  en: { welcome: 'Welcome to conscious spending', add: 'Add', deposit: 'Deposit', del: 'Delete', deleted: 'Deleted', undo: 'Undo' },
-  cs: { welcome: 'Vítej ve vědomém utrácení', add: 'Přidat', deposit: 'Vložit', del: 'Smazat', deleted: 'Smazáno', undo: 'Zpět' },
+  en: { welcome: 'Welcome to Mindful\u00a0Spending', add: 'Add', deposit: 'Deposit', del: 'Delete', deleted: 'Deleted', undo: 'Undo' },
+  cs: { welcome: 'Vítej ve Vědomém utrácení', add: 'Přidat', deposit: 'Vložit', del: 'Smazat', deleted: 'Smazáno', undo: 'Zpět' },
 };
 
 for (const lang of ['en', 'cs']) {
