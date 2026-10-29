@@ -165,6 +165,7 @@ const ACCENTS = {
   honey: { v: '--honey', soft: '--honey-soft' },
   blush: { v: '--blush', soft: '--blush-soft' },
   sage:  { v: '--sage',  soft: '--sage-soft'  },
+  clay:  { v: '--clay',  soft: '--clay-soft'  },
 };
 function accentVar(name)  { return `var(${(ACCENTS[name] || ACCENTS.moss).v})`; }
 function accentSoft(name) { return `var(${(ACCENTS[name] || ACCENTS.moss).soft})`; }
