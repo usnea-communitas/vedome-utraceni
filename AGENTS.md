@@ -28,7 +28,7 @@ npm test               # unit, translation and build checks (about a second)
 npm run test:e2e       # Chromium smoke test; first run: npx playwright install chromium
 ```
 
-CI (`.github/workflows/ci.yml`) runs the same checks: the compile output must match the committed files, `npm test` must pass, and the smoke test runs in a second job.
+CI (`.github/workflows/ci.yml`) runs the same checks: the compile output must match the committed files, `npm test` must pass, and the smoke test runs in a second job. After every production deployment, `.github/workflows/production-smoke.yml` runs `npm run test:production` on the deployed commit against the live site; it never blocks a deploy.
 
 When you change screens, look at a phone width (360–430 px) and a laptop window (the desktop phone frame scales to the window), in English and Czech, and in both themes if you touched styling.
 

@@ -36,6 +36,8 @@ Before opening a pull request:
 4. Commit `index.html` and `sw.js` too if `npm run compile` changed them (it stamps the new `app.js?v=<hash>`). Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
 5. Keep privacy intact: no network calls with user data, no analytics, no accounts.
 
+After a merge, Vercel deploys `main` and a workflow checks the live site (`npm run test:production`); there is nothing to run for it yourself.
+
 ## Pull requests
 
 - Describe what changed and why, and which devices, themes and languages you verified.

@@ -1,0 +1,38 @@
+name: Production smoke test
+
+# Vercel reports every deployment to GitHub. After a successful production
+# deployment this checks the live domain (the per-deployment URL is behind
+# Vercel's login): it must serve this commit's build of app.js, the files the
+# service worker caches must exist, and the app must start in Chromium and get
+# through onboarding to the overview without console errors. It runs after the
+# deploy and never blocks it; a failure shows on the commit and in Actions.
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Live site serves this build and starts
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Check https://vedome-utraceni.vercel.app/ (one retry)
+        env:
+          PROD_URL: https://vedome-utraceni.vercel.app/
+        run: npm run test:production || { echo "::warning::First attempt failed; retrying once in 20 s."; sleep 20; npm run test:production; }

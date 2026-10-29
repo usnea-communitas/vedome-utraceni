@@ -63,7 +63,7 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | `ios-frame.jsx`, `tweaks-panel.jsx` | Device frame for desktop preview and the developer Tweaks panel. |
 | `scripts/compile.mjs` | Precompiles the JSX sources into `app.js`, vendors React and stamps the `app.js?v=<hash>` cache key into `index.html` and `sw.js`. |
 | `sw.js`, `manifest.webmanifest` | Offline cache (network first) and PWA manifest. |
-| `tests/` | `node:test` unit, translation and build checks; a Playwright smoke test in `tests/e2e/`. |
+| `tests/` | `node:test` unit, translation and build checks; Playwright smoke tests in `tests/e2e/`; a check of the live site in `tests/production/`. |
 | `vercel.json` | Security headers for the Vercel deployment (no build settings). |
 
 `app.js` and `vendor/` are generated and committed; **never edit `app.js` by hand** — change the `.jsx` sources and run `npm run compile`.
@@ -87,6 +87,8 @@ Open the site in a browser; on a phone-sized viewport the app fills the screen, 
 ## Deployment
 
 The repository root is deployed as-is to Vercel (framework preset *Other*, no build, install or output settings). Any static host works the same way. `npm run compile` stamps a content hash into the script URL in `index.html` (`app.js?v=…`) and into `sw.js`, and the service worker loads the page and the app shell network-first, so a returning visitor gets the new deploy on the next visit and never a mix of old and new files; the cache is only the offline fallback. Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
+
+After every production deployment the *Production smoke test* workflow (`.github/workflows/production-smoke.yml`) checks the live site on the deployed commit: <https://vedome-utraceni.vercel.app/> must serve that commit's `app.js`, every file the service worker caches must exist, and onboarding must reach the overview in Chromium without console errors. It runs after the deploy and never blocks it; `npm run test:production` runs the same check by hand.
 
 ## Status
 
