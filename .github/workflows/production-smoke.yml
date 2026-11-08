@@ -12,8 +12,11 @@ on:
 permissions:
   contents: read
 
+# One queue per environment: Vercel reports the Preview deployment of the same
+# push a few seconds after Production, and a shared group cancelled the
+# production check before it started (2aa12f0, 8 November 2026).
 concurrency:
-  group: production-smoke
+  group: production-smoke-${{ github.event.deployment.environment }}
   cancel-in-progress: true
 
 jobs:
