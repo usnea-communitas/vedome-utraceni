@@ -106,6 +106,23 @@ for (const lang of ['en', 'cs']) {
   });
 }
 
+test('a ?lang= link opens the app in that language and leaves the switcher in charge', async () => {
+  const { context, page, problems } = await phone();
+  await page.goto(base + '?lang=cs');
+  assert.equal(await page.locator('.fa-onb-h').innerText(), TEXT.cs.welcome);
+  assert.equal(new URL(page.url()).search, '', 'the parameter leaves the address');
+  assert.equal(await page.evaluate(() => localStorage.getItem('fa.lang')), 'cs', 'and is remembered');
+  await page.reload();
+  assert.equal(await page.locator('.fa-onb-h').innerText(), TEXT.cs.welcome);
+  await page.locator('.fa-onb-lang button[lang="en"]').click();
+  await page.reload();
+  assert.equal(await page.locator('.fa-onb-h').innerText(), TEXT.en.welcome, 'a later choice wins');
+  await page.goto(base + '?lang=xx');
+  assert.equal(await page.locator('.fa-onb-h').innerText(), TEXT.en.welcome, 'an unknown language changes nothing');
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
 test('skipping the first goal adds no goal, even after highlighting one', async () => {
   const { context, page, problems } = await phone();
   await page.goto(base);
