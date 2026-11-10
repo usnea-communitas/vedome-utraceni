@@ -24,8 +24,8 @@
     "test:production": "node --test tests/production/*.test.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
-    "playwright": "1.63.0",
+    "esbuild": "^0.28.2",
+    "playwright": "1.64.1",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   }
