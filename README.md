@@ -10,7 +10,7 @@
 
 **Use it:** <https://vedome-utraceni.vercel.app/> — installable as a PWA, no account, no server.
 
-Vědomé utrácení (Czech for *mindful spending*) is an open-source project of [Usnea communitas, z. s.](https://usnea.ngo), a Czech nonprofit association for education, communities, nature and permaculture. It is built and maintained by [Martin Pazderník](https://github.com/martinpazdernik-source), and is used on its own and as a companion to financial-literacy workshops.
+Vědomé utrácení (Czech for *mindful spending*) is an open-source project built and maintained by [Martin Pazderník](https://github.com/martinpazdernik-source). It is used on its own and as a companion to financial-literacy workshops.
 
 ---
 
@@ -107,6 +107,6 @@ Bug reports, translation fixes and ideas for calmer money habits are welcome. Pl
 - **Media** (the ambient background videos, the app icon and other artwork in `assets/`): [CC BY-NC-SA 4.0](LICENSE-ASSETS.md), © 2026 Martin Pazderník.
 - React and the Google Fonts used by the design keep their own licences (MIT and SIL OFL respectively).
 
-## About Usnea communitas
+## Related projects
 
-Usnea communitas, z. s. is a Czech nonprofit association (IČO 29953448) that develops educational projects about permaculture, financial literacy and urban nature. Its other open-source projects include [Le Jardin](https://github.com/usnea-communitas/le-jardin), a permaculture garden game, and [Zahrady Prahy](https://github.com/usnea-communitas/zahrady-prahy), an illustrated atlas of Prague's community gardens. More at <https://usnea.ngo>.
+By the same maintainer: [Le Jardin](https://github.com/usnea-communitas/le-jardin), a permaculture garden game, and [Zahrady Prahy](https://github.com/usnea-communitas/zahrady-prahy), an illustrated atlas of Prague's community gardens.
