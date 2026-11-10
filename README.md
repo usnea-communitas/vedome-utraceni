@@ -94,6 +94,8 @@ After every production deployment the *Production smoke test* workflow (`.github
 
 Feature-complete for everyday use: plan, expenses, goals, tips, reflections, PIN lock, backups, reminders and five languages are all in place. Ongoing work is testing with real users and small fixes; feedback from workshops is very welcome. There are no user statistics or testimonials to report — the app sends nothing anywhere, by design.
 
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md) and on the [releases page](https://github.com/usnea-communitas/vedome-utraceni/releases).
+
 ## Contributing
 
 Bug reports, translation fixes and ideas for calmer money habits are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) (it explains the compile step and what we check), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report security concerns privately as described in [SECURITY.md](SECURITY.md).
