@@ -29,13 +29,13 @@ before(async () => {
 });
 after(async () => { await browser?.close(); server?.close(); });
 
-// a phone-sized page with no network outside the test server (fonts answered empty)
+// a phone-sized page; any request outside the test server is a problem (fonts are stored with the app)
 async function phone(width = 390) {
   const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
-  await context.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
+  const problems = [];
+  await context.route(url => !url.href.startsWith(base), r => { problems.push('external request: ' + r.request().url()); return r.abort(); });
   const page = await context.newPage();
   page.setDefaultTimeout(10000);
-  const problems = [];
   page.on('pageerror', e => problems.push('pageerror: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') problems.push('console: ' + m.text()); });
   return { context, page, problems };

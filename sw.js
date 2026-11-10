@@ -3,15 +3,15 @@
 // network first: online, every visit gets one consistent deploy, and the cache is
 // only the offline fallback. index.html loads app.js?v=<content hash>; `npm run
 // compile` stamps the same hash below, so a new app.js also brings a new service
-// worker with its own cache. Fonts are cache first (their URLs never change);
-// videos are left to the browser (range requests).
+// worker with its own cache. Fonts are stored with the app and cache first (their
+// files never change); videos are left to the browser (range requests).
 const BUILD = '84ddf27f24'; // stamped by scripts/compile.mjs
 const REACT = '18.3.1'; // stamped by scripts/compile.mjs
 const CACHE = 'vedome-utraceni-v3-' + BUILD;
 const CORE = [
   './', './index.html', './app.js?v=' + BUILD,
   './vendor/react.production.min.js?v=' + REACT, './vendor/react-dom.production.min.js?v=' + REACT,
-  './manifest.webmanifest', './icon.png',
+  './manifest.webmanifest', './icon.png', './register-sw.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -43,12 +43,14 @@ self.addEventListener('fetch', (event) => {
   if (/\.(mp4|webm)$/i.test(url.pathname) || req.headers.has('range')) return;
 
   if (req.mode === 'navigate') { event.respondWith(networkFirst(req, './index.html')); return; }
-  if (url.origin === self.location.origin) { event.respondWith(networkFirst(req)); return; }
+  if (url.origin !== self.location.origin) return;
 
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+  if (url.pathname.includes('/fonts/')) {
     event.respondWith(caches.open(CACHE).then(cache => cache.match(req).then(hit => hit || fetch(req).then(res => {
-      if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
+      if (res && res.ok) cache.put(req, res.clone());
       return res;
     }))));
+    return;
   }
+  event.respondWith(networkFirst(req));
 });
