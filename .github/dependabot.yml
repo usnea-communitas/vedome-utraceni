@@ -1,0 +1,37 @@
+# Dependency updates once a month (package S-05 of the 2026–27 plan).
+# Minor and patch updates arrive together in one pull request; a major
+# update gets its own pull request so it can be read and tested alone.
+# Updates are proposed only after a version has been public for a week.
+#
+# This app commits generated files: if "Compile and verify the bundle"
+# fails on a Dependabot pull request, run `npm run compile` on its
+# branch and push app.js, index.html, sw.js and vendor/.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # React is copied into vendor/; moving to React 19 is a deliberate
+      # change, not a routine update.
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
