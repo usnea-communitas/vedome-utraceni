@@ -6,7 +6,7 @@ Maintainer workspace: if an untracked `STAV.md` exists in the repo root, read it
 
 ## What this is
 
-Vědomé utrácení (Mindful Spending) is a calm, local-first 50/30/20 money-planning PWA by Usnea communitas, z. s., used on its own and in financial-literacy workshops. Plain React 18 without a framework and without a server: all data lives in the browser's `localStorage`. Live at <https://vedome-utraceni.vercel.app/>; Vercel deploys `main`.
+Vědomé utrácení (Mindful Spending) is a calm, local-first 50/30/20 money-planning PWA by Martin Pazderník, used on its own and in financial-literacy workshops. Plain React 18 without a framework and without a server: all data lives in the browser's `localStorage`. Live at <https://vedome-utraceni.vercel.app/>; Vercel deploys `main`.
 
 - Features and architecture: [README.md](README.md)
 - Users, purpose and principles: [PRODUCT.md](PRODUCT.md)

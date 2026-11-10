@@ -10,7 +10,7 @@ These works are licensed under the **Creative Commons Attribution-NonCommercial-
 
 Copyright © 2026 Martin Pazderník.
 
-You may share and adapt them for non-commercial purposes as long as you credit *Vědomé utrácení — Usnea communitas, z. s.* with a link to this repository, indicate changes, and distribute your adaptations under the same licence. Full licence text: <https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode>. Summary: <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
+You may share and adapt them for non-commercial purposes as long as you credit *Vědomé utrácení — Martin Pazderník* with a link to this repository, indicate changes, and distribute your adaptations under the same licence. Full licence text: <https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode>. Summary: <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 Schools, community organisations and financial-literacy educators may use the app and its materials in their work free of charge; a commercial licence for other uses can be requested from the maintainer.
 

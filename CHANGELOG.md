@@ -6,7 +6,7 @@ Notable changes to Vědomé utrácení (Mindful Spending). The version lives in 
 
 - **Plan vs. actual:** the plan belongs to a month and carries over to the next months until it is changed; an item that does not repeat counts only in its month. Expenses no longer raise the plan: the new *Plan vs. actual* card on the Overview and the Reflection shows how much of each category's plan the month has used, and goal deposits count as put aside for *Future me*.
 - The old single plan becomes the plan of the current month on the first start, and a copy of it is kept; backups now carry the monthly plans (format 2), and older backups still restore.
-- The app no longer links to Usnea communitas for now.
+- The link under the version line in More is gone, and the preview image shows only the app's names.
 
 ## 1.3.0 — 2026-11-10
 
