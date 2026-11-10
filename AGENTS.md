@@ -30,6 +30,8 @@ npm run test:e2e       # Chromium smoke test; first run: npx playwright install 
 
 CI (`.github/workflows/ci.yml`) runs the same checks: the compile output must match the committed files, `npm test` must pass, and the smoke test runs in a second job. After every production deployment, `.github/workflows/production-smoke.yml` runs `npm run test:production` on the deployed commit against the live site; it never blocks a deploy.
 
+Changes reach `main` through pull requests: work on a branch (`claude/<id>-…` or `codex/…`), open a pull request and merge it once both CI jobs are green. Vercel deploys every merge to production. Do not push to `main` directly or rewrite its history.
+
 When you change screens, look at a phone width (360–430 px) and a laptop window (the desktop phone frame scales to the window), in English and Czech, and in both themes if you touched styling.
 
 ## Product decisions (do not change without the maintainer)
