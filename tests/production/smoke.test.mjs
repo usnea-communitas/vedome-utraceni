@@ -51,10 +51,32 @@ test(`${site.host} serves build ${build}`, async () => {
   // the rest of what the service worker caches for offline use
   const sw = await (await get('/sw.js')).text();
   const react = sw.match(/const REACT = '([^']+)'/)[1];
-  for (const path of ['/sw.js', '/manifest.webmanifest', '/icon.png',
+  for (const path of ['/sw.js', '/manifest.webmanifest', '/icon.png', '/register-sw.js',
     `/vendor/react.production.min.js?v=${react}`, `/vendor/react-dom.production.min.js?v=${react}`]) {
     assert.equal((await get(path)).status, 200, `GET ${path}`);
   }
+});
+
+test('security headers, fonts, icons and the share preview are in place', async () => {
+  const res = await get('/');
+  const h = name => res.headers.get(name) || '';
+  assert.equal(h('x-content-type-options'), 'nosniff');
+  assert.equal(h('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(h('x-frame-options'), 'SAMEORIGIN');
+  assert.match(h('permissions-policy'), /camera=\(\)/);
+  assert.match(h('content-security-policy'), /frame-ancestors 'self'/);
+  const html = await res.text();
+  assert.match(html, /http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';/, 'CSP without inline scripts');
+  assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/, 'no Google Fonts');
+  const og = html.match(/property="og:image" content="([^"]+)"/)[1];
+  assert.match(og, /^https:\/\//, 'og:image is an absolute address');
+  const image = await fetch(og);
+  assert.equal(image.status, 200, `GET ${og}`);
+  assert.match(image.headers.get('content-type') || '', /image\/jpeg/);
+  for (const path of ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/fonts/hanken-grotesk-normal-latin.woff2']) {
+    assert.equal((await get(path)).status, 200, `GET ${path}`);
+  }
+  assert.match((await get('/fonts/newsreader-normal-latin.woff2')).headers.get('cache-control') || '', /immutable/, 'fonts are cached for a year');
 });
 
 test('the app starts and onboarding reaches the overview, with no console errors', async () => {
@@ -65,6 +87,7 @@ test('the app starts and onboarding reaches the overview, with no console errors
   const problems = [];
   page.on('pageerror', e => problems.push('pageerror: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') problems.push('console: ' + m.text()); });
+  page.on('request', r => { if (new URL(r.url()).origin !== site.origin) problems.push('request outside the site: ' + r.url()); });
 
   await page.goto(site.href, { waitUntil: 'load' });
   assert.ok((await page.locator('.fa-onb-h').innerText()).trim(), 'the welcome screen');

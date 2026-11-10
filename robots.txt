@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vedome-utraceni.vercel.app/sitemap.xml
