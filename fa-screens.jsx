@@ -575,9 +575,6 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         </div>
         <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {Lf('verze {v}', { v: FA_VERSION })}</div>
       </div>
-      <p style={{ textAlign: 'center', margin: '8px 0 0', fontFamily: 'var(--sans)', fontSize: 12, letterSpacing: 0.2 }}>
-        <a className="fa-footer-link" href="https://usnea.ngo/" target="_blank" rel="noopener">{L('Projekt spolku Usnea communitas, z. s.')}</a>
-      </p>
 
       <IncomeSheet open={sheet === 'income'} onClose={() => setSheet(null)} onChanged={refresh} demo={!real} />
       <SecuritySheet open={sheet === 'security'} onClose={() => setSheet(null)} onChanged={refresh} />
