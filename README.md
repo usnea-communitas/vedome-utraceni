@@ -22,8 +22,9 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project of 
 
 ## What it does
 
-- **One plan, three jars.** Monthly income is split into *Need*, *Fun* and *Future me* with the proven 50/30/20 split as a starting point; the ratios are yours to adjust. The overview shows how much of the month is allocated and where each category stands.
-- **Expenses in seconds.** A floating button opens a bottom sheet with curated and repeated suggestions; one-off expenses are recorded per day and month, and the overview recalculates immediately. A deleted expense can be brought back with *Undo*.
+- **One plan, three jars.** Monthly income is split into *Need*, *Fun* and *Future me* with the proven 50/30/20 split as a starting point; the ratios are yours to adjust. Each month has a plan: it carries over to the next months until you change it, and an item that does not repeat counts only in its month.
+- **Plan vs. actual.** Expenses never raise the plan; the overview and the reflection show how much of each category's plan the month has used, and goal deposits count as put aside for *Future me*.
+- **Expenses in seconds.** A floating button opens a bottom sheet with curated and repeated suggestions; expenses are recorded per day and month, and the overview recalculates immediately. A deleted expense can be brought back with *Undo*.
 - **A goal tree, not a progress bar.** Every savings goal is a branch; foliage grows with each deposit, completed goals get a sparkle crown, and the whole tree sways gently.
 - **Tips and a compounding simulator.** Short, kind tips (the 24-hour rule, pay your future self first, name your goals…) and an interactive compound-interest calculator for monthly contributions.
 - **Monthly reflection.** A few gentle questions about how money felt this month, kept privately in the app.

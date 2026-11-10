@@ -172,7 +172,6 @@ const S = {
 
   // ── Přehled ──
   'Celkový měsíční příjem': { en: 'Total monthly income', pl: 'Całkowity miesięczny dochód', uk: 'Загальний місячний дохід', es: 'Ingreso mensual total' },
-  'v limitu': { en: 'within limit', pl: 'w limicie', uk: 'у межах', es: 'dentro del límite' },
   'Naplánováno': { en: 'Planned', pl: 'Zaplanowano', uk: 'Заплановано', es: 'Planificado' },
   'Rozděleno': { en: 'Allocated', pl: 'Rozdzielono', uk: 'Розподілено', es: 'Asignado' },
   'Zbývá rozdělit': { en: 'Left to allocate', pl: 'Do rozdzielenia', uk: 'Залишилось розподілити', es: 'Por asignar' },
@@ -494,7 +493,6 @@ const S = {
   // ── batch 2026-09: months, dates, backup, reminders, neutral wording ──
   'Datum': { en: 'Date', pl: 'Data', uk: 'Дата', es: 'Fecha' },
   'Celkem za {m}: {v}': { en: 'Total for {m}: {v}', pl: 'Razem za {m}: {v}', uk: 'Разом за {m}: {v}', es: 'Total de {m}: {v}' },
-  'z toho plán {a} a jednorázové výdaje {b}': { en: 'of which plan {a} and one-off expenses {b}', pl: 'w tym plan {a} i wydatki jednorazowe {b}', uk: 'з них план {a} і разові витрати {b}', es: 'de ello plan {a} y gastos puntuales {b}' },
   'Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.': { en: 'Next step: in Plan, list what belongs to Essentials — rent, energy, food.', pl: 'Następny krok: w Planie rozpisz, co należy do Niezbędnych — czynsz, energia, jedzenie.', uk: 'Наступний крок: у Плані розпиши, що належить до Необхідного — оренда, енергія, їжа.', es: 'Siguiente paso: en el Plan detalla lo que va a Necesario — alquiler, energía, comida.' },
   'Rozepsat měsíční plán': { en: 'Break down the monthly plan', pl: 'Rozpisz plan miesięczny', uk: 'Розписати місячний план', es: 'Detallar el plan mensual' },
   'Vyber měsíc': { en: 'Choose a month', pl: 'Wybierz miesiąc', uk: 'Обери місяць', es: 'Elige un mes' },
@@ -544,6 +542,17 @@ const S = {
   'Data (náhled)': { en: 'Data (preview)', pl: 'Dane (podgląd)', uk: 'Дані (перегляд)', es: 'Datos (vista previa)' },
   'Načíst ukázková data': { en: 'Load sample data', pl: 'Wczytaj przykładowe dane', uk: 'Завантажити зразкові дані', es: 'Cargar datos de ejemplo' },
   'Smazat data → onboarding': { en: 'Delete data → onboarding', pl: 'Usuń dane → onboarding', uk: 'Видалити дані → онбординг', es: 'Borrar datos → onboarding' },
+  // ── batch 2026-11: plan × actual (monthly plans, expenses use up the plan) ──
+  'Plán převzatý z měsíce {m}. Když ho upravíš, změna platí od tohoto měsíce dál.': { en: 'Plan carried over from {m}. If you change it, the change applies from this month on.', pl: 'Plan przeniesiony z miesiąca {m}. Jeśli go zmienisz, zmiana obowiązuje od tego miesiąca.', uk: 'План перенесено з місяця {m}. Якщо ти його зміниш, зміна діятиме від цього місяця.', es: 'Plan traído de {m}. Si lo cambias, el cambio vale desde este mes en adelante.' },
+  'Plán se přenáší do dalších měsíců, dokud ho nezměníš. Položka bez opakování platí jen v tomto měsíci.': { en: 'The plan carries over to the next months until you change it. An item that does not repeat counts only this month.', pl: 'Plan przechodzi na kolejne miesiące, dopóki go nie zmienisz. Pozycja bez powtarzania liczy się tylko w tym miesiącu.', uk: 'План переходить на наступні місяці, доки ти його не зміниш. Позиція без повторення діє лише в цьому місяці.', es: 'El plan pasa a los meses siguientes hasta que lo cambies. Una partida que no se repite cuenta solo este mes.' },
+  'v plánu': { en: 'on plan', pl: 'zgodnie z planem', uk: 'за планом', es: 'según el plan' },
+  'jen tento měsíc': { en: 'this month only', pl: 'tylko w tym miesiącu', uk: 'лише цього місяця', es: 'solo este mes' },
+  'Opakuje se měsíčně – {n}': { en: 'Repeats monthly – {n}', pl: 'Powtarza się co miesiąc – {n}', uk: 'Повторюється щомісяця – {n}', es: 'Se repite cada mes – {n}' },
+  'Plán a skutečnost': { en: 'Plan vs. actual', pl: 'Plan a rzeczywistość', uk: 'План і реальність', es: 'Plan y realidad' },
+  'utraceno {a} z {b}': { en: 'spent {a} of {b}', pl: 'wydano {a} z {b}', uk: 'витрачено {a} з {b}', es: 'gastado {a} de {b}' },
+  'odloženo {a} z {b}': { en: 'put aside {a} of {b}', pl: 'odłożono {a} z {b}', uk: 'відкладено {a} з {b}', es: 'apartado {a} de {b}' },
+  'přes plán o {v}': { en: '{v} over plan', pl: 'ponad plan o {v}', uk: 'понад план на {v}', es: '{v} por encima del plan' },
+  'o {v} víc': { en: '{v} more', pl: 'o {v} więcej', uk: 'на {v} більше', es: '{v} más' },
 };
 
 // Keys are matched exactly first, then with spaces and quotation marks normalised

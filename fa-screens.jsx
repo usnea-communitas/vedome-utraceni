@@ -17,6 +17,8 @@ function Cile({ go, month, setMonth, ratios, profile }) {
   const addGoal = (g) => mutate(list => [...list, g]);
   const removeGoal = (id) => { mutate(list => list.filter(g => g.id !== id)); setOpenId(null); };
   const deposit = (id, amount) => {
+    // dated like an expense, so it counts towards "Future me" in the month shown
+    if (real) faAddDeposit(id, amount, faDefaultDay(APP.month));
     mutate(list => list.map(g => g.id === id ? { ...g, saved: Math.max(0, (+g.saved || 0) + amount) } : g));
     try { window.dispatchEvent(new CustomEvent('fa-goal-deposit', { detail: { id } })); } catch (e) {}
   };
@@ -384,6 +386,9 @@ function Reflexe({ month }) {
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Konec měsíce')} title={L('Reflexe')} />
       <p className="fa-lede">{L('Odpověz na pár otázek a podívej se, jak ti tento měsíc bylo s penězi.')}</p>
+
+      {/* the month in numbers, the same card as on the Overview */}
+      <div style={{ marginTop: 10 }}><PlanActual /></div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 6 }}>
         {REFLEX_QUIZ.map((q, qi) => (
