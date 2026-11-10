@@ -576,6 +576,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   color: var(--ink-faint); transition: all .2s;
 }
 .fa-rec.on { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+.fa-item-once { font-family: var(--sans); font-size: 11px; color: var(--ink-soft); }
+.fa-plan-note { font-family: var(--sans); font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); margin: -8px 4px 14px; }
+.fa-root[data-theme="forest"][data-scene="video"] .fa-plan-note { color: rgba(240,236,224,0.92); text-shadow: 0 1px 8px rgba(18,28,14,0.55); }
+.fa-root[data-theme="wizard"] .fa-plan-note { color: rgba(216,210,232,0.9); text-shadow: 0 1px 10px rgba(4,6,16,0.85); }
 .fa-item-del {
   border: none; background: transparent; cursor: pointer; flex-shrink: 0;
   width: 26px; height: 26px; border-radius: 8px; color: var(--ink-faint);
@@ -1157,7 +1161,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=6641617304"></script>
+  <script src="app.js?v=2a4083de09"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>

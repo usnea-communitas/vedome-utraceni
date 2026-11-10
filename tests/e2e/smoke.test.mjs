@@ -90,8 +90,9 @@ for (const lang of ['en', 'cs']) {
     await page.locator('.fa-sheet input.fa-field[type=text]').fill('Coffee');
     await page.locator('.fa-catpick button').nth(1).click();
     await page.locator('.fa-sheet .fa-cta').click();
+    // the expense uses up the joy plan; it does not raise the plan
     const overview = await page.locator('.fa-screen').innerText();
-    for (const n of [21450, 10550, 1950]) assert.ok(overview.includes(money(lang, n)), `${money(lang, n)} on the overview`);
+    for (const n of [21000, 11000, 1050]) assert.ok(overview.includes(money(lang, n)), `${money(lang, n)} on the overview`);
 
     // a deposit into the goal
     await page.locator('.fa-nav .fa-tab').nth(2).click();
@@ -122,6 +123,110 @@ test('a ?lang= link opens the app in that language and leaves the switcher in ch
   assert.deepEqual(problems, []);
   await context.close();
 });
+
+// ── plan × actual: a plan carries over month to month, one-off items and expenses stay in their month ──
+const MONTHS = {
+  en: { spent: (a, b) => `spent ${a} of ${b}`, left: v => `${v} left`, saved: (a, b) => `put aside ${a} of ${b}`, more: v => `${v} more`,
+    own: 'The plan carries over to the next months until you change it.', carried: 'Plan carried over from', rent: 'Rent', cafe: 'Café', trip: 'Trip', coffee: 'Coffee', repeats: 'Repeats monthly – Trip' },
+  cs: { spent: (a, b) => `utraceno ${a} z ${b}`, left: v => `zbývá ${v}`, saved: (a, b) => `odloženo ${a} z ${b}`, more: v => `o ${v} víc`,
+    own: 'Plán se přenáší do dalších měsíců, dokud ho nezměníš.', carried: 'Plán převzatý z měsíce', rent: 'Nájem', cafe: 'Kavárna', trip: 'Výlet', coffee: 'Káva', repeats: 'Opakuje se měsíčně – Výlet' },
+};
+const nextMonth = () => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() + 1); return [d.getFullYear(), d.getMonth() + 1]; };
+
+async function onboard(page, lang) {
+  await page.goto(base);
+  if (lang === 'cs') await page.locator('.fa-onb-lang button[lang="cs"]').click();
+  const next = page.locator('.fa-onb .fa-cta');
+  await next.click();                                         // welcome
+  await page.locator('.fa-onb-input').fill('Jana'); await next.click();
+  await page.locator('.fa-onb-input').fill('32 000'); await next.click();
+  await next.click();                                         // 50 / 30 / 20
+  await page.locator('.fa-onb-goal').first().click();         // emergency fund
+  await next.click(); await next.click();                     // theme → finish
+}
+async function pickMonth(page, [year, month]) {
+  await page.locator('.fa-pill-btn').click();
+  for (let i = 0; i < 3 && Number(await page.locator('.fa-month-year span').innerText()) !== year; i++) {
+    await page.locator('.fa-month-year button').nth(Number(await page.locator('.fa-month-year span').innerText()) < year ? 1 : 0).click();
+  }
+  await page.locator('.fa-month-pop > button').nth(month - 1).click();
+}
+const tab = (page, i) => page.locator('.fa-nav .fa-tab').nth(i).click();
+const planActual = page => page.locator('.fa-plan-actual').innerText();
+const storedMonths = page => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('fa.plans'))).sort());
+
+for (const lang of ['en', 'cs']) {
+  test(`two months in a row: the plan carries over, one-off items and expenses stay (${lang})`, async () => {
+    const T = MONTHS[lang];
+    const { context, page, problems } = await phone();
+    await onboard(page, lang);
+
+    // month 1: rent recurs, the trip is a one-off
+    await tab(page, 1);
+    assert.match(await page.locator('.fa-plan-note').innerText(), new RegExp(T.own));
+    const addItem = async (cat, name, amount) => {
+      const card = page.locator('.fa-card', { has: page.locator('.fa-cat-head') }).nth(cat);
+      if (!(await card.locator('input.fa-input').count())) await card.locator('.fa-cat-head').click();
+      await card.locator('input.fa-input').nth(0).fill(name);
+      await card.locator('input.fa-input').nth(1).fill(amount);
+      await card.getByRole('button', { name: TEXT[lang].add, exact: true }).click();
+    };
+    await addItem(0, T.rent, '12000');
+    await addItem(1, T.cafe, '1500');
+    await addItem(1, T.trip, '3000');
+    await page.getByRole('button', { name: T.repeats }).click();
+    assert.equal(await page.getByRole('button', { name: T.repeats }).getAttribute('aria-pressed'), 'false');
+
+    // an expense in month 1 uses up the joy plan
+    await tab(page, 0);
+    await page.locator('.fa-fab').click();
+    await page.locator('.fa-amount').fill('450');
+    await page.locator('.fa-sheet input.fa-field[type=text]').fill(T.coffee);
+    await page.locator('.fa-catpick button').nth(1).click();
+    await page.locator('.fa-sheet .fa-cta').click();
+    const m1 = await planActual(page);
+    for (const t of [T.spent(money(lang, 0), money(lang, 12000)), T.spent(money(lang, 450), money(lang, 4500)), T.left(money(lang, 4050))]) assert.ok(m1.includes(t), `${t} in month 1: ${m1}`);
+    await tab(page, 4);
+    assert.equal(await planActual(page), m1, 'the Reflection shows the Overview numbers');
+
+    // month 2: rent and café carry over; the trip and the expense stay in month 1
+    await tab(page, 0);
+    await pickMonth(page, nextMonth());
+    const m2 = await planActual(page);
+    for (const t of [T.spent(money(lang, 0), money(lang, 12000)), T.spent(money(lang, 0), money(lang, 1500))]) assert.ok(m2.includes(t), `${t} in month 2: ${m2}`);
+    assert.ok(!m2.includes(money(lang, 4500)), m2);
+    await tab(page, 4);
+    assert.equal(await planActual(page), m2, 'the Reflection shows the Overview numbers');
+
+    // looking at month 2 stores nothing; changing its rent gives it its own plan
+    await tab(page, 1);
+    assert.match(await page.locator('.fa-plan-note').innerText(), new RegExp(T.carried));
+    assert.equal((await storedMonths(page)).length, 1);
+    const rentCard = page.locator('.fa-card', { has: page.locator('.fa-cat-head') }).nth(0);
+    await rentCard.locator('.fa-cat-head').click();
+    const rent = rentCard.locator('.fa-item-amt input').first();
+    await rent.click(); await rent.fill('13000'); await rent.press('Enter');
+    assert.equal((await storedMonths(page)).length, 2);
+    await tab(page, 0);
+    assert.ok((await planActual(page)).includes(T.spent(money(lang, 0), money(lang, 13000))));
+
+    // a goal deposit counts as put aside in its month
+    await tab(page, 2);
+    await page.locator('.fa-goal-head').first().click();
+    await page.locator('.fa-card input.fa-onb-input').fill('500');
+    await page.getByRole('button', { name: TEXT[lang].deposit }).click();
+    await tab(page, 0);
+    assert.ok((await planActual(page)).includes(T.saved(money(lang, 500), money(lang, 0))));
+
+    // month 1 keeps its own plan
+    await pickMonth(page, [new Date().getFullYear(), new Date().getMonth() + 1]);
+    const back = await planActual(page);
+    assert.ok(back.includes(T.spent(money(lang, 0), money(lang, 12000))) && back.includes(T.spent(money(lang, 450), money(lang, 4500))), back);
+
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
 
 test('skipping the first goal adds no goal, even after highlighting one', async () => {
   const { context, page, problems } = await phone();

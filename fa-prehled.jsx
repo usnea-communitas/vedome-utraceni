@@ -28,11 +28,12 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
                 <h2 className="fa-cardtitle" style={{ fontSize: 19, whiteSpace: 'nowrap' }}>{faLabel(L('Lesní koláč peněz'), L('Kouzelný měšec'))}</h2>
               </div>
               {(() => {
-                const anyOver = a.categories.some(c => c.ofTarget > 100);
-                const nothing = !a.allocated;
+                // spending past the plan; putting more aside for "Future me" is not
+                const anyOver = a.categories.some(c => c.key !== 'budouci' && c.spent > c.planned);
+                const nothing = !a.allocated && !a.spentTotal;
                 const tone = nothing ? 'calm' : anyOver ? 'over' : 'ok';
                 const icon = nothing ? 'leaf' : anyOver ? 'alert' : 'check';
-                const label = nothing ? L('zatím bez plánu') : anyOver ? L('nad plán') : L('v limitu');
+                const label = nothing ? L('zatím bez plánu') : anyOver ? L('nad plán') : L('v plánu');
                 return <Chip tone={tone}><Icon name={icon} size={13} stroke={2.2} /> {label}</Chip>;
               })()}
             </div>
@@ -59,11 +60,6 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
               <span style={{ opacity: 0.4 }}>·</span>
               <span>{L('Zbývá rozdělit')} <strong style={{ color: 'var(--moss-deep)', fontWeight: 600 }}>{kc(a.remaining)}</strong></span>
             </div>
-            {a.spentTotal > 0 && (
-              <div style={{ textAlign: 'center', marginTop: 6, fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-faint)' }}>
-                {Lf('z toho plán {a} a jednorázové výdaje {b}', { a: kc(a.plannedTotal || 0), b: kc(a.spentTotal) })}
-              </div>
-            )}
             {!a.allocated && (
               <p style={{ textAlign: 'center', margin: '10px auto 0', maxWidth: 270, fontFamily: 'var(--sans)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--ink-soft)' }}>
                 {L('Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.')}
@@ -76,6 +72,9 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
           {a.allocated ? L('Upravit měsíční plán') : L('Rozepsat měsíční plán')} <Icon name="chevron" size={16} stroke={2} />
         </button>
       </Card>
+
+      {/* ── Plán a skutečnost: how much of each category's plan the month has used ── */}
+      <PlanActual />
 
       {/* ── Poslední výdaje (uživatelské one-off) ─────────────── */}
       <RecentExpenses expenses={expenses} onDelete={deleteExpense} go={go} month={month} />
@@ -125,6 +124,51 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
       {/* ── Roční cíle (Year goals) — naplňující se „hadi" ──────── */}
       <SectionLabel action={L('Detail')} onAction={() => go('cile')}>{L('Roční cíle')}</SectionLabel>
       <YearGoals go={go} real={!!(profile && !profile.demo)} onChanged={() => setProfile && setProfile(loadFaProfile())} />
+    </div>
+  );
+}
+
+// ── Plán a skutečnost — the month's plan per category and what was used of it.
+// Expenses use up the plan; for "Future me" the expenses and goal deposits are
+// what was put aside, and more than planned is good news, not a warning.
+// The Overview and the Reflection show this same card, so their numbers agree.
+function PlanActual() {
+  const a = APP;
+  if (!a.allocated && !a.spentTotal) return null;
+  return (
+    <div className="fa-plan-actual" style={{ marginBottom: 22 }}>
+    <Card>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+        <Icon name="plan" size={17} stroke={1.7} color="var(--brand)" />
+        <h2 className="fa-cardtitle" style={{ fontSize: 17, whiteSpace: 'nowrap' }}>{L('Plán a skutečnost')}</h2>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {a.categories.map((c, i) => {
+          const future = c.key === 'budouci';
+          const over = c.spent > c.planned;
+          const pct = c.planned > 0 ? Math.round(c.spent / c.planned * 100) : c.spent > 0 ? 101 : 0;
+          const note = !over ? Lf('zbývá {v}', { v: kc(c.left) })
+            : future ? Lf('o {v} víc', { v: kc(-c.left) })
+            : Lf('přes plán o {v}', { v: kc(-c.left) });
+          const tone = over ? (future ? 'var(--moss-deep)' : 'var(--clay)') : 'var(--ink-soft)';
+          return (
+            <div key={c.key} data-cat={c.key}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 3, background: accentVar(c.accent), flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'var(--sans)', fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>{L(c.name)}</span>
+                </span>
+                <span className="fa-pa-note" style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600, color: tone, whiteSpace: 'nowrap' }}>{note}</span>
+              </div>
+              <Bar pct={future ? Math.min(pct, 100) : pct} color={accentVar(c.accent)} h={7} delay={140 + i * 80} />
+              <div className="fa-pa-used" style={{ fontFamily: 'var(--sans)', fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 5 }}>
+                {future ? Lf('odloženo {a} z {b}', { a: kc(c.spent), b: kc(c.planned) }) : Lf('utraceno {a} z {b}', { a: kc(c.spent), b: kc(c.planned) })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
     </div>
   );
 }
@@ -359,4 +403,4 @@ function SourceBars({ sources, maxA }) {
   );
 }
 
-Object.assign(window, { Prehled, ScreenHeader, GrowthMark, YearGoals, SnakeBar, SourceBars });
+Object.assign(window, { Prehled, PlanActual, ScreenHeader, GrowthMark, YearGoals, SnakeBar, SourceBars });

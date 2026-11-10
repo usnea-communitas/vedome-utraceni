@@ -2,6 +2,12 @@
 
 Notable changes to Vědomé utrácení (Mindful Spending). The version lives in `package.json` and in `FA_VERSION` (`fa-core.jsx`), is shown under More, and a test keeps the two in step. Each version is also a [GitHub release](https://github.com/usnea-communitas/vedome-utraceni/releases).
 
+## Unreleased
+
+- **Plan vs. actual:** the plan belongs to a month and carries over to the next months until it is changed; an item that does not repeat counts only in its month. Expenses no longer raise the plan: the new *Plan vs. actual* card on the Overview and the Reflection shows how much of each category's plan the month has used, and goal deposits count as put aside for *Future me*.
+- The old single plan becomes the plan of the current month on the first start, and a copy of it is kept; backups now carry the monthly plans (format 2), and older backups still restore.
+- The app no longer links to Usnea communitas for now.
+
 ## 1.3.0 — 2026-11-10
 
 The second improvement round, live since 8 November 2026.

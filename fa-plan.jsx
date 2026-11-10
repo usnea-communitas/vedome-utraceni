@@ -3,15 +3,13 @@
 // collapsible row you expand to add individual incomes. Each of the 3 categories
 // (Potřebné / Budoucí já / Radost) carries a short description, a structure
 // graphic, and expands to manage individual items: add (incl. auto-suggested),
-// delete, and a recurring-monthly toggle. State persists to localStorage.
+// delete, and a recurring-monthly toggle. The plan belongs to the month shown
+// (faPlanFor / faSetPlanFor in fa-store.jsx); a recurring item carries over to
+// the next months, a one-off item counts only in its month.
 
-const { useState: usePl, useEffect: usePlE } = React;
+const { useState: usePl } = React;
 
-// ── persisted state helpers ──
-function plLoad(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch (e) { return fallback; } }
-function plSave(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
-
-// ── seed data (used until the user edits; mirrors APP totals) ──
+// ── sample plan of the demo profile (mirrors the demo APP totals) ──
 const PLAN_INCOME0 = [
   { name: 'Hlavní práce', amount: 33000, recurring: true },
   { name: 'Coaching', amount: 5500, recurring: true },
@@ -37,13 +35,22 @@ const PLAN_DESC = {
   radost: 'Kavárny, výlety a drobnosti, co tě těší.',
 };
 
-function Plan({ go, month, setMonth, ratios }) {
+function Plan({ go, month, setMonth, ratios, profile }) {
   const cats = APP.categories; // {key,name,icon,accent,targetPct}
-  const [income, setIncome] = usePl(() => plLoad('fa.plan.income', PLAN_INCOME0));
-  const [items, setItems] = usePl(() => plLoad('fa.plan.items', PLAN_ITEMS0));
+  const shown = month || APP.month;
+  // the plan of the month shown; the demo profile starts from the sample plan
+  const [plan, setPlan] = usePl(() => {
+    const p = faPlanFor(shown);
+    if (!p.from && profile && profile.demo) return { income: PLAN_INCOME0.map(x => ({ ...x })), items: { nutne: PLAN_ITEMS0.nutne.map(x => ({ ...x })), budouci: PLAN_ITEMS0.budouci.map(x => ({ ...x })), radost: PLAN_ITEMS0.radost.map(x => ({ ...x })) }, from: null, own: false };
+    return p;
+  });
   const [open, setOpen] = usePl(null); // 'income' | cat.key | null
-  usePlE(() => plSave('fa.plan.income', income), [income]);
-  usePlE(() => plSave('fa.plan.items', items), [items]);
+  // looking stores nothing; the first change gives the month its own plan,
+  // which then carries over to the months after it
+  const change = (patch) => setPlan(p => { const next = { ...p, ...patch(p), from: shown, own: true }; faSetPlanFor(shown, next); return next; });
+  const income = plan.income;
+  const items = plan.items;
+  const setIncome = (list) => change(() => ({ income: list }));
 
   const incomeTotal = income.reduce((s, x) => s + (+x.amount || 0), 0);
   const catTotal = (k) => (items[k] || []).reduce((s, x) => s + (+x.amount || 0), 0);
@@ -54,11 +61,16 @@ function Plan({ go, month, setMonth, ratios }) {
   const segs = cats.map(c => ({ value: catTotal(c.key), color: accentVar(c.accent), ink: c.accent === 'honey' }));
   if (remaining > 0) segs.push({ value: remaining, color: 'var(--unalloc)', ink: true });
 
-  const setCatItems = (k, next) => setItems({ ...items, [k]: next });
+  const setCatItems = (k, next) => change(p => ({ items: { ...p.items, [k]: next } }));
 
   return (
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Měsíční plán')} title={L('Plán')} right={<MonthPill month={APP.month} setMonth={setMonth} ratios={ratios} go={go} />} />
+      <p className="fa-plan-note">
+        {plan.from && !plan.own
+          ? Lf('Plán převzatý z měsíce {m}. Když ho upravíš, změna platí od tohoto měsíce dál.', { m: faMonthInText(plan.from) })
+          : L('Plán se přenáší do dalších měsíců, dokud ho nezměníš. Položka bez opakování platí jen v tomto měsíci.')}
+      </p>
 
       {/* ── Hero: the split graph is the priority ── */}
       <Card pad={0} style={{ overflow: 'hidden', marginBottom: 18 }}>
@@ -269,9 +281,12 @@ function ItemEditor({ list, setList, accent, suggest, addLabel }) {
     <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 9 }}>
       {list.map((it, i) => (
         <div key={i} className="fa-item">
-          <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(it.name)}</span>
-          <button className={'fa-rec' + (it.recurring ? ' on' : '')} title={L('Opakuje se měsíčně')} aria-label={L('Opakuje se měsíčně')} aria-pressed={!!it.recurring}
-            onClick={() => update(i, { recurring: !it.recurring })}>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 13.5, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{faDataLabel(it.name)}</span>
+            {it.recurring === false && <span className="fa-item-once">{L('jen tento měsíc')}</span>}
+          </span>
+          <button className={'fa-rec' + (it.recurring !== false ? ' on' : '')} title={L('Opakuje se měsíčně')} aria-label={Lf('Opakuje se měsíčně – {n}', { n: faDataLabel(it.name) })} aria-pressed={it.recurring !== false}
+            onClick={() => update(i, { recurring: it.recurring === false })}>
             <Icon name="repeat" size={13} stroke={2} />
           </button>
           <PlanAmount value={it.amount} label={Lf('Částka – {n}', { n: faDataLabel(it.name) })} onChange={v => update(i, { amount: v })} />

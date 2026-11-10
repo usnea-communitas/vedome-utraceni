@@ -263,12 +263,12 @@ function RemindersSheet({ open, onClose, onChanged }) {
   );
 }
 
-// ── Měsíční příjem sheet — edits fa.plan.income (same data as Plán) ─────
+// ── Měsíční příjem sheet — edits the income of the month shown (same data as Plán) ──
 function IncomeSheet({ open, onClose, onChanged, demo }) {
   const [list, setList] = useSt([]);
   useStE(() => {
     if (!open) return;
-    const stored = faLoad('fa.plan.income', []);
+    const stored = faPlanFor(APP.month).income;
     setList(stored.length ? stored.map(x => ({ ...x })) : APP.incomeSources.map(s => ({ name: s.name, amount: s.amount, recurring: true })));
   }, [open]);
   const total = list.reduce((s, x) => s + faAmount(x.amount), 0);
@@ -279,7 +279,8 @@ function IncomeSheet({ open, onClose, onChanged, demo }) {
       APP.income = total;
       APP.incomeSources = clean.map((x, i) => ({ name: x.name, amount: x.amount, accent: ['moss', 'honey', 'blush', 'sage'][i % 4] }));
     } else {
-      faSave('fa.plan.income', clean);
+      const plan = faPlanFor(APP.month);
+      if (JSON.stringify(clean) !== JSON.stringify(plan.income)) faSetPlanFor(APP.month, { ...plan, income: clean });
     }
     onChanged(); onClose();
   };

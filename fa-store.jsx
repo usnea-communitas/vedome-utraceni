@@ -8,10 +8,13 @@
 // earlier versions stored the seeded income name translated ("Main income")
 faRegisterDataNames(['Hlavní příjem']);
 
+// fa.plan.income and fa.plan.items are the plan before monthly plans (version 1);
+// they stay listed so old backups restore, and faMigratePlan() converts them.
+// fa.plan.v1 is the copy of that old plan kept by the conversion.
 const FA_STORE_KEYS = [
-  'fa.profile', 'fa.plan.income', 'fa.plan.items', 'fa.expenses',
+  'fa.profile', 'fa.plans', 'fa.plan.income', 'fa.plan.items', 'fa.expenses', 'fa.deposits',
   'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe', 'fa.ratios', 'fa.month',
-  'fa.security', 'fa.reminders',
+  'fa.security', 'fa.reminders', 'fa.plan.v1',
 ];
 
 function faLoad(key, fallback) {
@@ -19,6 +22,54 @@ function faLoad(key, fallback) {
   catch (e) { return fallback; }
 }
 function faSave(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+// ── monthly plans: fa.plans = { 'YYYY-MM': { income: [item], items: { nutne, budouci, radost } } }
+// A month gets its own entry when its plan is set or changed. A month without
+// one follows the latest earlier entry, minus that entry's one-off items
+// (recurring: false), so a plan carries over until it is changed; a month
+// before the first entry follows the first entry the same way. Expenses and
+// goal deposits never change the plan: they show how much of it is used.
+const FA_CATS = ['nutne', 'budouci', 'radost'];
+const faList = v => (Array.isArray(v) ? v : []);
+const faCopyItems = list => faList(list).map(x => ({ ...x }));
+const faRecurringOnly = list => faList(list).filter(x => x && x.recurring !== false).map(x => ({ ...x }));
+function faEmptyPlan() { return { income: [], items: { nutne: [], budouci: [], radost: [] } }; }
+
+function faLoadPlans() {
+  const p = faLoad('fa.plans', {});
+  return p && typeof p === 'object' && !Array.isArray(p) ? p : {};
+}
+const faPlanMonths = plans => Object.keys(plans).filter(k => /^\d{4}-\d{2}$/.test(k)).sort();
+
+// the plan that applies in a month: { income, items, from, own }
+function faPlanFor(month, plans) {
+  plans = plans || faLoadPlans();
+  const keys = faPlanMonths(plans);
+  if (!keys.length) return { ...faEmptyPlan(), from: null, own: false };
+  const own = !!plans[month];
+  const earlier = keys.filter(k => k <= month);
+  const from = own ? month : earlier.length ? earlier[earlier.length - 1] : keys[0];
+  const src = plans[from] || {};
+  const take = own ? faCopyItems : faRecurringOnly;
+  const items = src.items || {};
+  return { income: take(src.income), items: { nutne: take(items.nutne), budouci: take(items.budouci), radost: take(items.radost) }, from, own };
+}
+
+// stores a changed plan as the month's own entry
+function faSetPlanFor(month, plan) {
+  const plans = faLoadPlans();
+  const items = plan.items || {};
+  plans[month] = { income: faCopyItems(plan.income), items: { nutne: faCopyItems(items.nutne), budouci: faCopyItems(items.budouci), radost: faCopyItems(items.radost) } };
+  faSave('fa.plans', plans);
+}
+
+// ── goal deposits, dated, so they count towards "Future me" in their month ──
+function loadFaDeposits() { return faList(faLoad('fa.deposits', [])); }
+function faAddDeposit(goal, amount, day) {
+  if (!(amount > 0)) return;
+  faSave('fa.deposits', loadFaDeposits().concat([{ goal, amount, day, ts: Date.now() }]));
+}
+function faDepositsIn(month) { return loadFaDeposits().filter(d => d && String(d.day).slice(0, 7) === month); }
 
 // ── goals store (Cíle) ──────────────────────────────────────────────────
 function loadFaGoals() { return faLoad('fa.goals', []); }
@@ -52,6 +103,30 @@ function faMigrateYearGoals() {
   try { localStorage.removeItem('fa.yearGoals.custom'); } catch (e) {}
 }
 
+// The plan used to be one list for every month (fa.plan.income, fa.plan.items).
+// It becomes the plan of the current month, which carries over to the months
+// after it and stands in for the months before it. A copy of the old plan is
+// kept in fa.plan.v1 before anything is rewritten. Runs again after an old
+// backup is restored.
+function faMigratePlan() {
+  const OLD = ['fa.plan.income', 'fa.plan.items'];
+  const raw = {};
+  OLD.forEach(k => { try { const v = localStorage.getItem(k); if (v != null) raw[k] = v; } catch (e) {} });
+  if (!Object.keys(raw).length) return;
+  faSave('fa.plan.v1', { saved: new Date().toISOString(), data: raw });
+  const plans = faLoadPlans();
+  if (!faPlanMonths(plans).length) {
+    const income = faLoad('fa.plan.income', []);
+    const items = faLoad('fa.plan.items', {}) || {};
+    plans[faCurrentMonth()] = {
+      income: faCopyItems(income),
+      items: { nutne: faCopyItems(items.nutne), budouci: faCopyItems(items.budouci), radost: faCopyItems(items.radost) },
+    };
+    faSave('fa.plans', plans);
+  }
+  OLD.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+}
+
 // ── wipe everything (Více → „Smazat všechna data") ──────────────────────
 function faResetAll() {
   FA_STORE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
@@ -62,9 +137,9 @@ function faSeedFreshUser(p) {
   // p: { name, income, ratios, goal|null, theme }
   saveFaProfile({ name: p.name, income: p.income, created: Date.now() });
   // the Czech key is stored, so the name follows the interface language
-  faSave('fa.plan.income', [{ name: 'Hlavní příjem', amount: p.income, recurring: true }]);
-  faSave('fa.plan.items', { nutne: [], budouci: [], radost: [] });
+  faSave('fa.plans', { [faCurrentMonth()]: { income: [{ name: 'Hlavní příjem', amount: p.income, recurring: true }], items: { nutne: [], budouci: [], radost: [] } } });
   faSave('fa.expenses', []);
+  faSave('fa.deposits', []);
   faSave('fa.reflexe', {});
   faSave('fa.ratios', p.ratios);
   saveFaGoals(p.goal ? [p.goal] : []);
@@ -73,29 +148,30 @@ function faSeedFreshUser(p) {
 // load the authored demo as a profile (design preview / Tweaks)
 function faLoadDemo() {
   saveFaProfile({ demo: true, name: 'Anička' });
-  ['fa.plan.income', 'fa.plan.items', 'fa.expenses', 'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe']
+  ['fa.plans', 'fa.plan.income', 'fa.plan.items', 'fa.expenses', 'fa.deposits', 'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe']
     .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
 }
 
 const FA_SRC_ACCENTS = ['moss', 'honey', 'blush', 'sage'];
 
-// ── hydrate APP from the user's stores (call before applyFaExpenses) ────
-function faHydrate(ratios) {
+// ── hydrate APP from the user's stores for one month (call before applyFaExpenses) ──
+function faHydrate(ratios, month) {
   const profile = loadFaProfile();
   if (!profile || profile.demo) return profile; // demo: keep authored data
 
   APP.user = profile.name || '';
 
-  // income (drives everything)
-  const incomeList = faLoad('fa.plan.income', []);
+  // the month's plan: income drives everything
+  const plan = faPlanFor(month || APP.month);
+  const incomeList = plan.income;
   const total = incomeList.reduce((s, x) => s + (+x.amount || 0), 0) || (+profile.income || 0);
   APP.income = total;
   APP.incomeSources = incomeList.map((x, i) => ({
     name: x.name, amount: +x.amount || 0, accent: FA_SRC_ACCENTS[i % FA_SRC_ACCENTS.length],
   }));
 
-  // categories: targets from ratios, base actuals from plan items
-  const items = faLoad('fa.plan.items', { nutne: [], budouci: [], radost: [] });
+  // categories: targets from ratios, planned amounts from the plan items
+  const items = plan.items;
   APP.categories.forEach(c => {
     const pct = ratios && ratios[c.key] != null ? ratios[c.key] : c.targetPct;
     c.targetPct = pct;
@@ -124,14 +200,16 @@ function faHydrate(ratios) {
 // ── backup: export / import all user data as a JSON file ────────────────
 // fa.security is left out on purpose — restoring a backup must never lock anyone out.
 // Values are kept as the raw localStorage strings so every key round-trips exactly.
-const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security').concat(['fa.theme', 'fa.lang']);
+// Version 2 (monthly plans) adds fa.plans and fa.deposits; a version 1 backup still
+// restores, and its fa.plan.income and fa.plan.items are converted on the next start.
+const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security' && k !== 'fa.plan.v1').concat(['fa.theme', 'fa.lang']);
 
 function faExportData() {
   const data = {};
   FA_BACKUP_KEYS.forEach(k => {
     try { const raw = localStorage.getItem(k); if (raw != null) data[k] = raw; } catch (e) {}
   });
-  return JSON.stringify({ app: 'vedome-utraceni', version: 1, exported: new Date().toISOString(), data }, null, 2);
+  return JSON.stringify({ app: 'vedome-utraceni', version: 2, exported: new Date().toISOString(), data }, null, 2);
 }
 
 // What each restored key must look like for the app to render. A damaged or
@@ -143,6 +221,10 @@ const FA_BACKUP_CHECKS = {
   'fa.profile': v => faIsObj(v) && (v.name == null || typeof v.name === 'string') && (v.income == null || faIsNum(v.income)),
   'fa.plan.income': v => Array.isArray(v) && v.every(faIsItem),
   'fa.plan.items': v => faIsObj(v) && ['nutne', 'budouci', 'radost'].every(k => v[k] == null || (Array.isArray(v[k]) && v[k].every(faIsItem))),
+  'fa.plans': v => faIsObj(v) && Object.keys(v).every(m => /^\d{4}-\d{2}$/.test(m) && faIsObj(v[m])
+    && (v[m].income == null || (Array.isArray(v[m].income) && v[m].income.every(faIsItem)))
+    && (v[m].items == null || FA_BACKUP_CHECKS['fa.plan.items'](v[m].items))),
+  'fa.deposits': v => Array.isArray(v) && v.every(d => faIsObj(d) && faIsNum(d.amount) && d.amount >= 0 && /^\d{4}-\d{2}-\d{2}$/.test(d.day)),
   'fa.expenses': v => Array.isArray(v) && v.every(e => faIsObj(e) && typeof e.name === 'string' && faIsNum(e.amount) && e.amount >= 0
     && typeof e.cat === 'string' && faIsNum(e.ts) && (e.day == null || /^\d{4}-\d{2}-\d{2}$/.test(e.day))),
   'fa.goals': v => Array.isArray(v) && v.every(g => faIsObj(g) && typeof g.name === 'string' && faIsNum(g.target) && (g.saved == null || faIsNum(g.saved))),
@@ -187,6 +269,7 @@ function faDerive() {
 
 Object.assign(window, {
   faLoad, faSave, loadFaGoals, saveFaGoals, loadFaReflexe, saveFaReflexe,
-  faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive, faMigrateYearGoals,
+  faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive, faMigrateYearGoals, faMigratePlan,
+  faLoadPlans, faPlanFor, faSetPlanFor, loadFaDeposits, faAddDeposit, faDepositsIn,
   FA_BACKUP_KEYS, faExportData, faImportData, faBackupValueOk,
 });

@@ -27,21 +27,27 @@ const FA_SUGGESTED = [
 // picked suggestions are stored in the language of the moment (see faDataLabel)
 faRegisterDataNames(FA_SUGGESTED.map(s => s.name));
 
-// ── apply expenses onto the shared APP model (after ratios!) ───────────
-function applyFaExpenses(expenses) {
+// ── apply the month's expenses and goal deposits onto the APP model (after faHydrate) ──
+// The plan decides each category's share of the income (c.planned, also c.actual,
+// compared with the 50/30/20 target). Expenses never raise it: they are what was
+// used of it (c.spent), and goal deposits count towards "Future me".
+function applyFaExpenses(expenses, deposits = []) {
   if (!APP._baseActuals) APP._baseActuals = APP.categories.map(c => c.actual);
   APP.plannedTotal = APP._baseActuals.reduce((s, v) => s + (+v || 0), 0);
-  APP.spentTotal = expenses.reduce((s, e) => s + (+e.amount || 0), 0);
+  APP.depositTotal = deposits.reduce((s, d) => s + (+d.amount || 0), 0);
   APP.categories.forEach((c, i) => {
-    const extra = expenses.reduce((s, e) => s + (e.cat === c.key ? e.amount : 0), 0);
-    c.actual = APP._baseActuals[i] + extra;
-    c.incomePct = Math.round(c.actual / APP.income * 100);
-    c.ofTarget = c.target ? Math.round(c.actual / c.target * 100) : 0;
-    const diff = c.actual - c.target;
+    c.planned = +APP._baseActuals[i] || 0;
+    c.actual = c.planned;
+    c.spent = expenses.reduce((s, e) => s + (e.cat === c.key ? +e.amount || 0 : 0), 0) + (c.key === 'budouci' ? APP.depositTotal : 0);
+    c.left = c.planned - c.spent;
+    c.incomePct = APP.income > 0 ? Math.round(c.planned / APP.income * 100) : 0;
+    c.ofTarget = c.target ? Math.round(c.planned / c.target * 100) : 0;
+    const diff = c.planned - c.target;
     if (diff > 0) { c.tone = 'over'; c.status = 'Řešit'; }
     else if (c.key === 'budouci' && diff < 0) { c.tone = 'under'; c.status = 'Řešit'; }
     else { c.tone = 'ok'; c.status = 'OK'; }
   });
+  APP.spentTotal = APP.categories.reduce((s, c) => s + c.spent, 0);
 }
 
 // localized note derived from live numbers (replaces static c.note)

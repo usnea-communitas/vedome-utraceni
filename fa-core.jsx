@@ -77,6 +77,11 @@ function faMonthLabel(key) {
   return f ? faCap(f.format(new Date(p.y, p.m - 1, 1))) : L(FA_MONTHS[p.m - 1]) + ' ' + p.y;
 }
 // the day an expense belongs to ('YYYY-MM-DD'); older records only have a timestamp
+// a month inside a sentence: lower-case as running text needs it, except in English
+function faMonthInText(key) {
+  const label = faMonthLabel(key);
+  return getFaLang() === 'en' ? label : label.charAt(0).toLocaleLowerCase(getFaLocale()) + label.slice(1);
+}
 function faExpenseDay(e) {
   if (e && e.day) return e.day;
   const d = new Date(e && e.ts ? e.ts : Date.now());
@@ -250,5 +255,5 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 Object.assign(window, {
   FA_VERSION, fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, accentText, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
-  faMonthLabel, faMonthName, faExpenseDay, faExpenseMonth, faDayLabel,
+  faMonthLabel, faMonthName, faMonthInText, faExpenseDay, faExpenseMonth, faDayLabel,
 });

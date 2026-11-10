@@ -52,7 +52,7 @@ function App() {
   // fill the viewport natively — avoids a double status bar and a clipped nav.
   const [bare, setBare] = useA(false);
   const [frameScale, setFrameScale] = useA(faFrameScale);
-  const [profile, setProfile] = useA(() => { faMigrateYearGoals(); return loadFaProfile(); });
+  const [profile, setProfile] = useA(() => { faMigrateYearGoals(); faMigratePlan(); return loadFaProfile(); });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
@@ -145,12 +145,11 @@ function App() {
   const scene = t.scene === 'video' && profile && !still ? 'video' : 'les';
   // apply editable 50/30/20 ratios onto the shared data model before render
   APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
-  // real-data mode: rewrite APP from the user's stores (no-op for demo profile)
-  faHydrate(ratios);
-  // then layer user-added one-off expenses on top (recomputes derived stats)
-  // only the selected month's one-off expenses count towards its numbers
+  // real-data mode: rewrite APP from the user's stores for the month shown (no-op for demo profile)
+  faHydrate(ratios, month);
+  // then the month's expenses and goal deposits: they use up the plan, they never raise it
   const monthExpenses = expenses.filter(e => faExpenseMonth(e) === month);
-  applyFaExpenses(monthExpenses);
+  applyFaExpenses(monthExpenses, faDepositsIn(month));
   faDerive();
   setFaTheme(isWizard ? 'wizard' : 'forest');
   setFaLang(lang);
