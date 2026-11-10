@@ -5,7 +5,7 @@ Thank you for helping people spend more mindfully. Contributions of every size a
 ## Ways to help
 
 - **Report a bug** — open an issue with the browser, device, language and the steps to reproduce. If the problem concerns your data, describe it rather than attaching a backup (backups contain your finances).
-- **Improve a translation** — strings live in `fa-i18n.jsx`; the Czech text is the key, the other languages are values. Fix the text, keep the key, run `npm run compile`.
+- **Improve a translation** — native speakers can review a whole language in a spreadsheet: [docs/translations/](docs/translations/README.md) has a file per language and a one-page guide. Or edit `fa-i18n.jsx` directly: the Czech text is the key, the other languages are values. Fix the text, keep the key, run `npm run compile`.
 - **Add a language** — add the code to `FA_LANGS` in `fa-i18n.jsx` and a translation to every entry. A partial translation falls back to Czech, so complete it before opening a pull request.
 - **Propose a tip or a reflection question** — keep the tone calm and non-judgemental; one idea per issue.
 - **Share workshop feedback** — what confused participants, what helped. Open an issue tagged `workshop`.
