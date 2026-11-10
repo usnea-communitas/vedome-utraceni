@@ -21,7 +21,9 @@
     "compile": "node scripts/compile.mjs",
     "test": "node --test tests/unit/*.test.mjs",
     "test:e2e": "node --test tests/e2e/*.test.mjs",
-    "test:production": "node --test tests/production/*.test.mjs"
+    "test:production": "node --test tests/production/*.test.mjs",
+    "translations:export": "node scripts/translations.mjs export",
+    "translations:import": "node scripts/translations.mjs import"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
