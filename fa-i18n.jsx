@@ -491,7 +491,6 @@ const S = {
   'Lesní klid': { en: 'Forest Calm', pl: 'Leśny spokój', uk: 'Лісовий спокій', es: 'Calma del bosque' },
   'Kouzelnický': { en: 'Wizardly', pl: 'Czarodziejski', uk: 'Чарівний', es: 'Mágico' },
   'verze {v}': { en: 'version {v}', pl: 'wersja {v}', uk: 'версія {v}', es: 'versión {v}' },
-  'Projekt spolku Usnea communitas, z. s.': { en: 'A project of Usnea communitas, z. s.', pl: 'Projekt stowarzyszenia Usnea communitas, z. s.', uk: 'Проєкт громадської організації Usnea communitas, z. s.', es: 'Un proyecto de la asociación Usnea communitas, z. s.' },
   // ── batch 2026-09: months, dates, backup, reminders, neutral wording ──
   'Datum': { en: 'Date', pl: 'Data', uk: 'Дата', es: 'Fecha' },
   'Celkem za {m}: {v}': { en: 'Total for {m}: {v}', pl: 'Razem za {m}: {v}', uk: 'Разом за {m}: {v}', es: 'Total de {m}: {v}' },
