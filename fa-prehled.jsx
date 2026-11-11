@@ -2,8 +2,10 @@
 // (income + balance + "Lesní koláč peněz" donut), then the three 50/30/20
 // category cards, reserves and extra-income cards.
 
-function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, profile, setProfile }) {
+function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, profile, setProfile, onDefaultPlan }) {
   const a = APP;
+  // an empty plan: the split chosen in onboarding goes into it in one tap
+  const offer = !!onDefaultPlan && !a.allocated && faCanUseDefaultPlan(month);
   const segs = a.categories.map(c => ({ value: c.actual, color: accentVar(c.accent), label: L(c.name) }));
   // unallocated slice
   if (a.remaining > 0) segs.push({ value: a.remaining, color: 'var(--unalloc)', label: L('Nerozděleno') });
@@ -60,7 +62,14 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
               <span style={{ opacity: 0.4 }}>·</span>
               <span>{L('Zbývá rozdělit')} <strong style={{ color: 'var(--moss-deep)', fontWeight: 600 }}>{kc(a.remaining)}</strong></span>
             </div>
-            {!a.allocated && (
+            {offer ? (
+              <div className="fa-plan-offer">
+                <p>{Lf('Plán na {m} je zatím prázdný. Začni svým rozdělením — po položkách ho rozepíšeš později.', { m: faMonthInText(month) })}</p>
+                <button className="fa-cta fa-cta-solid fa-plan-offer-btn" onClick={ev => onDefaultPlan(ev.detail === 0)}>
+                  <Icon name="check" size={16} stroke={2.2} /> {Lf('Zapsat {r} do plánu', { r: faRatioText(ratios) })}
+                </button>
+              </div>
+            ) : !a.allocated && (
               <p style={{ textAlign: 'center', margin: '10px auto 0', maxWidth: 270, fontFamily: 'var(--sans)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--ink-soft)' }}>
                 {L('Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.')}
               </p>

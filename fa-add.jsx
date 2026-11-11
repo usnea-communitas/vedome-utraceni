@@ -269,7 +269,7 @@ function faUndoExpense(list, t) {
   return [...list.slice(0, i), t.expense, ...list.slice(i)];
 }
 
-// ── toast with undo, after adding or deleting an expense ──────────────
+// ── toast with undo, after adding or deleting an expense or writing the plan in one tap ──
 // A polite live region announces it. It stays 6 s, and as long as it is pointed
 // at or focused. A delete made from the keyboard moves focus to Undo (the row is
 // gone), and Undo from the keyboard brings focus back to the restored row.
@@ -292,17 +292,25 @@ function FaToast({ toast, onUndo, onHide }) {
       const row = document.querySelector('.fa-exp-del[data-ts="' + toast.expense.ts + '"]');
       if (row) row.focus();
     });
+    // undoing the plan in one tap brings its offer back
+    if (fromKeyboard && toast.kind === 'plan') requestAnimationFrame(() => {
+      const offer = document.querySelector('.fa-plan-offer-btn');
+      if (offer) offer.focus();
+    });
   };
   const e = toast && toast.expense;
   const what = e && faDataLabel(e.name) + ' · −' + kc(e.amount);
+  const text = !toast ? ''
+    : toast.kind === 'plan' ? Lf('V plánu: {r}', { r: faRatioText(toast.ratios) })
+    : toast.kind === 'deleted' ? Lf('Smazáno: {n}', { n: what }) : what;
   return (
     <div role="status" aria-live="polite" aria-atomic="true">
       {toast && (
-        <div className="fa-toast" key={toast.kind + e.ts}
+        <div className="fa-toast" key={toast.kind + (e ? e.ts : toast.at)}
           onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)}
           onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
           <Icon name={toast.kind === 'deleted' ? 'trash' : 'check'} size={15} stroke={2.2} />
-          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{toast.kind === 'deleted' ? Lf('Smazáno: {n}', { n: what }) : what}</span>
+          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
           <button ref={undoRef} onClick={undo}>{L('Zpět')}</button>
         </div>
       )}

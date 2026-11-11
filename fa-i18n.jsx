@@ -493,8 +493,13 @@ const S = {
   // ── batch 2026-09: months, dates, backup, reminders, neutral wording ──
   'Datum': { en: 'Date', pl: 'Data', uk: 'Дата', es: 'Fecha' },
   'Celkem za {m}: {v}': { en: 'Total for {m}: {v}', pl: 'Razem za {m}: {v}', uk: 'Разом за {m}: {v}', es: 'Total de {m}: {v}' },
-  'Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.': { en: 'Next step: in Plan, list what belongs to Essentials — rent, energy, food.', pl: 'Następny krok: w Planie rozpisz, co należy do Niezbędnych — czynsz, energia, jedzenie.', uk: 'Наступний крок: у Плані розпиши, що належить до Необхідного — оренда, енергія, їжа.', es: 'Siguiente paso: en el Plan detalla lo que va a Necesario — alquiler, energía, comida.' },
+  'Další krok: v Plánu rozepiš, co patří do Potřebných — nájem, energie, jídlo.': { en: 'Next step: in Plan, list what belongs to Need — rent, energy, food.', pl: 'Następny krok: w Planie rozpisz, co należy do Niezbędnych — czynsz, energia, jedzenie.', uk: 'Наступний крок: у Плані розпиши, що належить до Необхідного — оренда, енергія, їжа.', es: 'Siguiente paso: en el Plan detalla lo que va a Esenciales — alquiler, energía, comida.' },
   'Rozepsat měsíční plán': { en: 'Break down the monthly plan', pl: 'Rozpisz plan miesięczny', uk: 'Розписати місячний план', es: 'Detallar el plan mensual' },
+  // the plan in one tap (an empty plan on Overview and Plan)
+  'Plán na {m} je zatím prázdný. Začni svým rozdělením — po položkách ho rozepíšeš později.': { en: 'The plan for {m} is still empty. Start with your split and break it down item by item later.', pl: 'Plan na {m} jest jeszcze pusty. Zacznij od swojego podziału — na pozycje rozpiszesz go później.', uk: 'План на {m} поки порожній. Почни зі свого розподілу — по статтях розпишеш його пізніше.', es: 'El plan de {m} aún está vacío. Empieza con tu reparto y detállalo partida a partida más tarde.' },
+  'Zapsat {r} do plánu': { en: 'Put {r} into the plan', pl: 'Wpisz {r} do planu', uk: 'Записати {r} у план', es: 'Pasar {r} al plan' },
+  'V plánu: {r}': { en: 'In the plan: {r}', pl: 'W planie: {r}', uk: 'У плані: {r}', es: 'En el plan: {r}' },
+  'Zatím vcelku': { en: 'Not split yet', pl: 'W całości', uk: 'Ще не поділено', es: 'Sin desglosar' },
   'Vyber měsíc': { en: 'Choose a month', pl: 'Wybierz miesiąc', uk: 'Обери місяць', es: 'Elige un mes' },
   'Předchozí rok': { en: 'Previous year', pl: 'Poprzedni rok', uk: 'Попередній рік', es: 'Año anterior' },
   'Další rok': { en: 'Next year', pl: 'Następny rok', uk: 'Наступний рік', es: 'Año siguiente' },

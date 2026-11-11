@@ -69,8 +69,19 @@ function App() {
     setExpenses(list);
     setToast({ ...undo, focus: !!fromKeyboard });
   };
-  const undoToast = (t) => setExpenses(list => faUndoExpense(list, t));
   const [toast, setToast] = useA(null);
+  // the plan in one tap (Overview and Plan offer it while the month's plan is
+  // empty); a change in version re-reads the stored plan
+  const [planVersion, setPlanVersion] = useA(0);
+  const applyDefaultPlan = (fromKeyboard) => {
+    const before = faApplyDefaultPlan(month, ratios);
+    setPlanVersion(v => v + 1);
+    setToast({ kind: 'plan', month, ratios: { ...ratios }, before, at: Date.now(), focus: !!fromKeyboard });
+  };
+  const undoToast = (t) => {
+    if (t.kind === 'plan') { faRestorePlans(t.before); setPlanVersion(v => v + 1); return; }
+    setExpenses(list => faUndoExpense(list, t));
+  };
   const [prefs, setPrefs] = useA(faMotionPrefs);
   useAE(() => {
     const update = () => setPrefs(faMotionPrefs());
@@ -144,7 +155,8 @@ function App() {
   // the scene attribute follows what is shown (the video scene lightens the titles)
   const scene = t.scene === 'video' && profile && !still ? 'video' : 'les';
   // apply editable 50/30/20 ratios onto the shared data model before render
-  APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = Math.round(APP.income * ratios[c.key] / 100); } });
+  const targets = faSplitIncome(APP.income, ratios);
+  APP.categories.forEach(c => { if (ratios[c.key] != null) { c.targetPct = ratios[c.key]; c.target = targets[c.key]; } });
   // real-data mode: rewrite APP from the user's stores for the month shown (no-op for demo profile)
   faHydrate(ratios, month);
   // then the month's expenses and goal deposits: they use up the plan, they never raise it
@@ -176,8 +188,8 @@ function App() {
         {/* scrollable content */}
         <main ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
-            <div key={screen + '|' + month} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} />
+            <div key={screen + '|' + month + '|' + planVersion} className={'fa-stage' + (entered ? ' is-in' : '')}>
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} onDefaultPlan={applyDefaultPlan} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}

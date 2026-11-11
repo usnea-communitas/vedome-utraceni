@@ -228,6 +228,71 @@ for (const lang of ['en', 'cs']) {
   });
 }
 
+// ── the first minute: from opening the app to a plan in at most eight actions ──
+const FIRST = {
+  en: { url: '', offer: 'Put 50 / 30 / 20 into the plan', toast: 'In the plan: 50 / 30 / 20', item: 'Not split yet', none: 'no plan yet', onPlan: 'on plan' },
+  cs: { url: '?lang=cs', offer: 'Zapsat 50 / 30 / 20 do plánu', toast: 'V plánu: 50 / 30 / 20', item: 'Zatím vcelku', none: 'zatím bez plánu', onPlan: 'v plánu' },
+};
+// elements of the screen that reach past its right edge
+const overflowing = page => page.evaluate(() => {
+  const w = document.documentElement.clientWidth;
+  return [...document.querySelectorAll('.fa-screen *, .fa-toast')].filter(e => e.getBoundingClientRect().right > w + 0.5).map(e => e.className || e.tagName);
+});
+
+for (const lang of ['en', 'cs']) {
+  test(`a first plan in at most eight actions, 360 px wide (${lang})`, async () => {
+    const T = FIRST[lang];
+    const { context, page, problems } = await phone(360);
+    let actions = 0;
+    const act = async step => { actions += 1; await step(); };
+    // English opens by default; a Czech link (as a workshop would share it) opens in Czech
+    await page.goto(base + T.url);
+    const next = page.locator('.fa-onb .fa-cta');
+    await act(() => next.click());                                        // welcome
+    await act(() => next.click());                                        // no name
+    await act(() => page.locator('.fa-onb-input').fill('32 333'));
+    await act(() => next.click());
+    await act(() => next.click());                                        // 50 / 30 / 20
+    await act(() => page.locator('.fa-onb .fa-textbtn').click());         // a goal later
+    await act(() => next.click());                                        // theme → finish
+
+    // the empty plan says what to do next, and offers the split in one tap
+    const card = page.locator('.fa-screen .fa-card').first();
+    assert.ok((await card.innerText()).includes(T.none));
+    assert.deepEqual(await overflowing(page), []);
+    await act(() => page.getByRole('button', { name: T.offer }).click());
+    assert.ok(actions <= 8, `${actions} actions`);
+
+    // a full plan: each part holds its share, the three add up to the income
+    assert.ok((await card.innerText()).includes(T.onPlan));
+    assert.equal(await page.locator('.fa-toast span').innerText(), T.toast);
+    const overview = await page.locator('.fa-screen').innerText();
+    for (const n of [16166, 9700, 6467]) assert.ok(overview.includes(`${money(lang, n)} ${lang === 'cs' ? 'z' : 'of'} ${money(lang, n)}`), `${money(lang, n)} planned`);
+    assert.deepEqual(await overflowing(page), []);
+
+    // Undo leaves the plan empty again and brings the offer back
+    await page.locator('.fa-toast button').click();
+    assert.ok((await card.innerText()).includes(T.none));
+    assert.equal(await page.getByRole('button', { name: T.offer }).count(), 1);
+
+    // the Plan screen offers the same; each part is one item, to split later
+    await tab(page, 1);
+    await page.getByRole('button', { name: T.offer }).click();
+    assert.equal(await page.getByRole('button', { name: T.offer }).count(), 0);
+    const need = page.locator('.fa-card', { has: page.locator('.fa-cat-head') }).nth(0);
+    await need.locator('.fa-cat-head').click();
+    assert.equal(await need.locator('.fa-item').count(), 1);
+    assert.equal(await need.locator('.fa-item span span').first().innerText(), T.item);
+    assert.deepEqual(await overflowing(page), []);
+    const stored = JSON.parse(await page.evaluate(() => localStorage.getItem('fa.plans')));
+    const items = Object.values(stored)[0].items;
+    assert.deepEqual(['nutne', 'radost', 'budouci'].map(k => items[k].map(x => [x.amount, x.recurring])), [[[16166, true]], [[9700, true]], [[6467, true]]]);
+
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
+
 test('skipping the first goal adds no goal, even after highlighting one', async () => {
   const { context, page, problems } = await phone();
   await page.goto(base);
