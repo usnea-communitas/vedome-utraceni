@@ -61,12 +61,13 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | `fa-settings.jsx` | PIN lock, reminders, backups, language and appearance settings. |
 | `fa-onboard.jsx` | First-run onboarding: welcome → name → income → ratios → first goal → theme. |
 | `fa-workshop.jsx` | Workshop mode: the three stories, the five tasks, the facilitator's page. |
-| `fa-forest.jsx`, `fa-wizard.jsx` | The two ambient backdrops. |
+| `fa-forest.jsx`, `fa-wizard.jsx` | The two ambient backdrops; their blurred light and grain fade in once the page has loaded, so they never hold back the first screen. |
 | `fa-ui.jsx` | Shared UI primitives and micro-interactions. |
 | `fa-app.jsx` | App shell: navigation, screen transitions, motion preferences, Tweaks panel, error page, mount. |
 | `ios-frame.jsx`, `tweaks-panel.jsx` | Device frame for desktop preview and the developer Tweaks panel. |
 | `scripts/compile.mjs` | Precompiles the JSX sources into `app.js`, vendors React and stamps the `app.js?v=<hash>` cache key into `index.html` and `sw.js`. |
 | `scripts/workshop-qr.mjs` | Makes the workshop QR codes, `assets/workshop-qr-<lang>.svg`. |
+| `scripts/cut-fonts.py` | Cuts the stored fonts to the weights and letters the app uses, and the welcome heading's own font (`--heading`). |
 | `sw.js`, `manifest.webmanifest` | Offline cache (network first) and PWA manifest. |
 | `tests/` | `node:test` unit, translation and build checks; Playwright smoke tests in `tests/e2e/`; a check of the live site in `tests/production/`. |
 | `vercel.json` | Security headers for the Vercel deployment (no build settings). |
