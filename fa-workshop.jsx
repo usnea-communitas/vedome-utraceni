@@ -91,6 +91,16 @@ const FA_WORKSHOP_QUESTIONS = {
   look: ['Co z příběhu platí i pro vás?'],
 };
 
+// The facilitator kit (docs/workshop/, made by scripts/workshop-pdf.mjs): Czech
+// and English; the other languages get the English one.
+const FA_WORKSHOP_KIT = {
+  cs: [['Průvodce lekcí', 'vedome-utraceni-pro-lektory-cs.pdf'], ['Pracovní listy a dotazník', 'vedome-utraceni-pracovni-listy-cs.pdf'], ['Snímky', 'vedome-utraceni-snimky-cs.pdf']],
+  en: [['Průvodce lekcí', 'mindful-spending-facilitator-guide-en.pdf'], ['Pracovní listy a dotazník', 'mindful-spending-worksheets-en.pdf'], ['Snímky', 'mindful-spending-slides-en.pdf']],
+};
+function faWorkshopKit(lang) {
+  return (FA_WORKSHOP_KIT[lang] || FA_WORKSHOP_KIT.en).map(([label, file]) => ({ label, href: 'docs/workshop/pdf/' + file }));
+}
+
 function faWorkshopStory(id) { return FA_WORKSHOP_STORIES.find(s => s.id === id) || null; }
 const faStoryIncome = story => story.income.reduce((s, x) => s + x.amount, 0);
 
@@ -314,6 +324,18 @@ function WorkshopGuide({ inCard, onBack }) {
       </GuidePart>
 
       <GuidePart inCard={inCard}>
+        <h2 className="fa-ws-h2">{L('Sada pro lektory')}</h2>
+        <p className="fa-ws-text">{L('Plán lekce na 90 i 45 minut, pracovní listy k tisku, snímky a dotazník. Česky a anglicky.')}</p>
+        <div className="fa-ws-kit">
+          {faWorkshopKit(lang).map(k => (
+            <a key={k.href} className="fa-ghostbtn" href={k.href} target="_blank" rel="noopener">
+              <Icon name="book" size={14} stroke={2} /> {L(k.label)} <small>PDF</small>
+            </a>
+          ))}
+        </div>
+      </GuidePart>
+
+      <GuidePart inCard={inCard}>
         <h2 className="fa-ws-h2">{L('Časový plán, asi 45 minut')}</h2>
         <ol className="fa-ws-time">
           {FA_WORKSHOP_TIMING.map(([min, text]) => (
@@ -350,7 +372,7 @@ function WorkshopGuide({ inCard, onBack }) {
 function WorkshopGuideScreen({ go }) { return <WorkshopGuide onBack={() => go('workshop')} />; }
 
 Object.assign(window, {
-  FA_SITE, FA_WORKSHOP_STORIES, FA_WORKSHOP_TASKS, FA_WORKSHOP_TIMING, FA_WORKSHOP_QUESTIONS,
-  faWorkshopLink, faWorkshopStory, faStoryIncome, loadFaTasks, saveFaTasks, faStartWorkshop,
+  FA_SITE, FA_WORKSHOP_STORIES, FA_WORKSHOP_TASKS, FA_WORKSHOP_TIMING, FA_WORKSHOP_QUESTIONS, FA_WORKSHOP_KIT,
+  faWorkshopLink, faWorkshopKit, faWorkshopStory, faStoryIncome, loadFaTasks, saveFaTasks, faStartWorkshop,
   WorkshopWelcome, Workshop, WorkshopGuide, WorkshopGuideScreen,
 });

@@ -26,7 +26,7 @@ A calm money plan in one understandable frame (50/30/20), with data that stays i
 - Tabs: Overview, Plan, Goals, Tips, Reflection, More; onboarding on first launch.
 - Languages: English (default), Czech (original), Polish, Ukrainian, Spanish; chosen on the welcome screen or under More → Language and stored on the device.
 - Themes: Forest Calm and Wizard.
-- Workshop mode: a link or QR code (`?workshop=1&lang=cs`) opens three made-up stories and five tasks on data kept apart from the participant's own; *End and delete* removes it. The facilitator's page has the link, the QR code, the timing and questions.
+- Workshop mode: a link or QR code (`?workshop=1&lang=cs`) opens three made-up stories and five tasks on data kept apart from the participant's own; *End and delete* removes it. The facilitator's page has the link, the QR code, the timing and questions, and links to the facilitator kit (`docs/workshop/`: lesson plans for 90 and 45 minutes, worksheets, slides, a questionnaire and the table against the Czech Financial Literacy Standard; Czech and English, PDF).
 
 ## Capabilities and Constraints
 
