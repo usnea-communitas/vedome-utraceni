@@ -1,5 +1,5 @@
 // sw.js — lets the installed app open offline, without ever mixing two versions.
-// The page and the app shell (index.html, app.js, React, manifest, icon) are
+// The page and the app shell (index.html, app.js, React, manifest, small icon) are
 // network first: online, every visit gets one consistent deploy, and the cache is
 // only the offline fallback. index.html loads app.js?v=<content hash>; `npm run
 // compile` stamps the same hash below, so a new app.js also brings a new service
@@ -11,7 +11,7 @@ const CACHE = 'vedome-utraceni-v3-' + BUILD;
 const CORE = [
   './', './index.html', './app.js?v=' + BUILD,
   './vendor/react.production.min.js?v=' + REACT, './vendor/react-dom.production.min.js?v=' + REACT,
-  './manifest.webmanifest', './icon.png', './register-sw.js',
+  './manifest.webmanifest', './icon-192.png', './register-sw.js',
 ];
 
 self.addEventListener('install', (event) => {
