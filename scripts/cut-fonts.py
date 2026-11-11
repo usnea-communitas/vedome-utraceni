@@ -17,6 +17,12 @@ original files (git history before November 2026) with fontTools installed:
 
     pip install fonttools brotli
     python3 scripts/cut-fonts.py
+
+The onboarding headings (.fa-onb-h: 25 px, weight 500) are the only Newsreader
+text on the first screen, so they get one static instance of the font, the
+variable font at opsz 25 and wght 500: the same letters at a quarter of the
+size. `python3 scripts/cut-fonts.py --heading` writes it from the -v2 files as
+newsreader-heading-<subset>.woff2; index.html calls it 'Newsreader Heading'.
 """
 import re
 import sys
@@ -62,7 +68,24 @@ def cut(name, weights):
     print(f'{target.name}: {before / 1024:.1f} -> {after / 1024:.1f} kB')
 
 
+# where .fa-onb-h draws Newsreader: 25 px (optical size follows the font size) at weight 500
+HEADING = {'opsz': 25, 'wght': 500}
+
+
+def cut_heading():
+    for part in ('latin', 'latin-ext'):
+        source = ROOT / 'fonts' / f'newsreader-normal-{part}-v2.woff2'
+        font = instancer.instantiateVariableFont(TTFont(source), HEADING)
+        font.flavor = 'woff2'
+        target = ROOT / 'fonts' / f'newsreader-heading-{part}.woff2'
+        font.save(target)
+        print(f'{target.name}: {source.stat().st_size / 1024:.1f} -> {target.stat().st_size / 1024:.1f} kB')
+
+
 def main():
+    if sys.argv[1:] == ['--heading']:
+        cut_heading()
+        return
     css = (ROOT / 'index.html').read_text(encoding='utf-8')
     weights = declared_weights(css)
     names = sys.argv[1:] or sorted(n for n in weights if not n.endswith('-v2.woff2'))

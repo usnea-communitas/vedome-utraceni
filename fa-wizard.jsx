@@ -75,6 +75,7 @@ function WizardCastle({ animate, dur }) {
 }
 
 function WizardBackground({ motion = 'gentle', videoSrc = null }) {
+  const awake = useFaAmbientAwake();
   const animate = motion !== 'off';
   const lvl = { off: 0, barely: 1, gentle: 2, living: 3 }[motion] ?? 2;
   const mul = motion === 'barely' ? 1.5 : motion === 'living' ? 0.82 : 1;
@@ -106,6 +107,9 @@ function WizardBackground({ motion = 'gentle', videoSrc = null }) {
     : null;
 
   const CF = window.CrossfadeVideo;
+  // the blurred and blended layers join once the page has loaded (useFaAmbientAwake)
+  const scene = awake && !videoSrc;
+  const layer = { position: 'absolute', inset: 0 };
 
   return (
     <div aria-hidden="true" style={{
@@ -116,12 +120,16 @@ function WizardBackground({ motion = 'gentle', videoSrc = null }) {
       <div style={{ position: 'absolute', inset: -40,
         background: 'radial-gradient(120% 82% at 70% -6%, #1E2750 0%, #131B38 44%, #0A0E20 100%)' }} />
       {/* indigo light pools (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', top: '-12%', left: '-16%', width: 300, height: 300,
-        borderRadius: '50%', background: 'radial-gradient(circle,#2C3C82,transparent 68%)', filter: 'blur(52px)',
-        opacity: 0.5, animation: animate ? `wzDrift1 ${dur(50)} ease-in-out infinite alternate` : 'none' }} />}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', top: '26%', right: '-18%', width: 260, height: 260,
-        borderRadius: '50%', background: 'radial-gradient(circle,#3C2A6A,transparent 68%)', filter: 'blur(52px)',
-        opacity: 0.46, animation: animate ? `wzDrift2 ${dur(58)} ease-in-out infinite alternate` : 'none' }} />}
+      {scene && lvl >= 2 && (
+        <div className="fa-ambient-in" style={layer}>
+          <div style={{ position: 'absolute', top: '-12%', left: '-16%', width: 300, height: 300,
+            borderRadius: '50%', background: 'radial-gradient(circle,#2C3C82,transparent 68%)', filter: 'blur(52px)',
+            opacity: 0.5, animation: animate ? `wzDrift1 ${dur(50)} ease-in-out infinite alternate` : 'none' }} />
+          <div style={{ position: 'absolute', top: '26%', right: '-18%', width: 260, height: 260,
+            borderRadius: '50%', background: 'radial-gradient(circle,#3C2A6A,transparent 68%)', filter: 'blur(52px)',
+            opacity: 0.46, animation: animate ? `wzDrift2 ${dur(58)} ease-in-out infinite alternate` : 'none' }} />
+        </div>
+      )}
       {/* stars (CSS scene only) */}
       {!videoSrc && stars}
       {/* moon glow (CSS scene only) */}
@@ -142,16 +150,19 @@ function WizardBackground({ motion = 'gentle', videoSrc = null }) {
       )}
       {/* castle silhouette (CSS scene only) */}
       {!videoSrc && <WizardCastle animate={animate} dur={dur} />}
-      {/* drifting mist near the base (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && <div style={{ position: 'absolute', left: 0, right: 0, bottom: '6%', height: '32%',
-        background: 'linear-gradient(0deg, rgba(150,170,214,0.16), transparent)', filter: 'blur(9px)',
-        animation: animate ? `wzMist ${dur(30)} ease-in-out infinite alternate` : 'none' }} />}
-      {/* candle embers (CSS scene only) */}
-      {!videoSrc && embers}
-      {/* fine grain */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 'var(--grain-opacity)',
+      {/* drifting mist near the base and candle embers (CSS scene only) */}
+      {scene && (lvl >= 2 || embers) && (
+        <div className="fa-ambient-in" style={layer}>
+          {lvl >= 2 && <div style={{ position: 'absolute', left: 0, right: 0, bottom: '6%', height: '32%',
+            background: 'linear-gradient(0deg, rgba(150,170,214,0.16), transparent)', filter: 'blur(9px)',
+            animation: animate ? `wzMist ${dur(30)} ease-in-out infinite alternate` : 'none' }} />}
+          {embers}
+        </div>
+      )}
+      {/* fine grain, outside the fading layer above so it keeps blending with the night beneath */}
+      {awake && <div className="fa-ambient-in" style={{ position: 'absolute', inset: 0, opacity: 'var(--grain-opacity)',
         backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-        mixBlendMode: 'overlay' }} />
+        mixBlendMode: 'overlay' }} />}
       {/* edge vignette for focus */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
         boxShadow: 'inset 0 0 120px 26px rgba(4,6,16,0.55)' }} />
