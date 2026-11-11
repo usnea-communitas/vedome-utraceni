@@ -48,13 +48,17 @@ test(`${site.host} serves build ${build}`, async () => {
   const code = Buffer.from(await app.arrayBuffer());
   assert.equal(createHash('sha256').update(code).digest('hex').slice(0, 10), build, 'app.js content matches its hash');
 
-  // the rest of what the service worker caches for offline use
+  // the rest of what the service worker caches for offline use, as sw.js lists it
   const sw = await (await get('/sw.js')).text();
   const react = sw.match(/const REACT = '([^']+)'/)[1];
-  for (const path of ['/sw.js', '/manifest.webmanifest', '/icon.png', '/register-sw.js',
-    `/vendor/react.production.min.js?v=${react}`, `/vendor/react-dom.production.min.js?v=${react}`]) {
-    assert.equal((await get(path)).status, 200, `GET ${path}`);
-  }
+  const core = sw.match(/const CORE = \[([^\]]+)\]/)[1].match(/'[^']*'(?: \+ (?:BUILD|REACT))?/g)
+    .map(item => item.replace(/^'\.\/?/, '/').replace(/' \+ BUILD$/, build).replace(/' \+ REACT$/, react).replace(/'$/, ''));
+  assert.ok(core.length >= 8, `CORE lists ${core.length} files`);
+  // (each answer is read to the end, so no download is left open after the test)
+  const ok = async path => { const res = await get(path); await res.arrayBuffer(); assert.equal(res.status, 200, `GET ${path}`); };
+  for (const path of ['/sw.js', ...core]) await ok(path);
+  // and every icon of the manifest
+  for (const icon of (await (await get('/manifest.webmanifest')).json()).icons) await ok('/' + icon.src);
 });
 
 test('security headers, fonts, icons and the share preview are in place', async () => {
@@ -73,10 +77,21 @@ test('security headers, fonts, icons and the share preview are in place', async 
   const image = await fetch(og);
   assert.equal(image.status, 200, `GET ${og}`);
   assert.match(image.headers.get('content-type') || '', /image\/jpeg/);
-  for (const path of ['/favicon.ico', '/robots.txt', '/sitemap.xml', '/fonts/hanken-grotesk-normal-latin.woff2']) {
-    assert.equal((await get(path)).status, 200, `GET ${path}`);
+  // the icons the page names (favicon, home-screen icon)
+  const icons = [...html.matchAll(/<link rel="(?:icon|apple-touch-icon)" href="([^"]+)"/g)].map(m => '/' + m[1]);
+  assert.ok(icons.length >= 2, `${icons.length} icons`);
+  for (const path of [...icons, '/robots.txt', '/sitemap.xml']) {
+    const res = await get(path); await res.arrayBuffer();
+    assert.equal(res.status, 200, `GET ${path}`);
   }
-  assert.match((await get('/fonts/newsreader-normal-latin.woff2')).headers.get('cache-control') || '', /immutable/, 'fonts are cached for a year');
+  // every font the page names exists and is cached for a year
+  const fonts = [...new Set([...html.matchAll(/url\((fonts\/[^)]+\.woff2)\)/g)].map(m => '/' + m[1]))];
+  assert.ok(fonts.length >= 10, `${fonts.length} fonts`);
+  for (const path of fonts) {
+    const font = await get(path); await font.arrayBuffer();
+    assert.equal(font.status, 200, `GET ${path}`);
+    assert.match(font.headers.get('cache-control') || '', /immutable/, `${path} is cached for a year`);
+  }
 });
 
 test('the app starts and onboarding reaches the overview, with no console errors', async () => {

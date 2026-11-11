@@ -25,3 +25,11 @@ test('index.html and sw.js point at the committed app.js', () => {
   assert.match(readFileSync(join(root, 'index.html'), 'utf8'), new RegExp(`src="app\\.js\\?v=${build}"`));
   assert.match(readFileSync(join(root, 'sw.js'), 'utf8'), new RegExp(`const BUILD = '${build}';`));
 });
+
+test('index.html asks only for fonts that are in fonts/, and every font there is asked for', () => {
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
+  const asked = new Set([...html.matchAll(/url\(fonts\/([^)]+\.woff2)\)/g)].map(m => m[1]));
+  const stored = new Set(readdirSync(join(root, 'fonts')).filter(f => f.endsWith('.woff2')));
+  assert.deepEqual([...asked].filter(f => !stored.has(f)), [], 'asked for but missing');
+  assert.deepEqual([...stored].filter(f => !asked.has(f)), [], 'stored but never asked for');
+});
