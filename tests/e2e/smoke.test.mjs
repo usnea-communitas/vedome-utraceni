@@ -46,7 +46,7 @@ const money = (lang, n) => new Intl.NumberFormat(lang, { maximumFractionDigits: 
 
 const TEXT = {
   en: { welcome: 'Welcome to Mindful\u00a0Spending', add: 'Add', deposit: 'Deposit', del: 'Delete', deleted: 'Deleted', undo: 'Undo' },
-  cs: { welcome: 'Vítej ve Vědomém utrácení', add: 'Přidat', deposit: 'Vložit', del: 'Smazat', deleted: 'Smazáno', undo: 'Zpět' },
+  cs: { welcome: 'Vítej ve Vědomém utrácení', add: 'Přidat', deposit: 'Vložit', del: 'Smazat', deleted: 'Smazáno', undo: 'Vrátit zpět' },
 };
 
 for (const lang of ['en', 'cs']) {

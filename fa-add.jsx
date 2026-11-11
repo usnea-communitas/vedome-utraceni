@@ -313,7 +313,7 @@ function FaToast({ toast, onUndo, onHide }) {
           onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
           <Icon name={toast.kind === 'deleted' ? 'trash' : 'check'} size={15} stroke={2.2} />
           <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
-          <button ref={undoRef} onClick={undo}>{L('Zpět')}</button>
+          <button ref={undoRef} onClick={undo}>{L('Vrátit zpět')}</button>
         </div>
       )}
     </div>
