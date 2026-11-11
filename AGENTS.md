@@ -20,6 +20,7 @@ Vědomé utrácení (Mindful Spending) is a calm, local-first 50/30/20 money-pla
 - UI strings live in `fa-i18n.jsx`: the Czech text is the key, and every entry needs `en`, `pl`, `uk` and `es`.
 - Read and write the browser's storage only through `faStorage` (`fa-storage.jsx`), never `localStorage` directly: in a workshop (`?workshop=1`) it keeps every key under `fa.workshop.`, apart from the participant's own data, and a test checks that the own data stays byte for byte the same.
 - `assets/workshop-qr-<lang>.svg` come from `node scripts/workshop-qr.mjs`; run it again when the address or the languages change.
+- The facilitator kit's PDFs (`docs/workshop/pdf/`) come from the Markdown in `docs/workshop/cs` and `docs/workshop/en` through `node scripts/workshop-pdf.mjs`; run it after changing the kit and commit them together. Its numbers follow the stories in `fa-workshop.jsx`, and a test says which part of the kit to update when a story changes.
 
 ## Before committing
 

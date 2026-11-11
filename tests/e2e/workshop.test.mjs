@@ -12,7 +12,7 @@ import { chromium } from 'playwright';
 import { root } from '../harness.mjs';
 
 const require = createRequire(import.meta.url);
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.pdf': 'application/pdf' };
 let server, base, browser;
 
 before(async () => {
@@ -198,6 +198,28 @@ async function axeViolations(page) {
   const result = await page.evaluate(() => window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }));
   return result.violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).join(', ')}`);
 }
+
+test('the facilitator page offers the kit, and every link opens its PDF', async () => {
+  const labels = {
+    cs: ['Průvodce lekcí PDF', 'Pracovní listy a dotazník PDF', 'Snímky PDF'],
+    en: ['Lesson guide PDF', 'Worksheets and questionnaire PDF', 'Slides PDF'],
+  };
+  for (const [lang, guide] of [['cs', 'Pro lektora'], ['en', 'For the facilitator']]) {
+    const { context, page, problems } = await phone();
+    await page.goto(base + '?workshop=1&lang=' + lang);
+    await page.getByRole('button', { name: guide }).click();
+    const links = page.locator('.fa-ws-kit a');
+    assert.deepEqual((await links.allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim()), labels[lang]);
+    for (const href of await links.evaluateAll(as => as.map(a => a.getAttribute('href')))) {
+      assert.match(href, new RegExp('^docs/workshop/pdf/.+-' + lang + '\\.pdf$'));
+      const res = await page.request.get(base + href);
+      assert.equal(res.status(), 200, href);
+      assert.equal((await res.body()).subarray(0, 5).toString('latin1'), '%PDF-', href);
+    }
+    assert.deepEqual(problems, []);
+    await context.close();
+  }
+});
 
 test('the workshop screens have a clean outline and pass axe, in both themes', async () => {
   // the page's Content-Security-Policy allows no injected script, axe is one
