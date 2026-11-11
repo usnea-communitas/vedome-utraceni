@@ -7,6 +7,7 @@ Notable changes to Vědomé utrácení (Mindful Spending). The version lives in 
 - **Plan vs. actual:** the plan belongs to a month and carries over to the next months until it is changed; an item that does not repeat counts only in its month. Expenses no longer raise the plan: the new *Plan vs. actual* card on the Overview and the Reflection shows how much of each category's plan the month has used, and goal deposits count as put aside for *Future me*.
 - The old single plan becomes the plan of the current month on the first start, and a copy of it is kept; backups now carry the monthly plans (format 2), and older backups still restore.
 - The link under the version line in More is gone, and the preview image shows only the app's names.
+- **A plan in one tap:** right after onboarding, the empty plan offers the split chosen there (*Put 50 / 30 / 20 into the plan*, on the Overview and in Plan). Each part becomes one repeating item, *Not split yet*, to break down later, and Undo takes it back. From opening the app to a plan takes eight actions. The parts of the income are rounded so they add up to it exactly (the remainder goes to *Need*), and the empty Overview's English next-step hint names *Need* as the category is called.
 
 ## 1.3.0 — 2026-11-10
 
