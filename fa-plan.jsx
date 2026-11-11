@@ -35,7 +35,7 @@ const PLAN_DESC = {
   radost: 'Kavárny, výlety a drobnosti, co tě těší.',
 };
 
-function Plan({ go, month, setMonth, ratios, profile }) {
+function Plan({ go, month, setMonth, ratios, profile, onDefaultPlan }) {
   const cats = APP.categories; // {key,name,icon,accent,targetPct}
   const shown = month || APP.month;
   // the plan of the month shown; the demo profile starts from the sample plan
@@ -56,6 +56,8 @@ function Plan({ go, month, setMonth, ratios, profile }) {
   const catTotal = (k) => (items[k] || []).reduce((s, x) => s + (+x.amount || 0), 0);
   const allocated = cats.reduce((s, c) => s + catTotal(c.key), 0);
   const remaining = incomeTotal - allocated;
+  // nothing planned yet: the split chosen in onboarding goes in with one tap
+  const offer = !!onDefaultPlan && allocated === 0 && incomeTotal > 0 && !(profile && profile.demo);
 
   // dark labels on the light segments (honey, unallocated), white on the dark ones
   const segs = cats.map(c => ({ value: catTotal(c.key), color: accentVar(c.accent), ink: c.accent === 'honey' }));
@@ -100,11 +102,18 @@ function Plan({ go, month, setMonth, ratios, profile }) {
         </div>
 
         {/* status banner */}
-        <div style={{ padding: '11px 16px', background: remaining < 0 ? 'var(--clay-soft)' : remaining === 0 ? 'var(--moss-soft)' : 'var(--honey-soft)', display: 'flex', alignItems: 'center', gap: 9, borderTop: '1px solid var(--card-line)' }}>
-          <Icon name={remaining < 0 ? 'alert' : remaining === 0 ? 'check' : 'leaf'} size={16} stroke={1.8} color={remaining < 0 ? 'var(--clay)' : remaining === 0 ? 'var(--moss-deep)' : 'var(--honey-deep)'} />
-          <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, fontWeight: 500, color: remaining < 0 ? 'var(--clay)' : remaining === 0 ? 'var(--moss-deep)' : 'var(--honey-deep)' }}>
-            {remaining < 0 ? Lf('Překročeno o {v}', { v: kc(-remaining) }) : remaining === 0 ? L('Vše rozděleno — krásně vyvážené.') : Lf('Ještě zbývá rozdělit {v}.', { v: kc(remaining) })}
+        <div style={{ padding: '11px 16px', background: remaining < 0 ? 'var(--clay-soft)' : remaining === 0 ? 'var(--moss-soft)' : 'var(--honey-soft)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '9px 12px', borderTop: '1px solid var(--card-line)' }}>
+          <span style={{ flex: '1 1 170px', display: 'flex', alignItems: 'center', gap: 9 }}>
+            <Icon name={remaining < 0 ? 'alert' : remaining === 0 ? 'check' : 'leaf'} size={16} stroke={1.8} color={remaining < 0 ? 'var(--clay)' : remaining === 0 ? 'var(--moss-deep)' : 'var(--honey-deep)'} />
+            <span style={{ fontFamily: 'var(--sans)', fontSize: 12.5, fontWeight: 500, color: remaining < 0 ? 'var(--clay)' : remaining === 0 ? 'var(--moss-deep)' : 'var(--honey-deep)' }}>
+              {remaining < 0 ? Lf('Překročeno o {v}', { v: kc(-remaining) }) : remaining === 0 ? L('Vše rozděleno — krásně vyvážené.') : Lf('Ještě zbývá rozdělit {v}.', { v: kc(remaining) })}
+            </span>
           </span>
+          {offer && (
+            <button className="fa-cta fa-cta-solid fa-plan-offer-btn fa-plan-offer-inline" onClick={ev => onDefaultPlan(ev.detail === 0)}>
+              {Lf('Zapsat {r} do plánu', { r: faRatioText(ratios || { nutne: 50, budouci: 20, radost: 30 }) })}
+            </button>
+          )}
         </div>
 
         {/* total income — collapsible (smaller, secondary) */}

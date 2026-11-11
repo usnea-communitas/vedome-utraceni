@@ -151,3 +151,62 @@ test('Undo after adding an expense removes just that one', () => {
   const list = [{ name: 'Nájem', amount: 12000, cat: 'nutne', ts: 2, day: '2026-10-02' }, added];
   assert.deepEqual(plain(app.faUndoExpense(list, { kind: 'added', expense: added })), [list[0]]);
 });
+
+test('the split adds up to the income, and the rounding goes to "Need"', () => {
+  const app = loadApp();
+  const r = { nutne: 50, budouci: 20, radost: 30 };
+  assert.deepEqual(plain(app.faSplitIncome(32000, r)), { nutne: 16000, budouci: 6400, radost: 9600 });
+  // 32 333 × 50 % = 16 166.5, but the three parts must still make 32 333
+  assert.deepEqual(plain(app.faSplitIncome(32333, r)), { nutne: 16166, budouci: 6467, radost: 9700 });
+  assert.deepEqual(plain(app.faSplitIncome(0, r)), { nutne: 0, budouci: 0, radost: 0 });
+  // ratios that do not add up to 100 % are taken as they are
+  assert.deepEqual(plain(app.faSplitIncome(10000, { nutne: 50, budouci: 20, radost: 20 })), { nutne: 5000, budouci: 2000, radost: 2000 });
+});
+
+test('the plan in one tap: one recurring item per part, Undo puts the plans back exactly', () => {
+  const month = '2026-11';
+  const plans = JSON.stringify({ [month]: { income: [{ name: 'Hlavní příjem', amount: 32333, recurring: true }], items: { nutne: [], budouci: [], radost: [] } } });
+  const app = loadApp({ 'fa.profile': base['fa.profile'], 'fa.plans': plans });
+  app.setFaLang('en');
+  assert.equal(app.faCanUseDefaultPlan(month), true);
+  const before = app.faApplyDefaultPlan(month, { nutne: 50, budouci: 20, radost: 30 });
+  assert.equal(before, plans);
+  const plan = app.faPlanFor(month);
+  assert.deepEqual(plain(plan.items), {
+    nutne: [{ name: 'Zatím vcelku', amount: 16166, recurring: true }],
+    budouci: [{ name: 'Zatím vcelku', amount: 6467, recurring: true }],
+    radost: [{ name: 'Zatím vcelku', amount: 9700, recurring: true }],
+  });
+  assert.deepEqual(plain(plan.income), [{ name: 'Hlavní příjem', amount: 32333, recurring: true }]);
+  assert.equal(app.faDataLabel('Zatím vcelku'), 'Not split yet');
+  // it carries over like any recurring plan, and is offered no more
+  assert.equal(app.faPlanFor('2026-12').items.radost[0].amount, 9700);
+  assert.equal(app.faCanUseDefaultPlan(month), false);
+  app.faRestorePlans(before);
+  assert.equal(app.localStorage.getItem('fa.plans'), plans);
+  assert.equal(app.faCanUseDefaultPlan(month), true);
+});
+
+test('a month that follows an earlier plan gets its own, and Undo takes only that back', () => {
+  const plans = JSON.stringify({ '2026-10': { income: [{ name: 'Hlavní příjem', amount: 30000, recurring: true }], items: { nutne: [], budouci: [], radost: [{ name: 'Výlet', amount: 3000, recurring: false }] } } });
+  const app = loadApp({ 'fa.profile': base['fa.profile'], 'fa.plans': plans });
+  // November follows October without its one-off trip: still nothing planned
+  assert.equal(app.faCanUseDefaultPlan('2026-11'), true);
+  const before = app.faApplyDefaultPlan('2026-11', { nutne: 50, budouci: 30, radost: 20 });
+  assert.deepEqual(Object.keys(JSON.parse(app.localStorage.getItem('fa.plans'))), ['2026-10', '2026-11']);
+  assert.equal(app.faPlanFor('2026-11').items.budouci[0].amount, 9000);
+  assert.equal(app.faPlanFor('2026-10').items.radost[0].name, 'Výlet');
+  app.faRestorePlans(before);
+  assert.equal(app.localStorage.getItem('fa.plans'), plans);
+});
+
+test('the plan in one tap is not offered without an income, with a plan, or in the demo', () => {
+  const month = '2026-11';
+  const plan = items => JSON.stringify({ [month]: { income: [{ name: 'Hlavní příjem', amount: 30000, recurring: true }], items } });
+  const empty = { nutne: [], budouci: [], radost: [] };
+  assert.equal(loadApp({ 'fa.profile': base['fa.profile'], 'fa.plans': plan({ ...empty, budouci: [{ name: 'ETF', amount: 1, recurring: true }] }) }).faCanUseDefaultPlan(month), false);
+  assert.equal(loadApp({ 'fa.profile': base['fa.profile'], 'fa.plans': JSON.stringify({ [month]: { income: [], items: empty } }) }).faCanUseDefaultPlan(month), false);
+  assert.equal(loadApp({ 'fa.profile': JSON.stringify({ demo: true }), 'fa.plans': plan(empty) }).faCanUseDefaultPlan(month), false);
+  assert.equal(loadApp({ 'fa.plans': plan(empty) }).faCanUseDefaultPlan(month), false);
+  assert.equal(loadApp({ 'fa.profile': base['fa.profile'], 'fa.plans': plan(empty) }).faCanUseDefaultPlan(month), true);
+});

@@ -63,6 +63,53 @@ function faSetPlanFor(month, plan) {
   faSave('fa.plans', plans);
 }
 
+// ── the plan in one tap: the month's income split by the user's ratios ──
+// One recurring item per part, kept whole until it is broken down in Plan.
+// Rounding goes to "Need", so the three parts add up to the income exactly.
+const FA_WHOLE_PART = 'Zatím vcelku';
+faRegisterDataNames([FA_WHOLE_PART]);
+const faRatioText = r => r.nutne + ' / ' + r.radost + ' / ' + r.budouci;
+const faPlanIncome = plan => faList(plan.income).reduce((s, x) => s + (+x.amount || 0), 0);
+
+// the income split by the ratios, in whole crowns; when the ratios add up to
+// 100 %, rounding goes to "Need", so the parts add up to the income exactly
+function faSplitIncome(income, ratios) {
+  const r = ratios || { nutne: 50, budouci: 20, radost: 30 };
+  const part = k => Math.round(income * (+r[k] || 0) / 100);
+  const budouci = part('budouci'), radost = part('radost');
+  const whole = (+r.nutne || 0) + (+r.budouci || 0) + (+r.radost || 0) === 100;
+  return { nutne: whole ? income - budouci - radost : part('nutne'), budouci, radost };
+}
+
+function faDefaultPlanItems(income, ratios) {
+  const parts = faSplitIncome(income, ratios);
+  const item = amount => (amount > 0 ? [{ name: FA_WHOLE_PART, amount, recurring: true }] : []);
+  return { nutne: item(parts.nutne), budouci: item(parts.budouci), radost: item(parts.radost) };
+}
+
+// offered while the month's plan has an income and no item yet (not in the demo)
+function faCanUseDefaultPlan(month) {
+  const profile = loadFaProfile();
+  if (!profile || profile.demo) return false;
+  const plan = faPlanFor(month);
+  return faPlanIncome(plan) > 0 && FA_CATS.every(k => !plan.items[k].length);
+}
+
+// writes the split into the month's plan; returns what Undo puts back
+function faApplyDefaultPlan(month, ratios) {
+  let before = null;
+  try { before = localStorage.getItem('fa.plans'); } catch (e) {}
+  const plan = faPlanFor(month);
+  faSetPlanFor(month, { income: plan.income, items: faDefaultPlanItems(faPlanIncome(plan), ratios) });
+  return before;
+}
+function faRestorePlans(before) {
+  try {
+    if (before == null) localStorage.removeItem('fa.plans');
+    else localStorage.setItem('fa.plans', before);
+  } catch (e) {}
+}
+
 // ── goal deposits, dated, so they count towards "Future me" in their month ──
 function loadFaDeposits() { return faList(faLoad('fa.deposits', [])); }
 function faAddDeposit(goal, amount, day) {
@@ -172,10 +219,12 @@ function faHydrate(ratios, month) {
 
   // categories: targets from ratios, planned amounts from the plan items
   const items = plan.items;
+  const pcts = {};
+  APP.categories.forEach(c => { pcts[c.key] = ratios && ratios[c.key] != null ? ratios[c.key] : c.targetPct; });
+  const targets = faSplitIncome(total, pcts);
   APP.categories.forEach(c => {
-    const pct = ratios && ratios[c.key] != null ? ratios[c.key] : c.targetPct;
-    c.targetPct = pct;
-    c.target = Math.round(total * pct / 100);
+    c.targetPct = pcts[c.key];
+    c.target = targets[c.key];
   });
   APP._baseActuals = APP.categories.map(c =>
     (items[c.key] || []).reduce((s, x) => s + (+x.amount || 0), 0));
@@ -271,5 +320,6 @@ Object.assign(window, {
   faLoad, faSave, loadFaGoals, saveFaGoals, loadFaReflexe, saveFaReflexe,
   faResetAll, faSeedFreshUser, faLoadDemo, faHydrate, faDerive, faMigrateYearGoals, faMigratePlan,
   faLoadPlans, faPlanFor, faSetPlanFor, loadFaDeposits, faAddDeposit, faDepositsIn,
+  faRatioText, faSplitIncome, faDefaultPlanItems, faCanUseDefaultPlan, faApplyDefaultPlan, faRestorePlans,
   FA_BACKUP_KEYS, faExportData, faImportData, faBackupValueOk,
 });
