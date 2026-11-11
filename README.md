@@ -15,9 +15,10 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project bui
 ---
 
 <p align="center">
-  <img src="docs/screenshots/overview-phone.webp" alt="Overview: the forest money pie with Need, Fun and Future me, the goal tree and income sources" width="31%">
-  <img src="docs/screenshots/plan-phone.webp" alt="Plan: monthly income split into the three categories" width="31%">
-  <img src="docs/screenshots/goals-phone.webp" alt="Goals: the growing goal tree with named savings goals" width="31%">
+  <img src="docs/screenshots/overview-phone.webp" alt="Overview: the forest money pie with Need, Fun and Future me, and the month's plan vs. actual" width="24%">
+  <img src="docs/screenshots/plan-phone.webp" alt="Plan: the month's income split into Need, Fun and Future me, carried over to the next months" width="24%">
+  <img src="docs/screenshots/goals-phone.webp" alt="Goals: the growing goal tree with named savings goals" width="24%">
+  <img src="docs/screenshots/workshop-phone.webp" alt="Workshop mode: the made-up story of Ema, a student, and the first of five tasks" width="24%">
 </p>
 
 ## What it does
