@@ -11,6 +11,8 @@ const NAV = [
   { key: 'reflexe', label: 'Reflexe', icon: 'book' },
   { key: 'vice',    label: 'Více',    icon: 'more' },
 ];
+// in a workshop (?workshop=1) its tasks lead the navigation, in place of Tips
+const NAV_WORKSHOP = [{ key: 'workshop', label: 'Workshop', icon: 'tasks' }].concat(NAV.filter(n => n.key !== 'tipy'));
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "theme": "lesní",
@@ -42,7 +44,7 @@ function faFrameScale() {
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [screen, setScreen] = useA('prehled');
+  const [screen, setScreen] = useA(FA_IN_WORKSHOP ? 'workshop' : 'prehled');
   // English by default; a chosen language is kept in localStorage ('fa.lang') and restored on load
   const [lang, setLang] = useA(loadFaLang);
   const [entered, setEntered] = useA(false);
@@ -54,12 +56,15 @@ function App() {
   const [frameScale, setFrameScale] = useA(faFrameScale);
   const [profile, setProfile] = useA(() => { faMigrateYearGoals(); faMigratePlan(); return loadFaProfile(); });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
-  const [theme, setTheme] = useA(() => { try { return localStorage.getItem('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
-  const [ratios, setRatios] = useA(() => { try { return JSON.parse(localStorage.getItem('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
+  const [theme, setTheme] = useA(() => { try { return faStorage.get('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
+  const [ratios, setRatios] = useA(() => { try { return JSON.parse(faStorage.get('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
   // always open on the current month; the picker lets you look back or ahead
   const [month, setMonth] = useA(faCurrentMonth);
   const [expenses, setExpenses] = useA(loadFaExpenses);
   const [addOpen, setAddOpen] = useA(false);
+  // an expense the add sheet offers filled in (a workshop task), else null
+  const [addPreset, setAddPreset] = useA(null);
+  const openAdd = (preset) => { setAddPreset(preset || null); setAddOpen(true); };
   useAE(() => { saveFaExpenses(expenses); }, [expenses]);
   const addExpense = (e) => { setExpenses(list => [...list, e]); setToast({ kind: 'added', expense: e }); };
   // deleting offers Undo, which puts the exact expense back in its place
@@ -94,12 +99,12 @@ function App() {
       if (conn && conn.removeEventListener) conn.removeEventListener('change', update);
     };
   }, []);
-  useAE(() => { try { localStorage.setItem('fa.theme', theme); } catch (e) {} }, [theme]);
+  useAE(() => { try { faStorage.set('fa.theme', theme); } catch (e) {} }, [theme]);
   useAE(() => {
     saveFaLang(lang);
     try { document.documentElement.lang = lang; } catch (e) {}
   }, [lang]);
-  useAE(() => { try { localStorage.setItem('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
+  useAE(() => { try { faStorage.set('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
   useAE(() => {
     const check = () => {
       const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
@@ -141,6 +146,20 @@ function App() {
     setProfile(null);
     setScreen('prehled');
   };
+  // workshop: a story seeds the workshop's own data; the end deletes it and
+  // opens the app without ?workshop, on the participant's own data
+  const startWorkshop = (id) => {
+    if (!faStartWorkshop(id)) return;
+    setRatios(faLoad('fa.ratios', { nutne: 50, budouci: 20, radost: 30 }));
+    setExpenses(loadFaExpenses());
+    setToast(null);
+    setProfile(loadFaProfile());
+    setScreen('workshop');
+  };
+  const endWorkshop = () => {
+    faClearWorkshop();
+    location.replace(location.pathname);
+  };
   const loadDemo = () => {
     faLoadDemo();
     setExpenses([]);
@@ -173,14 +192,16 @@ function App() {
     'data-depth': t.depth, 'data-card': t.card, 'data-accent': t.accent,
   };
 
-  const Screen = { prehled: Prehled, plan: Plan, cile: Cile, tipy: Tipy, reflexe: Reflexe, vice: Vice }[screen];
+  const Screen = { prehled: Prehled, plan: Plan, cile: Cile, tipy: Tipy, reflexe: Reflexe, vice: Vice, workshop: Workshop, lektor: WorkshopGuideScreen }[screen] || Prehled;
 
   const inner = (
     <div style={{ position: 'absolute', inset: 0 }}>
       {isWizard
         ? <WizardBackground motion={motion} />
         : <ForestBackground motion={motion} videoSrc={scene === 'video' ? FOREST_VIDEO : null} />}
-      {!profile ? (
+      {!profile && FA_IN_WORKSHOP ? (
+        <WorkshopWelcome lang={lang} setLang={setLang} onStart={startWorkshop} />
+      ) : !profile ? (
         <Onboarding onFinish={finishOnboarding} defaultRatios={ratios} initialTheme={theme} lang={lang} setLang={setLang} />
       ) : (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
@@ -189,18 +210,18 @@ function App() {
         <main ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
             <div key={screen + '|' + month + '|' + planVersion} className={'fa-stage' + (entered ? ' is-in' : '')}>
-              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} onDefaultPlan={applyDefaultPlan} />
+              <Screen go={go} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} ratios={ratios} setRatios={setRatios} month={month} setMonth={setMonth} expenses={monthExpenses} deleteExpense={deleteExpense} profile={profile} setProfile={setProfile} resetAll={resetAll} onDefaultPlan={applyDefaultPlan} onAdd={openAdd} endWorkshop={endWorkshop} />
             </div>
           </div>
           {/* sync APP.month so static reads stay in step */}
           {(() => { APP.month = month; return null; })()}
         </main>
         {/* add expense: floating + button & sheet */}
-        <AddFab onClick={() => setAddOpen(true)} />
-        <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} month={month} />
+        <AddFab onClick={() => openAdd(null)} />
+        <AddSheet open={addOpen} onClose={() => setAddOpen(false)} onSave={addExpense} expenses={expenses} month={month} preset={addPreset} />
         <FaToast toast={toast} onUndo={undoToast} onHide={() => setToast(null)} />
         {/* bottom nav */}
-        <BottomNav active={screen} go={go} lang={lang} />
+        <BottomNav items={FA_IN_WORKSHOP ? NAV_WORKSHOP : NAV} active={screen} go={go} lang={lang} />
       </div>
       )}
       {profile && locked && (
@@ -240,11 +261,11 @@ function App() {
   );
 }
 
-function BottomNav({ active, go }) {
+function BottomNav({ items, active, go }) {
   return (
     <nav className="fa-nav" aria-label={L('Hlavní navigace')}>
       <div className="fa-nav-inner">
-        {NAV.map(n => {
+        {items.map(n => {
           const on = active === n.key;
           return (
             <button key={n.key} className="fa-tab" data-on={on} aria-current={on ? 'page' : undefined} onClick={() => go(n.key)}>

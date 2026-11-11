@@ -463,7 +463,7 @@ function reflexSegments(score, max) {
 // ════════════════════════════════════════════════════════════════════
 // VÍCE — settings, warmly restyled
 // ════════════════════════════════════════════════════════════════════
-function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setProfile, resetAll }) {
+function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setProfile, resetAll, go, endWorkshop }) {
   const real = profile && !profile.demo;
   const [sheet, setSheet] = useS2(null); // 'income' | 'security' | 'reminders' | null
   const [, bump] = useS2(0);
@@ -494,14 +494,16 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
     reader.onerror = () => setDataMsg(L('Soubor se nepodařilo přečíst.'));
     reader.readAsText(f);
   };
+  // a workshop shows its story, not the participant's lock, reminders or backups
+  const workshop = FA_IN_WORKSHOP;
   const groups = [
     { h: 'Účet', rows: [
-      { i: 'sprout', t: APP.user || L('Bez jména'), d: L('Osobní profil'), raw: true },
+      { i: 'sprout', t: APP.user || L('Bez jména'), d: workshop ? L('Příběh z workshopu') : L('Osobní profil'), raw: true },
       { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true, open: 'income' },
-      { i: 'shield', t: L('Zabezpečení'), d: secLabel, raw: true, open: 'security' },
-    ] },
+    ].concat(workshop ? [] : [{ i: 'shield', t: L('Zabezpečení'), d: secLabel, raw: true, open: 'security' }]) },
+  ].concat(workshop ? [] : [
     { h: 'Vědomé utrácení', rows: [ { i: 'bell', t: L('Jemné připomínky'), d: remLabel, raw: true, open: 'reminders' } ] },
-  ];
+  ]);
   return (
     <div className="fa-screen">
       <ScreenHeader eyebrow={L('Nastavení')} title={L('Více')} />
@@ -554,6 +556,17 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         </Card>
       </div>
 
+      {workshop ? (
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Workshop')}</SectionLabel>
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          <DataRow icon="book" accent="sage" label={L('Pro lektora')} sub={L('Odkaz, QR kód, časový plán a otázky')} onClick={() => go && go('lektor')} />
+          <div style={{ borderTop: '1px solid var(--card-line)' }}>
+            <DangerRow label={L('Ukončit a smazat')} confirmLabel={L('Opravdu smazat workshop?')} onConfirm={endWorkshop} />
+          </div>
+        </Card>
+      </div>
+      ) : (
       <div style={{ marginTop: 18 }}>
         <SectionLabel>{L('Data')}</SectionLabel>
         <Card pad={0} style={{ overflow: 'hidden' }}>
@@ -572,6 +585,7 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
           <p role="status" style={{ fontFamily: 'var(--sans)', fontSize: 12.5, color: 'var(--ink-soft)', margin: '9px 6px 0', lineHeight: 1.45 }}>{dataMsg}</p>
         )}
       </div>
+      )}
 
       <div style={{ textAlign: 'center', marginTop: 26, opacity: 0.7 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'var(--brand)', whiteSpace: 'nowrap' }}>

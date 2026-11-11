@@ -11,14 +11,14 @@ const { useState: useSt, useEffect: useStE, useRef: useStR } = React;
 // ── stores ───────────────────────────────────────────────────────────────
 function loadFaSecurity() {
   try {
-    const v = JSON.parse(localStorage.getItem('fa.security'));
+    const v = JSON.parse(faStorage.get('fa.security'));
     // only PIN locks exist now; older simulated modes (face) are ignored
     return v && v.mode === 'pin' && (v.hash || v.pin) ? v : null;
   } catch (e) { return null; }
 }
-function saveFaSecurity(v) { try { v ? localStorage.setItem('fa.security', JSON.stringify(v)) : localStorage.removeItem('fa.security'); } catch (e) {} }
-function loadFaReminders() { try { return JSON.parse(localStorage.getItem('fa.reminders')) || { on: false, freq: 'denně', time: '20:00' }; } catch (e) { return { on: false, freq: 'denně', time: '20:00' }; } }
-function saveFaReminders(v) { try { localStorage.setItem('fa.reminders', JSON.stringify(v)); } catch (e) {} }
+function saveFaSecurity(v) { try { v ? faStorage.set('fa.security', JSON.stringify(v)) : faStorage.remove('fa.security'); } catch (e) {} }
+function loadFaReminders() { try { return JSON.parse(faStorage.get('fa.reminders')) || { on: false, freq: 'denně', time: '20:00' }; } catch (e) { return { on: false, freq: 'denně', time: '20:00' }; } }
+function saveFaReminders(v) { try { faStorage.set('fa.reminders', JSON.stringify(v)); } catch (e) {} }
 
 // SHA-256 of the PIN (salted with the app name); falls back to a simple
 // string hash where WebCrypto is unavailable (non-secure origins).

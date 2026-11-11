@@ -6,10 +6,10 @@ const { useState: useX, useEffect: useXE, useRef: useXR } = React;
 
 // ── persistence ─────────────────────────────────────────────────────────
 function loadFaExpenses() {
-  try { return JSON.parse(localStorage.getItem('fa.expenses')) || []; } catch (e) { return []; }
+  try { return JSON.parse(faStorage.get('fa.expenses')) || []; } catch (e) { return []; }
 }
 function saveFaExpenses(list) {
-  try { localStorage.setItem('fa.expenses', JSON.stringify(list)); } catch (e) {}
+  try { faStorage.set('fa.expenses', JSON.stringify(list)); } catch (e) {}
 }
 
 // ── curated common one-off expenses (Czech keys → i18n via L()) ────────
@@ -75,7 +75,8 @@ function AddFab({ onClick }) {
 }
 
 // ── bottom sheet ────────────────────────────────────────────────────────
-function AddSheet({ open, onClose, onSave, expenses, month }) {
+// preset: an expense to offer filled in ({ name, amount, cat }), e.g. a workshop task
+function AddSheet({ open, onClose, onSave, expenses, month, preset }) {
   const [amount, setAmount] = useX('');
   const [day, setDay] = useX('');
   const [name, setName] = useX('');
@@ -87,7 +88,8 @@ function AddSheet({ open, onClose, onSave, expenses, month }) {
   // slide-in: resting closed; .is-open added a tick after mount
   useXE(() => {
     if (open) {
-      setAmount(''); setName(''); setCat('radost'); setDay(faDefaultDay(month)); savedRef.current = false;
+      setAmount(preset ? String(preset.amount) : ''); setName(preset ? faDataLabel(preset.name) : '');
+      setCat(preset ? preset.cat : 'radost'); setDay(faDefaultDay(month)); savedRef.current = false;
       const id = setTimeout(() => setShown(true), 20);
       return () => clearTimeout(id);
     }
