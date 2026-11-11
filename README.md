@@ -28,6 +28,7 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project bui
 - **A goal tree, not a progress bar.** Every savings goal is a branch; foliage grows with each deposit, completed goals get a sparkle crown, and the whole tree sways gently.
 - **Tips and a compounding simulator.** Short, kind tips (the 24-hour rule, pay your future self first, name your goals…) and an interactive compound-interest calculator for monthly contributions.
 - **Monthly reflection.** A few gentle questions about how money felt this month, kept privately in the app.
+- **Workshop mode.** A link or QR code (`?workshop=1&lang=cs`) opens the app for a financial-literacy workshop. Each participant picks one of three made-up stories of young people (a student with a part-time job, a first paycheck, moving in together) and works through five short tasks in the ordinary app: split the income, find the leak, set a goal, an unexpected expense, looking back. The workshop keeps its own data under `fa.workshop.*`, so a participant's own plan in the same browser is never read or changed; it works offline after the first load, and *End and delete* removes it. A page for the facilitator has the link, a QR code per language, a 45-minute timing and questions to discuss. The stories and tasks are in all five languages; Czech and English are the reviewed ones.
 - **Two moods.** A *Forest Calm* daytime theme and a *Wizard* night-academy theme, each with an ambient background and tuned motion; reduced motion is respected.
 - **Privacy by design.** Everything is stored in the browser (`localStorage`) — there is no backend, no account and no analytics. An optional 4-digit PIN (stored only as a SHA-256 hash, typed on the keypad or a keyboard) locks the app on launch; backups can be exported and restored as a file; reminders are added to your own calendar as an `.ics` event.
 - **Installable.** A PWA manifest and a service worker let the app open full-screen from the home screen and work offline.
@@ -47,6 +48,7 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | File | Role |
 | --- | --- |
 | `index.html` | Entry point: the whole design system (tokens, both themes, components' CSS), metadata, service-worker registration. |
+| `fa-storage.jsx` | The one way to the browser's storage (`faStorage`); in a workshop every key gets the `fa.workshop.` prefix. |
 | `fa-core.jsx` | Data model, formatting helpers, nature-inspired icons, demo profile. |
 | `fa-i18n.jsx` | Lightweight localisation for five languages, language persistence. |
 | `fa-store.jsx` | Persistent user-data layer: profile, plan, expenses, goals, reflections, backups. |
@@ -58,11 +60,13 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | `fa-screens.jsx` | Goals, Tips, Reflection and More screens. |
 | `fa-settings.jsx` | PIN lock, reminders, backups, language and appearance settings. |
 | `fa-onboard.jsx` | First-run onboarding: welcome → name → income → ratios → first goal → theme. |
+| `fa-workshop.jsx` | Workshop mode: the three stories, the five tasks, the facilitator's page. |
 | `fa-forest.jsx`, `fa-wizard.jsx` | The two ambient backdrops. |
 | `fa-ui.jsx` | Shared UI primitives and micro-interactions. |
 | `fa-app.jsx` | App shell: navigation, screen transitions, motion preferences, Tweaks panel, error page, mount. |
 | `ios-frame.jsx`, `tweaks-panel.jsx` | Device frame for desktop preview and the developer Tweaks panel. |
 | `scripts/compile.mjs` | Precompiles the JSX sources into `app.js`, vendors React and stamps the `app.js?v=<hash>` cache key into `index.html` and `sw.js`. |
+| `scripts/workshop-qr.mjs` | Makes the workshop QR codes, `assets/workshop-qr-<lang>.svg`. |
 | `sw.js`, `manifest.webmanifest` | Offline cache (network first) and PWA manifest. |
 | `tests/` | `node:test` unit, translation and build checks; Playwright smoke tests in `tests/e2e/`; a check of the live site in `tests/production/`. |
 | `vercel.json` | Security headers for the Vercel deployment (no build settings). |
@@ -93,7 +97,7 @@ After every production deployment the *Production smoke test* workflow (`.github
 
 ## Status
 
-Feature-complete for everyday use: plan, expenses, goals, tips, reflections, PIN lock, backups, reminders and five languages are all in place. Ongoing work is testing with real users and small fixes; feedback from workshops is very welcome. There are no user statistics or testimonials to report — the app sends nothing anywhere, by design.
+Feature-complete for everyday use: plan, expenses, goals, tips, reflections, PIN lock, backups, reminders, five languages and a workshop mode are all in place. Ongoing work is testing with real users and small fixes; feedback from workshops is very welcome. There are no user statistics or testimonials to report — the app sends nothing anywhere, by design.
 
 What changed in each version is in [CHANGELOG.md](CHANGELOG.md) and on the [releases page](https://github.com/usnea-communitas/vedome-utraceni/releases).
 
