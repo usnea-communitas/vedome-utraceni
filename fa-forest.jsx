@@ -73,7 +73,23 @@ function CrossfadeVideo({ src, fade = 0.8, endTrim = 0, startAt = 0, filter, sty
   );
 }
 
+// The costly part of a backdrop (blurred light, blended grain) waits until the
+// page has loaded and settled, then fades in: the first screen comes up on the
+// plain gradient, which a phone draws at once, and is not held back by the blurs.
+function useFaAmbientAwake(delay = 1200) {
+  const [awake, setAwake] = React.useState(false);
+  React.useEffect(() => {
+    let id;
+    const wake = () => { id = setTimeout(() => setAwake(true), delay); };
+    if (document.readyState === 'complete') wake();
+    else window.addEventListener('load', wake, { once: true });
+    return () => { clearTimeout(id); window.removeEventListener('load', wake); };
+  }, []);
+  return awake;
+}
+
 function ForestBackground({ motion = 'gentle', videoSrc = null }) {
+  const awake = useFaAmbientAwake();
   const animate = motion !== 'off';
   const lvl = { off: 0, barely: 1, gentle: 2, living: 3 }[motion] ?? 2;
   // duration multiplier — slower for "barely", a touch livelier for "living"
@@ -140,6 +156,10 @@ function ForestBackground({ motion = 'gentle', videoSrc = null }) {
       ))
     : null;
 
+  // the blurred and blended layers join once the page has loaded (useFaAmbientAwake)
+  const scene = awake && !videoSrc;
+  const layer = { position: 'absolute', inset: 0 };
+
   return (
     <div aria-hidden="true" style={{
       position: 'absolute', inset: 0, overflow: 'hidden',
@@ -149,9 +169,13 @@ function ForestBackground({ motion = 'gentle', videoSrc = null }) {
       <div style={{ position: 'absolute', inset: -40, background: 'var(--canopy-wash)' }} />
 
       {/* drifting blurred light pools (depth) */}
-      {lvl >= 1 && <div style={blob('var(--canopy-1)', 320, 320, '-14%', '-22%', 'faDrift1', 42)} />}
-      {lvl >= 1 && <div style={blob('var(--canopy-3)', 360, 360, '44%', '-28%', 'faDrift3', 60)} />}
-      {lvl >= 1 && <div style={blob('var(--canopy-1)', 280, 280, '62%', '48%', 'faDrift2', 48)} />}
+      {awake && lvl >= 1 && (
+        <div className="fa-ambient-in" style={layer}>
+          <div style={blob('var(--canopy-1)', 320, 320, '-14%', '-22%', 'faDrift1', 42)} />
+          <div style={blob('var(--canopy-3)', 360, 360, '44%', '-28%', 'faDrift3', 60)} />
+          <div style={blob('var(--canopy-1)', 280, 280, '62%', '48%', 'faDrift2', 48)} />
+        </div>
+      )}
 
       {/* optional real forest video, behind everything-but-wash */}
       {videoSrc && (
@@ -165,85 +189,90 @@ function ForestBackground({ motion = 'gentle', videoSrc = null }) {
         </React.Fragment>
       )}
 
-      {/* swaying tree-crown silhouettes (no video) */}
-      {!videoSrc && lvl >= 2 && (
-        <React.Fragment>
-          {/* top canopy — looking up into the crowns */}
-          <Crown w="62%" h="42%" top="-18%" left="-12%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={9} op={0.6} blur={10} />
-          <Crown w="58%" h="40%" top="-20%" left="30%" fill="var(--canopy-1)" swayAnim="faSwayB" secs={11} delay={1.2} op={0.55} blur={11} />
-          <Crown w="50%" h="36%" top="-15%" left="66%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={10} delay={0.6} op={0.52} blur={10} />
-          {/* lower side crowns for framing */}
-          <Crown w="46%" h="34%" top="58%" left="-16%" fill="var(--canopy-3)" swayAnim="faSwayB" secs={13} delay={0.4} op={0.42} blur={13} origin="bottom center" />
-          <Crown w="44%" h="32%" top="66%" left="74%" fill="var(--canopy-1)" swayAnim="faSwayA" secs={12} delay={1.6} op={0.4} blur={13} origin="bottom center" />
-        </React.Fragment>
-      )}
+      {/* the CSS scene (no video): crowns, rays, glow, dapples, leaves */}
+      {scene && (
+        <div className="fa-ambient-in" style={layer}>
+          {/* swaying tree-crown silhouettes */}
+          {lvl >= 2 && (
+            <React.Fragment>
+              {/* top canopy — looking up into the crowns */}
+              <Crown w="62%" h="42%" top="-18%" left="-12%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={9} op={0.6} blur={10} />
+              <Crown w="58%" h="40%" top="-20%" left="30%" fill="var(--canopy-1)" swayAnim="faSwayB" secs={11} delay={1.2} op={0.55} blur={11} />
+              <Crown w="50%" h="36%" top="-15%" left="66%" fill="var(--canopy-3)" swayAnim="faSwayA" secs={10} delay={0.6} op={0.52} blur={10} />
+              {/* lower side crowns for framing */}
+              <Crown w="46%" h="34%" top="58%" left="-16%" fill="var(--canopy-3)" swayAnim="faSwayB" secs={13} delay={0.4} op={0.42} blur={13} origin="bottom center" />
+              <Crown w="44%" h="32%" top="66%" left="74%" fill="var(--canopy-1)" swayAnim="faSwayA" secs={12} delay={1.6} op={0.4} blur={13} origin="bottom center" />
+            </React.Fragment>
+          )}
 
-      {/* sweeping god-rays from upper canopy (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && (
-        <React.Fragment>
+          {/* sweeping god-rays from upper canopy */}
+          {lvl >= 2 && (
+            <React.Fragment>
+              <div style={{
+                position: 'absolute', top: '-12%', left: '14%', width: '34%', height: '90%',
+                background: 'var(--canopy-shaft)', filter: 'blur(26px)',
+                transform: 'rotate(12deg)', transformOrigin: 'top center',
+                animation: animate ? `faGodray ${dur(16)} ease-in-out infinite alternate` : 'none',
+              }} />
+              <div style={{
+                position: 'absolute', top: '-12%', left: '52%', width: '26%', height: '80%',
+                background: 'var(--canopy-shaft)', filter: 'blur(30px)',
+                transform: 'rotate(16deg)', transformOrigin: 'top center', opacity: 0.7,
+                animation: animate ? `faGodray2 ${dur(21)} ease-in-out 1.5s infinite alternate` : 'none',
+              }} />
+            </React.Fragment>
+          )}
+
+          {/* warm top glow */}
           <div style={{
-            position: 'absolute', top: '-12%', left: '14%', width: '34%', height: '90%',
-            background: 'var(--canopy-shaft)', filter: 'blur(26px)',
-            transform: 'rotate(12deg)', transformOrigin: 'top center',
-            animation: animate ? `faGodray ${dur(16)} ease-in-out infinite alternate` : 'none',
-          }} />
-          <div style={{
-            position: 'absolute', top: '-12%', left: '52%', width: '26%', height: '80%',
+            position: 'absolute', top: '-10%', left: '22%', width: '56%', height: '50%',
             background: 'var(--canopy-shaft)', filter: 'blur(30px)',
-            transform: 'rotate(16deg)', transformOrigin: 'top center', opacity: 0.7,
-            animation: animate ? `faGodray2 ${dur(21)} ease-in-out 1.5s infinite alternate` : 'none',
+            transform: 'rotate(8deg)', opacity: 0.6,
+            animation: animate ? `faGlow ${dur(20)} ease-in-out infinite alternate` : 'none',
           }} />
-        </React.Fragment>
-      )}
 
-      {/* warm top glow */}
-      {!videoSrc && (
-      <div style={{
-        position: 'absolute', top: '-10%', left: '22%', width: '56%', height: '50%',
-        background: 'var(--canopy-shaft)', filter: 'blur(30px)',
-        transform: 'rotate(8deg)', opacity: 0.6,
-        animation: animate ? `faGlow ${dur(20)} ease-in-out infinite alternate` : 'none',
-      }} />
-      )}
+          {/* dappled light through moving leaves */}
+          {lvl >= 2 && (
+            <div style={{ position: 'absolute', inset: 0 }}>
+              {Array.from({ length: lvl >= 3 ? 9 : 6 }).map((_, i) => (
+                <span key={'d' + i} style={{
+                  position: 'absolute',
+                  top: `${8 + (i * 37) % 70}%`, left: `${(i * 53 + 12) % 86}%`,
+                  width: 60 + (i % 3) * 26, height: 60 + (i % 3) * 26,
+                  borderRadius: '50%', background: 'var(--dapple)', filter: 'blur(22px)',
+                  willChange: 'opacity, transform',
+                  animation: animate ? `faDapple ${dur(7 + (i % 4) * 2)} ease-in-out ${-i * 1.3}s infinite` : 'none',
+                }} />
+              ))}
+            </div>
+          )}
 
-      {/* dappled light through moving leaves (CSS scene only) */}
-      {!videoSrc && lvl >= 2 && (
-        <div style={{ position: 'absolute', inset: 0 }}>
-          {Array.from({ length: lvl >= 3 ? 9 : 6 }).map((_, i) => (
-            <span key={'d' + i} style={{
-              position: 'absolute',
-              top: `${8 + (i * 37) % 70}%`, left: `${(i * 53 + 12) % 86}%`,
-              width: 60 + (i % 3) * 26, height: 60 + (i % 3) * 26,
-              borderRadius: '50%', background: 'var(--dapple)', filter: 'blur(22px)',
-              willChange: 'opacity, transform',
-              animation: animate ? `faDapple ${dur(7 + (i % 4) * 2)} ease-in-out ${-i * 1.3}s infinite` : 'none',
-            }} />
-          ))}
+          {leaves}
         </div>
       )}
 
-      {!videoSrc && leaves}
-
-      {/* lichen / paper grain (skip over video — it grays the footage) */}
-      {!videoSrc && (
-      <div style={{
+      {/* lichen / paper grain (skip over video — it grays the footage); outside the
+          fading layer above, so it keeps multiplying with the canopy beneath */}
+      {scene && (
+      <div className="fa-ambient-in" style={{
         position: 'absolute', inset: 0, opacity: 'var(--grain-opacity)',
         backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
         mixBlendMode: 'multiply',
       }} />
       )}
 
-      {/* frosted cream veil — lighter over video so the forest stays vivid */}
+      {/* frosted cream veil — lighter over video so the forest stays vivid; its
+          frosting (a blur of everything beneath) waits for the scene */}
       <div style={{
         position: 'absolute', inset: 0,
         background: videoSrc ? 'rgba(244,239,228,0.22)' : 'var(--veil)',
-        backdropFilter: videoSrc ? 'none' : 'blur(2px)',
-        WebkitBackdropFilter: videoSrc ? 'none' : 'blur(2px)',
+        backdropFilter: scene ? 'blur(2px)' : 'none',
+        WebkitBackdropFilter: scene ? 'blur(2px)' : 'none',
       }} />
 
-      {!videoSrc && motes}
+      {scene && motes && <div className="fa-ambient-in" style={layer}>{motes}</div>}
     </div>
   );
 }
 
-Object.assign(window, { ForestBackground, CrossfadeVideo });
+Object.assign(window, { useFaAmbientAwake, ForestBackground, CrossfadeVideo });

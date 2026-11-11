@@ -442,3 +442,26 @@ test('the overview legend stays inside its card from 360 to 430 px', async () =>
     await context.close();
   }
 });
+
+// The welcome screen is drawn before the costly part of the backdrop (its blurred light
+// and grain join once the page has loaded), and its heading has a font of its own, so
+// the whole serif family arrives with the first step that shows more of it.
+test('the welcome screen comes first: blurred backdrop after the load, the serif family with the income step', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  const fonts = [];
+  page.on('request', r => { if (r.url().includes('/fonts/')) fonts.push(r.url().split('/fonts/')[1]); });
+  await page.goto(base);
+  await page.locator('.fa-onb-h').waitFor();
+  assert.equal(await page.locator('.fa-ambient-in').count(), 0);
+  await page.waitForFunction(() => document.querySelectorAll('.fa-ambient-in').length >= 3, null, { timeout: 5000 });
+  assert.deepEqual(fonts.filter(f => f.startsWith('newsreader')), ['newsreader-heading-latin.woff2']);
+
+  const next = page.locator('.fa-onb .fa-cta');
+  await next.click();                                           // welcome → name
+  await next.click();                                           // name → income
+  await page.locator('.fa-onb-money').waitFor();
+  await page.waitForFunction(() => document.fonts.check('18px Newsreader', '0'));
+  assert.ok(fonts.includes('newsreader-normal-latin-v2.woff2'), fonts.join(', '));
+  await context.close();
+});

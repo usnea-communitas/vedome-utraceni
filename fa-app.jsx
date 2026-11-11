@@ -37,6 +37,11 @@ function faMotionPrefs() {
   const saveData = !!(navigator.connection && navigator.connection.saveData);
   return { reduce, saveData };
 }
+// a real phone, or the app installed to the home screen: no device frame
+function faIsBare() {
+  const mq = q => !!(window.matchMedia && window.matchMedia(q).matches);
+  return mq('(display-mode: standalone)') || window.navigator.standalone === true || mq('(max-width: 620px) and (pointer: coarse)');
+}
 function faFrameScale() {
   const s = Math.min(1, (window.innerHeight - 56) / FRAME_H, (window.innerWidth - 56) / FRAME_W);
   return Math.max(0.5, Math.floor(s * 1000) / 1000);
@@ -52,7 +57,9 @@ function App() {
 
   // On a real phone (or installed to home screen) drop the device bezel and
   // fill the viewport natively — avoids a double status bar and a clipped nav.
-  const [bare, setBare] = useA(false);
+  // decided before the first render, so a phone never draws the frame first
+  // and then the app again without it (that moved the page and the largest paint)
+  const [bare, setBare] = useA(faIsBare);
   const [frameScale, setFrameScale] = useA(faFrameScale);
   const [profile, setProfile] = useA(() => { faMigrateYearGoals(); faMigratePlan(); return loadFaProfile(); });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
@@ -107,10 +114,7 @@ function App() {
   useAE(() => { try { faStorage.set('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
   useAE(() => {
     const check = () => {
-      const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
-      const iosStandalone = window.navigator.standalone === true;
-      const touchPhone = window.matchMedia && window.matchMedia('(max-width: 620px) and (pointer: coarse)').matches;
-      setBare(standalone || iosStandalone || touchPhone);
+      setBare(faIsBare());
       setFrameScale(faFrameScale());
     };
     check();

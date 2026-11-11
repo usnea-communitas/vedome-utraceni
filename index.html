@@ -86,6 +86,11 @@
 @font-face { font-family: 'Newsreader'; font-style: italic; font-weight: 400 500; font-display: swap; src: url(fonts/newsreader-italic-latin-v2.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: 'Newsreader'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(fonts/newsreader-normal-latin-ext-v2.woff2) format('woff2'); unicode-range: U+0100-017F; }
 @font-face { font-family: 'Newsreader'; font-style: normal; font-weight: 400 600; font-display: swap; src: url(fonts/newsreader-normal-latin-v2.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+/* The onboarding headings (.fa-onb-h, 25 px, weight 500) are the only Newsreader text on the first
+   screen: they get that one instance of the font (23 kB instead of 90, scripts/cut-fonts.py --heading),
+   and the whole variable font loads with the first screen that needs it. */
+@font-face { font-family: 'Newsreader Heading'; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/newsreader-heading-latin-ext.woff2) format('woff2'); unicode-range: U+0100-017F; }
+@font-face { font-family: 'Newsreader Heading'; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/newsreader-heading-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 </style>
 <style>
 /* ════════════════════════ FOREST-CALM TOKENS ════════════════════════ */
@@ -94,6 +99,7 @@
   --sans: 'Hanken Grotesk', -apple-system, system-ui, sans-serif;
   --display: var(--serif);
   --title: var(--display);
+  --onb-heading: 'Newsreader Heading', var(--serif);
 
   /* surfaces — warm cream & beige */
   --cream: #F1EADC;
@@ -177,6 +183,7 @@
   --serif: 'EB Garamond', Georgia, serif;
   --display: 'Cormorant Garamond', Georgia, serif;
   --title: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  --onb-heading: var(--serif);
 
   /* aged-parchment surfaces (kept light so finance stays readable) */
   --cream: #ECE0C4;
@@ -784,7 +791,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   scrollbar-width: none;
 }
 .fa-onb-card::-webkit-scrollbar { display: none; }
-.fa-onb-h { font-family: var(--serif); font-size: 25px; font-weight: 500; color: var(--ink); margin: 0 0 8px; }
+.fa-onb-h { font-family: var(--onb-heading); font-size: 25px; font-weight: 500; color: var(--ink); margin: 0 0 8px; }
 .fa-onb-p { font-family: var(--sans); font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); margin: 0 0 16px; }
 .fa-onb-input {
   width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 16px; color: var(--ink);
@@ -933,6 +940,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 }
 
 /* ════════════════════════ FOREST MOTION ════════════════════════ */
+/* the backdrops' blurred light and grain fade in once the page has loaded (useFaAmbientAwake);
+   no fill, so a layer drops its own compositing group when the fade ends */
+.fa-ambient-in { animation: faAmbientIn 1.8s ease-out; }
+@keyframes faAmbientIn { from { opacity: 0; } }
 @keyframes faDrift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(46px,34px) scale(1.12); } }
 @keyframes faDrift2 { from { transform: translate(0,0) scale(1.05); } to { transform: translate(-40px,28px) scale(0.95); } }
 @keyframes faDrift3 { from { transform: translate(0,0) scale(1); } to { transform: translate(34px,-30px) scale(1.1); } }
@@ -1239,7 +1250,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=da44cb0a52"></script>
+  <script src="app.js?v=e79f151395"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>
