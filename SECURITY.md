@@ -1,6 +1,6 @@
 # Security policy
 
-Vědomé utrácení is a static, local-first web app: there is no backend, no database and no account. All user data — plan, expenses, goals, reflections, the optional PIN hash and the language choice — live in the browser's `localStorage`. The attack surface is therefore small, but not zero: the app parses backup files the user imports, exports `.ics` calendar events, registers a service worker and ships third-party code (React).
+Vědomé utrácení is a static, local-first web app: there is no backend, no database and no account. All user data — plan, expenses, goals, reflections, the optional PIN hash and the language choice — live in the browser's `localStorage`. A workshop (`?workshop=1`) keeps its made-up data under its own `fa.workshop.*` keys and deletes them when it ends; it never reads or changes the participant's own keys. The attack surface is therefore small, but not zero: the app parses backup files the user imports, exports `.ics` calendar events, registers a service worker and ships third-party code (React).
 
 ## Reporting a vulnerability
 
