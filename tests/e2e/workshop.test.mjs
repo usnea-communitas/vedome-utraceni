@@ -117,7 +117,10 @@ for (const lang of ['en', 'cs']) {
     // 4. the story's unexpected expense comes filled in
     await task(3).getByRole('button', { name: T.expense }).click();
     const sheet = page.locator('.fa-sheet');
-    assert.equal(await sheet.locator('input[inputmode="decimal"]').first().inputValue(), '2490');
+    const amount = sheet.locator('input[inputmode="decimal"]').first();
+    // the sheet fills the amount in an effect after it opens: wait for it before reading
+    await page.waitForFunction(el => el.value !== '', await amount.elementHandle(), { timeout: 5000 }).catch(() => {});
+    assert.equal(await amount.inputValue(), '2490');
     await sheet.locator('.fa-cta-solid').click();
     await tab(page, 0);
     await tick(3);
