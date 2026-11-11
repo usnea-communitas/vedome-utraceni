@@ -11,9 +11,9 @@ export const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 // compile order, without the device frame, the Tweaks panel and the app shell (which mounts React)
 const SOURCES = [
-  'fa-core.jsx', 'fa-i18n.jsx', 'fa-forest.jsx', 'fa-wizard.jsx', 'fa-ui.jsx', 'fa-tree.jsx',
+  'fa-storage.jsx', 'fa-core.jsx', 'fa-i18n.jsx', 'fa-forest.jsx', 'fa-wizard.jsx', 'fa-ui.jsx', 'fa-tree.jsx',
   'fa-invest.jsx', 'fa-prehled.jsx', 'fa-add.jsx', 'fa-screens.jsx', 'fa-plan.jsx', 'fa-store.jsx',
-  'fa-onboard.jsx', 'fa-settings.jsx',
+  'fa-onboard.jsx', 'fa-settings.jsx', 'fa-workshop.jsx',
 ];
 
 function memoryStorage(initial = {}) {
@@ -43,9 +43,15 @@ function compiled() {
   return code;
 }
 
-// a fresh app context; `storage` seeds localStorage (values are stored as given)
-export function loadApp(storage = {}) {
+// a fresh app context; `storage` seeds localStorage (values are stored as given),
+// `search` is the query of the address the app opens with (e.g. '?workshop=1')
+export function loadApp(storage = {}, { search } = {}) {
   const context = { React: ReactStub, localStorage: memoryStorage(storage), navigator: {}, console, Intl, Date, Math, JSON };
+  if (search != null) {
+    context.location = { search, pathname: '/', hash: '' };
+    context.history = { state: null, replaceState() {} };
+    context.URLSearchParams = URLSearchParams;
+  }
   context.window = context;
   vm.createContext(context);
   vm.runInContext(compiled(), context, { filename: 'app.js' });

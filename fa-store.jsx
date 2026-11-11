@@ -2,8 +2,9 @@
 // While no profile exists, the app shows onboarding; once a profile is saved,
 // faHydrate() rewrites the shared APP model from the user's stores each render.
 // A profile with {demo:true} keeps the authored demo data (used for design
-// preview via Tweaks). All keys live in this browser's localStorage; there is
-// no server, account or sync by design.
+// preview via Tweaks). All keys live in this browser's localStorage, read and
+// written through faStorage (fa-storage.jsx, which keeps a workshop apart);
+// there is no server, account or sync by design.
 
 // earlier versions stored the seeded income name translated ("Main income")
 faRegisterDataNames(['Hlavní příjem']);
@@ -18,10 +19,10 @@ const FA_STORE_KEYS = [
 ];
 
 function faLoad(key, fallback) {
-  try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; }
+  try { const v = JSON.parse(faStorage.get(key)); return v == null ? fallback : v; }
   catch (e) { return fallback; }
 }
-function faSave(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+function faSave(key, val) { try { faStorage.set(key, JSON.stringify(val)); } catch (e) {} }
 
 // ── monthly plans: fa.plans = { 'YYYY-MM': { income: [item], items: { nutne, budouci, radost } } }
 // A month gets its own entry when its plan is set or changed. A month without
@@ -98,15 +99,15 @@ function faCanUseDefaultPlan(month) {
 // writes the split into the month's plan; returns what Undo puts back
 function faApplyDefaultPlan(month, ratios) {
   let before = null;
-  try { before = localStorage.getItem('fa.plans'); } catch (e) {}
+  try { before = faStorage.get('fa.plans'); } catch (e) {}
   const plan = faPlanFor(month);
   faSetPlanFor(month, { income: plan.income, items: faDefaultPlanItems(faPlanIncome(plan), ratios) });
   return before;
 }
 function faRestorePlans(before) {
   try {
-    if (before == null) localStorage.removeItem('fa.plans');
-    else localStorage.setItem('fa.plans', before);
+    if (before == null) faStorage.remove('fa.plans');
+    else faStorage.set('fa.plans', before);
   } catch (e) {}
 }
 
@@ -147,7 +148,7 @@ function faMigrateYearGoals() {
       icon: g.icon || 'mountain', accent: g.accent || 'sage', kind: 'custom',
     }))));
   }
-  try { localStorage.removeItem('fa.yearGoals.custom'); } catch (e) {}
+  try { faStorage.remove('fa.yearGoals.custom'); } catch (e) {}
 }
 
 // The plan used to be one list for every month (fa.plan.income, fa.plan.items).
@@ -158,7 +159,7 @@ function faMigrateYearGoals() {
 function faMigratePlan() {
   const OLD = ['fa.plan.income', 'fa.plan.items'];
   const raw = {};
-  OLD.forEach(k => { try { const v = localStorage.getItem(k); if (v != null) raw[k] = v; } catch (e) {} });
+  OLD.forEach(k => { try { const v = faStorage.get(k); if (v != null) raw[k] = v; } catch (e) {} });
   if (!Object.keys(raw).length) return;
   faSave('fa.plan.v1', { saved: new Date().toISOString(), data: raw });
   const plans = faLoadPlans();
@@ -171,12 +172,12 @@ function faMigratePlan() {
     };
     faSave('fa.plans', plans);
   }
-  OLD.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  OLD.forEach(k => { try { faStorage.remove(k); } catch (e) {} });
 }
 
 // ── wipe everything (Více → „Smazat všechna data") ──────────────────────
 function faResetAll() {
-  FA_STORE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  FA_STORE_KEYS.forEach(k => { try { faStorage.remove(k); } catch (e) {} });
 }
 
 // ── seed stores right after onboarding finishes ─────────────────────────
@@ -196,7 +197,7 @@ function faSeedFreshUser(p) {
 function faLoadDemo() {
   saveFaProfile({ demo: true, name: 'Anička' });
   ['fa.plans', 'fa.plan.income', 'fa.plan.items', 'fa.expenses', 'fa.deposits', 'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe']
-    .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+    .forEach(k => { try { faStorage.remove(k); } catch (e) {} });
 }
 
 const FA_SRC_ACCENTS = ['moss', 'honey', 'blush', 'sage'];
@@ -256,7 +257,7 @@ const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security' && k !== 'f
 function faExportData() {
   const data = {};
   FA_BACKUP_KEYS.forEach(k => {
-    try { const raw = localStorage.getItem(k); if (raw != null) data[k] = raw; } catch (e) {}
+    try { const raw = faStorage.get(k); if (raw != null) data[k] = raw; } catch (e) {}
   });
   return JSON.stringify({ app: 'vedome-utraceni', version: 2, exported: new Date().toISOString(), data }, null, 2);
 }
@@ -303,8 +304,8 @@ function faImportData(text) {
   if (!keys.includes('fa.profile')) return { ok: false, error: 'profile' };
   const bad = keys.find(k => !faBackupValueOk(k, obj.data[k]));
   if (bad) return { ok: false, error: 'shape', key: bad };
-  FA_BACKUP_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
-  keys.forEach(k => { try { localStorage.setItem(k, obj.data[k]); } catch (e) {} });
+  FA_BACKUP_KEYS.forEach(k => { try { faStorage.remove(k); } catch (e) {} });
+  keys.forEach(k => { try { faStorage.set(k, obj.data[k]); } catch (e) {} });
   return { ok: true, count: keys.length };
 }
 

@@ -243,8 +243,8 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
 }
 
 // profile persistence
-function loadFaProfile() { try { return JSON.parse(localStorage.getItem('fa.profile')); } catch (e) { return null; } }
-function saveFaProfile(p) { try { localStorage.setItem('fa.profile', JSON.stringify(p)); } catch (e) {} }
-function clearFaProfile() { try { localStorage.removeItem('fa.profile'); } catch (e) {} }
+function loadFaProfile() { try { return JSON.parse(faStorage.get('fa.profile')); } catch (e) { return null; } }
+function saveFaProfile(p) { try { faStorage.set('fa.profile', JSON.stringify(p)); } catch (e) {} }
+function clearFaProfile() { try { faStorage.remove('fa.profile'); } catch (e) {} }
 
 Object.assign(window, { Onboarding, loadFaProfile, saveFaProfile, clearFaProfile, OB_GOALS, faReserveSuggestion });

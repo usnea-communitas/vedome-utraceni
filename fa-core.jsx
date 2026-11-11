@@ -213,6 +213,8 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
     book: <g {...p}><path d="M5 4 h9 a3 3 0 0 1 3 3 v13 H8 a3 3 0 0 1-3-3Z"/><path d="M17 7 h2 v13 H8"/><path d="M8 8h6M8 11h6"/></g>,
     // bulb — tips
     bulb: <g {...p}><path d="M9 17 h6 M10 20 h4"/><path d="M12 3 C8.7 3 6.5 5.4 6.5 8.2 C6.5 10.6 8 11.8 9 13.2 V14.5 h6 V13.2 C16 11.8 17.5 10.6 17.5 8.2 C17.5 5.4 15.3 3 12 3Z"/></g>,
+    // ticked list — workshop tasks
+    tasks: <g {...p}><path d="M10.5 6.5 h9.5 M10.5 12 h9.5 M10.5 17.5 h9.5"/><path d="M3.8 6.6 l1.5 1.5 L8 5.2 M3.8 12.1 l1.5 1.5 L8 10.7"/><circle cx="5.6" cy="17.5" r="1.3"/></g>,
     // home — overview
     home: <g {...p}><path d="M4 11 L12 4 L20 11"/><path d="M6 9.5 V20 h12 V9.5"/><path d="M10 20v-5h4v5"/></g>,
     // scales / plan

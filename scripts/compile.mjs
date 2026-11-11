@@ -21,10 +21,10 @@ const require = createRequire(import.meta.url);
 
 // order matters — same order as the old <script type="text/babel"> tags
 const SOURCES = [
-  'ios-frame.jsx', 'tweaks-panel.jsx', 'fa-core.jsx', 'fa-i18n.jsx', 'fa-forest.jsx',
+  'ios-frame.jsx', 'tweaks-panel.jsx', 'fa-storage.jsx', 'fa-core.jsx', 'fa-i18n.jsx', 'fa-forest.jsx',
   'fa-wizard.jsx', 'fa-ui.jsx', 'fa-tree.jsx', 'fa-invest.jsx', 'fa-prehled.jsx',
   'fa-add.jsx', 'fa-screens.jsx', 'fa-plan.jsx', 'fa-store.jsx', 'fa-onboard.jsx',
-  'fa-settings.jsx', 'fa-app.jsx',
+  'fa-settings.jsx', 'fa-workshop.jsx', 'fa-app.jsx',
 ];
 
 const joined = SOURCES.map(f => `// ── ${f} ──\n` + readFileSync(join(root, f), 'utf8')).join('\n;\n');
