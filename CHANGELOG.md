@@ -2,6 +2,14 @@
 
 Notable changes to Vědomé utrácení (Mindful Spending). The version lives in `package.json` and in `FA_VERSION` (`fa-core.jsx`), is shown under More, and a test keeps the two in step. Each version is also a [GitHub release](https://github.com/usnea-communitas/vedome-utraceni/releases).
 
+## Unreleased
+
+- **A backup with a password:** under More → Data, *Back up with a password* encrypts the backup right in the browser (AES-256-GCM with a key from PBKDF2-SHA-256, 600,000 rounds), so it can go by email or onto a shared drive. *Restore from backup* recognises such a file and asks for the password; a wrong password or a changed file changes nothing. The plain backup stays as it was.
+- **Expenses as a spreadsheet:** a CSV table of every expense (date, name, category, amount in Kč), oldest first, that Excel, Numbers and LibreOffice open with Czech letters intact: it starts with a byte-order mark, separates columns with a semicolon in Czech, Polish, Ukrainian and Spanish and with a comma in English, and keeps a name that starts like a formula as text.
+- **How we protect your data:** a new *Privacy* section in More, also in a workshop, shows where the numbers live (this browser, the files you save, nothing on a server) and what is good to know about the PIN, both kinds of backup, another device, deleting and the workshop.
+- **Add to home screen:** a short guide under *Mindful Spending* in More, for iPhone (iOS 26 included) and Android, with the phone's own buttons drawn in. It says that a home-screen app on an iPhone keeps its own storage, apart from Safari, and how a backup carries the data over.
+- Settings sheets close with Escape, take the focus when they open and give it back to the row that opened them.
+
 ## 2.0.0 — 2026-11-12
 
 The third round, live since 10–11 November 2026: the plan belongs to a month, a first plan takes one tap, and the app comes with a workshop mode and a kit for facilitators. It is a major version because the data model changed: plans are kept per month and backups use format 2 (older backups still restore).

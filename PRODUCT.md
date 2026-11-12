@@ -30,7 +30,7 @@ A calm money plan in one understandable frame (50/30/20), with data that stays i
 
 ## Capabilities and Constraints
 
-- No server and no account; data stay in the browser. Optional PIN lock (a convenience lock, not encryption), gentle reminders as a calendar file, backups.
+- No server and no account; data stay in the browser. Optional PIN lock (a convenience lock, not encryption), gentle reminders as a calendar file, backups (optionally encrypted with a password in the browser), expenses as a CSV table, a page on how the data is protected and a guide to adding the app to the home screen.
 - Static site: the `fa-*.jsx` modules are the source, `app.js` is generated from them (`npm run compile`) and must not be edited by hand.
 - Deployment: Vercel project `vedome-utraceni`, static root with no build step.
 

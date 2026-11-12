@@ -1,6 +1,15 @@
 # Security policy
 
-Vědomé utrácení is a static, local-first web app: there is no backend, no database and no account. All user data — plan, expenses, goals, reflections, the optional PIN hash and the language choice — live in the browser's `localStorage`. A workshop (`?workshop=1`) keeps its made-up data under its own `fa.workshop.*` keys and deletes them when it ends; it never reads or changes the participant's own keys. The attack surface is therefore small, but not zero: the app parses backup files the user imports, exports `.ics` calendar events, registers a service worker and ships third-party code (React).
+Vědomé utrácení is a static, local-first web app: there is no backend, no database and no account. All user data — plan, expenses, goals, reflections, the optional PIN hash and the language choice — live in the browser's `localStorage`. A workshop (`?workshop=1`) keeps its made-up data under its own `fa.workshop.*` keys and deletes them when it ends; it never reads or changes the participant's own keys. The attack surface is therefore small, but not zero: the app parses backup files the user imports (plain or encrypted with a password), exports `.ics` calendar events and CSV tables, registers a service worker and ships third-party code (React).
+
+## Backups with a password
+
+A backup can be encrypted in the browser before it is saved, with the Web Crypto API and nothing else. The key comes from the password through PBKDF2-SHA-256 with 600,000 rounds and a random 16-byte salt for every backup; the backup is encrypted with AES-256-GCM and a random 12-byte IV. The file holds only the salt, the IV, the number of rounds and the ciphertext; the password is normalised to Unicode NFC (so the same letters typed on another keyboard still match) and is never stored. Nobody can open the backup without it, and a forgotten password cannot be recovered.
+
+- A wrong password, or a file changed after it was made, fails the GCM check before anything is written; the stored data stays as it was. A file that opens is then checked like a plain backup before it replaces anything.
+- On import the number of rounds has to lie between 100,000 and 5,000,000, so a crafted file cannot keep a phone busy for minutes.
+- The plain backup and the CSV table of expenses are readable files, as the app's privacy page says. In the table, a text that starts like a formula (`=`, `+`, `-`, `@`) gets an apostrophe in front, so a spreadsheet shows it as text.
+- Neither format contains the PIN.
 
 ## Reporting a vulnerability
 
@@ -20,7 +29,7 @@ In scope:
 
 - the application code in this repository (the `.jsx` sources, `index.html`, `sw.js`),
 - the production deployment at <https://vedome-utraceni.vercel.app/>,
-- backup import/export and the PIN lock (note: the PIN is a convenience lock against casual access on a shared device, not encryption of the stored data),
+- backup import/export, including backups with a password, the CSV export and the PIN lock (note: the PIN is a convenience lock against casual access on a shared device, not encryption of the stored data),
 - the service worker's caching behaviour.
 
 Out of scope:
