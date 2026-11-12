@@ -9,6 +9,10 @@ Notable changes to Vědomé utrácení (Mindful Spending). The version lives in 
 - **How we protect your data:** a new *Privacy* section in More, also in a workshop, shows where the numbers live (this browser, the files you save, nothing on a server) and what is good to know about the PIN, both kinds of backup, another device, deleting and the workshop.
 - **Add to home screen:** a short guide under *Mindful Spending* in More, for iPhone (iOS 26 included) and Android, with the phone's own buttons drawn in. It says that a home-screen app on an iPhone keeps its own storage, apart from Safari, and how a backup carries the data over.
 - Settings sheets close with Escape, take the focus when they open and give it back to the row that opened them.
+- **Tips with sources:** each of the four tips has a fact from a named source, linked under the card with the day it was checked: three come from the Czech Ministry of Finance's 2020 measurement of financial literacy (half of Czechs consider whether they can afford something before buying; 70 % of households use standing orders; 41 % set financial goals), one from Cornell University's research on experiences and things. Facts without a source are gone, and the tip texts claim only what the sources say.
+- **The simulator in today's money:** a switch shows the result at 2 % inflation a year, the Czech National Bank's target, with a note that inflation varies (15.1 % in 2022, Czech Statistical Office). The note under the simulator now names its source: the S&P 500 returned about 10 % a year from 1928 to 2025 before inflation (A. Damodaran, NYU Stern).
+- **A learning aid, not financial advice:** the Tips screen and the reflection's tip say so.
+- `npm run sources:check` opens every source; a monthly workflow writes the result into one issue labelled `source-check`.
 
 ## 2.0.0 — 2026-11-12
 
