@@ -309,6 +309,106 @@ function faImportData(text) {
   return { ok: true, count: keys.length };
 }
 
+// ── backup with a password ──────────────────────────────────────────────
+// The backup above, encrypted in this browser before it is saved. PBKDF2
+// (SHA-256, 600 000 rounds, a random salt) turns the password into a key and
+// AES-256-GCM (a random nonce) seals the backup. The file keeps only what
+// decryption needs; the password is never stored, so nobody can open the file
+// without it. GCM checks the whole file: a wrong password or a changed byte is
+// refused before anything in the browser is touched.
+const FA_BACKUP_ROUNDS = 600000;
+const FA_BACKUP_MIN_PASSWORD = 8;
+const FA_BACKUP_CIPHER = 'AES-256-GCM';
+const FA_BACKUP_KDF = 'PBKDF2-SHA-256';
+
+function faCanEncrypt() {
+  try { return !!(crypto && crypto.subtle && crypto.getRandomValues && typeof TextEncoder === 'function'); } catch (e) { return false; }
+}
+function faBytesToB64(bytes) {
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function faB64ToBytes(text) {
+  const s = atob(String(text));
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+// the same password typed on another device gives the same key (NFC: "č" is one character)
+async function faBackupKey(password, salt, rounds) {
+  const raw = new TextEncoder().encode(String(password).normalize('NFC'));
+  const base = await crypto.subtle.importKey('raw', raw, 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: rounds }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+
+// the backup file, encrypted with the password
+async function faExportEncrypted(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await faBackupKey(password, salt, FA_BACKUP_ROUNDS);
+  const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(faExportData())));
+  return JSON.stringify({ app: 'vedome-utraceni', version: 2, encrypted: {
+    cipher: FA_BACKUP_CIPHER, kdf: FA_BACKUP_KDF, rounds: FA_BACKUP_ROUNDS,
+    salt: faBytesToB64(salt), iv: faBytesToB64(iv), data: faBytesToB64(sealed),
+  } }, null, 2);
+}
+
+// what a chosen file is: 'plain' or 'encrypted' (a backup of this app), else null
+function faBackupKind(text) {
+  let obj;
+  try { obj = JSON.parse(text); } catch (e) { return null; }
+  if (!obj || obj.app !== 'vedome-utraceni') return null;
+  return faIsObj(obj.encrypted) ? 'encrypted' : 'plain';
+}
+
+// opens a backup with a password and restores it like faImportData. Errors:
+// 'password' (wrong password, or the file was changed), 'format' (not a backup
+// with a password), 'unsupported' (this browser cannot decrypt), and those of
+// faImportData. Nothing changes until the file has opened and passed its checks.
+async function faImportEncrypted(text, password) {
+  if (!faCanEncrypt()) return { ok: false, error: 'unsupported' };
+  let box;
+  try { box = JSON.parse(text).encrypted; } catch (e) { return { ok: false, error: 'format' }; }
+  // a file must not keep a phone busy for minutes: the rounds stay within reason
+  if (!faIsObj(box) || box.cipher !== FA_BACKUP_CIPHER || box.kdf !== FA_BACKUP_KDF
+    || !Number.isInteger(box.rounds) || box.rounds < 100000 || box.rounds > 5000000) return { ok: false, error: 'format' };
+  let salt, iv, data;
+  try { salt = faB64ToBytes(box.salt); iv = faB64ToBytes(box.iv); data = faB64ToBytes(box.data); } catch (e) { return { ok: false, error: 'format' }; }
+  if (salt.length < 16 || iv.length !== 12 || data.length <= 16) return { ok: false, error: 'format' };
+  let plain;
+  try {
+    const key = await faBackupKey(password == null ? '' : password, salt, box.rounds);
+    plain = new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data));
+  } catch (e) { return { ok: false, error: 'password' }; }
+  return faImportData(plain);
+}
+
+// ── expenses as a table (CSV) ───────────────────────────────────────────
+// For Excel, LibreOffice or Numbers. A byte-order mark tells them the file is
+// UTF-8, so Czech letters arrive intact. Languages that write decimals with a
+// comma (Czech, Polish, Ukrainian, Spanish) separate columns with a semicolon,
+// as their spreadsheets expect; English with a comma. Every expense of every
+// month, oldest first, in whole Kč.
+function faCsvSeparator() { return getFaLang() === 'en' ? ',' : ';'; }
+function faCsvCell(value, sep) {
+  let s = String(value == null ? '' : value);
+  // a text that starts like a formula stays text in the spreadsheet
+  if (typeof value === 'string' && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return s.includes(sep) || /["\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function faExpensesCsv(expenses) {
+  const sep = faCsvSeparator();
+  const names = {};
+  APP.categories.forEach(c => { names[c.key] = L(c.name); });
+  const rows = (expenses || [])
+    .map((e, i) => ({ e, i, day: faExpenseDay(e) }))
+    .sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : ((+a.e.ts || 0) - (+b.e.ts || 0)) || a.i - b.i))
+    .map(({ e, day }) => [day, faDataLabel(e.name), names[e.cat] || String(e.cat || ''), Math.round(+e.amount || 0)]);
+  const head = [L('Datum'), L('Název'), L('Kategorie'), L('Částka (Kč)')];
+  return '﻿' + [head].concat(rows).map(r => r.map(c => faCsvCell(c, sep)).join(sep)).join('\r\n') + '\r\n';
+}
+
 // derived overview stats; call AFTER applyFaExpenses
 function faDerive() {
   const allocated = APP.categories.reduce((s, c) => s + (+c.actual || 0), 0);
@@ -323,4 +423,6 @@ Object.assign(window, {
   faLoadPlans, faPlanFor, faSetPlanFor, loadFaDeposits, faAddDeposit, faDepositsIn,
   faRatioText, faSplitIncome, faDefaultPlanItems, faCanUseDefaultPlan, faApplyDefaultPlan, faRestorePlans,
   FA_BACKUP_KEYS, faExportData, faImportData, faBackupValueOk,
+  FA_BACKUP_ROUNDS, FA_BACKUP_MIN_PASSWORD, faCanEncrypt, faExportEncrypted, faBackupKind, faImportEncrypted,
+  faCsvSeparator, faExpensesCsv,
 });

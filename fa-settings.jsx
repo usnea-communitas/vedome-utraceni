@@ -77,17 +77,29 @@ function faReminderIcs(rem) {
 }
 
 // ── shared bottom-sheet shell (same look as AddSheet) ───────────────────
+// Opening moves the keyboard focus into the sheet (unless a field there already
+// took it) and Escape closes it, so a keyboard never wanders behind the backdrop.
 function SettingsSheet({ open, title, onClose, children }) {
   const [shown, setShown] = useSt(false);
+  const box = useStR(null);
+  const close = useStR(onClose);
+  close.current = onClose;
   useStE(() => {
     if (open) { const t = setTimeout(() => setShown(true), 15); return () => clearTimeout(t); }
     setShown(false);
+  }, [open]);
+  useStE(() => {
+    if (!open) return;
+    const t = setTimeout(() => { const el = box.current; if (el && !el.contains(document.activeElement)) el.focus(); }, 30);
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close.current && close.current(); } };
+    document.addEventListener('keydown', onKey);
+    return () => { clearTimeout(t); document.removeEventListener('keydown', onKey); };
   }, [open]);
   if (!open) return null;
   return (
     <div className={'fa-sheet-wrap' + (shown ? ' is-open' : '')}>
       <div className="fa-sheet-backdrop" onClick={onClose}></div>
-      <div className="fa-sheet" role="dialog" aria-label={title}>
+      <div className="fa-sheet" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={box}>
         <div className="fa-sheet-grip"></div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 className="fa-cardtitle" style={{ fontSize: 21 }}>{title}</h2>
@@ -366,8 +378,253 @@ function LockScreen({ security, userName, onUnlock, onReset }) {
   );
 }
 
+// ── a sentence with pictures in it: "{share}" becomes the phone's share button ──
+function faRich(text, parts) {
+  return String(text).split(/(\{\w+\})/).map((piece, i) => {
+    const m = piece.match(/^\{(\w+)\}$/);
+    return m && parts[m[1]] ? <React.Fragment key={i}>{parts[m[1]]}</React.Fragment> : piece;
+  });
+}
+// a button of the phone itself, drawn as it looks there; it gets a name for
+// screen readers only when the sentence does not name it already
+function FaKey({ icon, label }) {
+  const glyph = <Icon name={icon} size={15} stroke={1.9} />;
+  return label
+    ? <span className="fa-key" role="img" aria-label={label}>{glyph}</span>
+    : <span className="fa-key" aria-hidden="true">{glyph}</span>;
+}
+// a mouse or trackpad: the password field can take the focus at once without
+// a phone keyboard covering the explanation
+function faFinePointer() {
+  try { return !!(window.matchMedia && matchMedia('(pointer: fine)').matches); } catch (e) { return false; }
+}
+
+// ── password fields ─────────────────────────────────────────────────────
+function PasswordField({ id, label, value, onChange, autoComplete, shown, onToggleShown, invalid, describedBy, inputRef }) {
+  return (
+    <div className="fa-pw">
+      <label className="fa-sheet-label" htmlFor={id}>{label}</label>
+      <div className="fa-pw-box">
+        <input id={id} ref={inputRef} className="fa-pw-input" type={shown ? 'text' : 'password'} value={value}
+          onChange={e => onChange(e.target.value)} autoComplete={autoComplete}
+          autoCapitalize="off" autoCorrect="off" spellCheck={false}
+          aria-invalid={invalid ? 'true' : undefined} aria-describedby={describedBy} />
+        {onToggleShown && (
+          <button type="button" className="fa-pw-eye" aria-controls={id} onClick={onToggleShown}>
+            {shown ? L('Skrýt') : L('Ukázat')}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+const faPasswordLength = pw => Array.from(String(pw)).length;
+
+// ── Záloha s heslem: the backup, encrypted in this browser ─────────────
+function PasswordBackupSheet({ open, onClose }) {
+  const [pw, setPw] = useSt('');
+  const [again, setAgain] = useSt('');
+  const [shown, setShown] = useSt(false);
+  const [busy, setBusy] = useSt(false);
+  const [done, setDone] = useSt(false);
+  const [err, setErr] = useSt(null);   // 'short' | 'match' | 'fail'
+  const first = useStR(null);
+  const second = useStR(null);
+  useStE(() => {
+    if (!open) return;
+    setPw(''); setAgain(''); setShown(false); setBusy(false); setDone(false); setErr(null);
+    if (!faFinePointer()) return;
+    const t = setTimeout(() => first.current && first.current.focus(), 60);
+    return () => clearTimeout(t);
+  }, [open]);
+  const can = faCanEncrypt();
+  const submit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (faPasswordLength(pw) < FA_BACKUP_MIN_PASSWORD) { setErr('short'); setDone(false); first.current && first.current.focus(); return; }
+    if (pw !== again) { setErr('match'); setDone(false); second.current && second.current.focus(); return; }
+    setErr(null); setBusy(true);
+    try {
+      const text = await faExportEncrypted(pw);
+      if (!faDownload('vedome-utraceni-zaloha-s-heslem-' + faTodayIso() + '.json', text, 'application/json')) throw new Error('download');
+      setPw(''); setAgain(''); setDone(true);
+    } catch (x) { setErr('fail'); }
+    setBusy(false);
+  };
+  const message = err === 'short' ? Lf('Heslo musí mít aspoň {n} znaků.', { n: FA_BACKUP_MIN_PASSWORD })
+    : err === 'match' ? L('Hesla se neshodují.')
+    : err === 'fail' ? L('Zálohu se nepodařilo vytvořit.') : '';
+  return (
+    <SettingsSheet open={open} title={L('Záloha s heslem')} onClose={onClose}>
+      <form className="fa-pwform" onSubmit={submit} noValidate>
+        <div className="fa-sheet-lead">
+          <Medallion icon="key" accent="sage" size={38} />
+          <p>{L('Zálohu zašifrujeme přímo v tomto prohlížeči. Bez hesla ji nikdo nepřečte, takže může i do e-mailu nebo na sdílený disk.')}</p>
+        </div>
+        {!can ? (
+          <p className="fa-pw-msg is-err" role="alert">{L('Tento prohlížeč šifrovat neumí. Použij běžnou zálohu.')}</p>
+        ) : (
+          <React.Fragment>
+            <PasswordField id="fa-backup-pw" label={L('Heslo')} value={pw} onChange={v => { setPw(v); setDone(false); }} inputRef={first}
+              autoComplete="new-password" shown={shown} onToggleShown={() => setShown(s => !s)}
+              invalid={err === 'short'} describedBy="fa-backup-help" />
+            <PasswordField id="fa-backup-again" label={L('Heslo ještě jednou')} value={again} onChange={v => { setAgain(v); setDone(false); }} inputRef={second}
+              autoComplete="new-password" shown={shown} invalid={err === 'match'} />
+            <p id="fa-backup-help" className="fa-pw-help">{Lf('Aspoň {n} znaků. Dobře poslouží věta, kterou si zapamatuješ.', { n: FA_BACKUP_MIN_PASSWORD })}</p>
+            <p className="fa-pw-warn"><Icon name="key" size={16} stroke={1.8} />
+              <span>{L('Heslo si zapiš nebo ulož do správce hesel. Když ho zapomeneš, zálohu neotevře nikdo, ani my.')}</span></p>
+            {message && <p className="fa-pw-msg is-err" role="alert">{message}</p>}
+            {done && <p className="fa-pw-msg is-ok" role="status">{L('Záloha s heslem se stáhla. Obnovíš ji ve Více → Data → Obnovit ze zálohy.')}</p>}
+            <button type="submit" className="fa-cta fa-cta-solid" disabled={busy}>{busy ? L('Šifruji…') : L('Stáhnout zálohu s heslem')}</button>
+          </React.Fragment>
+        )}
+      </form>
+    </SettingsSheet>
+  );
+}
+
+// ── restoring a backup with a password ──────────────────────────────────
+function PasswordRestoreSheet({ open, text, onClose }) {
+  const [pw, setPw] = useSt('');
+  const [shown, setShown] = useSt(false);
+  const [state, setState] = useSt('idle');   // idle | working | done
+  const [err, setErr] = useSt('');
+  const field = useStR(null);
+  useStE(() => {
+    if (!open) return;
+    setPw(''); setShown(false); setState('idle'); setErr('');
+    if (!faFinePointer()) return;
+    const t = setTimeout(() => field.current && field.current.focus(), 60);
+    return () => clearTimeout(t);
+  }, [open]);
+  const submit = async (e) => {
+    e.preventDefault();
+    if (state !== 'idle') return;
+    if (!pw) { field.current && field.current.focus(); return; }
+    setErr(''); setState('working');
+    const res = await faImportEncrypted(text, pw);
+    if (res.ok) { setState('done'); setTimeout(() => location.reload(), 700); return; }
+    setState('idle');
+    setErr(res.error === 'password' ? L('Heslo nesedí. Data zůstala beze změny.')
+      : res.error === 'unsupported' ? L('Tento prohlížeč šifrování neumí. Zkus zálohu obnovit v jiném prohlížeči.')
+      : res.error === 'shape' ? L('Záloha je poškozená nebo upravená. Data zůstala beze změny.')
+      : L('Tenhle soubor nevypadá jako záloha Vědomého utrácení.'));
+    if (res.error === 'password' && field.current) { field.current.focus(); field.current.select(); }
+  };
+  return (
+    <SettingsSheet open={open} title={L('Obnovit ze zálohy')} onClose={onClose}>
+      <form className="fa-pwform" onSubmit={submit} noValidate>
+        <div className="fa-sheet-lead">
+          <Medallion icon="key" accent="honey" size={38} />
+          <p>{L('Tahle záloha je zašifrovaná. Zadej heslo, se kterým vznikla. Obnovení nahradí současná data obsahem zálohy.')}</p>
+        </div>
+        <PasswordField id="fa-restore-pw" label={L('Heslo k záloze')} value={pw} onChange={setPw} inputRef={field}
+          autoComplete="current-password" shown={shown} onToggleShown={() => setShown(s => !s)} invalid={!!err} />
+        {err && <p className="fa-pw-msg is-err" role="alert">{err}</p>}
+        {state === 'done' && <p className="fa-pw-msg is-ok" role="status">{L('Data obnovena. Načítám…')}</p>}
+        <button type="submit" className="fa-cta fa-cta-solid" disabled={state !== 'idle' || !pw}>{state === 'working' ? L('Otevírám zálohu…') : L('Obnovit data')}</button>
+      </form>
+    </SettingsSheet>
+  );
+}
+
+// ── Jak chráníme tvoje data: where the numbers live, and where they never go ──
+function DataSafetySheet({ open, onClose }) {
+  const stops = [
+    { icon: 'home', title: L('V tomto prohlížeči'), text: L('Plán, výdaje, cíle, reflexe a nastavení. Nic z toho se samo nikam neposílá.') },
+    { icon: 'vault', title: L('V souborech, které si uložíš'), text: L('Záloha, záloha s heslem a tabulka výdajů. Vzniknou jen tehdy, když o ně požádáš, a zůstanou tam, kam je uložíš.') },
+    { icon: null, title: L('Na našem serveru'), text: L('Nic. Server s daty ani účty nemáme. Hosting aplikaci jen doručí jako každý web; tvoje čísla k němu nedorazí.') },
+  ];
+  const facts = [
+    [L('PIN'), L('Brání jen náhodnému nahlédnutí na tomto zařízení. Data pod ním šifrovaná nejsou a záloha PIN neobsahuje.')],
+    [L('Běžná záloha'), L('Je to čitelný soubor. Ukládej ho jen tam, kam se cizí nedostanou; do e-mailu nebo na sdílený disk patří záloha s heslem.')],
+    [L('Záloha s heslem'), L('Šifruje se přímo v prohlížeči (AES-256). Heslo nikde neukládáme, takže bez něj zálohu neotevře nikdo, ani my.')],
+    [L('Jiné zařízení'), L('Data se mezi zařízeními samy nepřenášejí. Udělej zálohu a na druhém zařízení ji obnov.')],
+    [L('Smazání'), L('Více → Data → Smazat všechna data vymaže vše v tomto prohlížeči. Data zmizí i se smazáním dat webů v nastavení prohlížeče, proto si dělej zálohy.')],
+    [L('Workshop'), L('Pracuje s vymyšlenými příběhy uloženými zvlášť. Tvoje vlastní data nečte ani nemění.')],
+  ];
+  return (
+    <SettingsSheet open={open} title={L('Jak chráníme tvoje data')} onClose={onClose}>
+      <p className="fa-safe-lead">{L('Tvoje čísla zůstávají u tebe. Tady je, kudy vedou.')}</p>
+      <ol className="fa-safe-path">
+        {stops.map((s, i) => (
+          <li key={i} className={'fa-safe-stop' + (s.icon ? '' : ' is-none') + (stops[i + 1] && !stops[i + 1].icon ? ' to-none' : '')}>
+            <span className="fa-safe-node">{s.icon && <Icon name={s.icon} size={18} stroke={1.8} />}</span>
+            <span className="fa-safe-body">
+              <span className="fa-safe-title">{s.title}</span>
+              <span className="fa-safe-text">{s.text}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      <h3 className="fa-safe-h">{L('Dobré vědět')}</h3>
+      <dl className="fa-safe-facts">
+        {facts.map(([term, text], i) => (
+          <div key={i}><dt>{term}</dt><dd>{text}</dd></div>
+        ))}
+      </dl>
+      <p className="fa-safe-foot">{L('Kód aplikace je otevřený (licence MIT), takže to může kdokoli ověřit.')}</p>
+    </SettingsSheet>
+  );
+}
+
+// ── Na plochu telefonu: how to add the app to the home screen ──────────
+// A home-screen app on an iPhone keeps its own storage, apart from Safari
+// (WebKit treats it as a separate app), so the guide says how to bring the data over.
+function faStandalone() {
+  try { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; } catch (e) { return false; }
+}
+function faDevicePlatform() {
+  try {
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    if (/Android/.test(ua)) return 'android';
+  } catch (e) {}
+  return 'other';
+}
+function HomeScreenSheet({ open, onClose }) {
+  const [os, setOs] = useSt(() => (faDevicePlatform() === 'android' ? 'android' : 'ios'));
+  useStE(() => { if (open) setOs(faDevicePlatform() === 'android' ? 'android' : 'ios'); }, [open]);
+  const installed = faStandalone();
+  const keys = {
+    share: <FaKey icon="share" />,
+    more: <FaKey icon="dotsh" label={L('Další volby')} />,
+    add: <FaKey icon="addsquare" />,
+    menu: <FaKey icon="dotsv" label={L('Další volby')} />,
+  };
+  const steps = os === 'ios' ? [
+    L('Otevři aplikaci v Safari.'),
+    L('Klepni na {share} Sdílet. V iOS 26 je pod tlačítkem {more} vedle adresy.'),
+    L('Vyber {add} Přidat na plochu, nech zapnuté otevírání jako webové aplikace a klepni na Přidat.'),
+  ] : [
+    L('Otevři aplikaci v Chromu.'),
+    L('Klepni na {menu} vedle adresy.'),
+    L('Vyber Nainstalovat aplikaci nebo Přidat na plochu a potvrď.'),
+  ];
+  const note = os === 'ios'
+    ? L('Na iPhonu a iPadu má aplikace na ploše vlastní úložiště, oddělené od Safari. Než ji začneš používat, ulož si v Safari zálohu a v aplikaci na ploše ji obnov (Více → Data).')
+    : L('Kdyby v aplikaci na ploše chyběla data, ulož si v prohlížeči zálohu a v aplikaci ji obnov (Více → Data).');
+  return (
+    <SettingsSheet open={open} title={L('Na plochu telefonu')} onClose={onClose}>
+      <div className="fa-sheet-lead">
+        <Medallion icon="phone" accent="moss" size={38} />
+        <p>{installed ? L('Aplikaci už máš na ploše a právě běží odtud.') : L('Otevře se přes celou obrazovku jako běžná aplikace a funguje i bez připojení.')}</p>
+      </div>
+      <div className="fa-lang fa-os" role="group" aria-label={L('Telefon')}>
+        <button type="button" data-on={os === 'ios'} aria-pressed={os === 'ios' ? 'true' : 'false'} onClick={() => setOs('ios')}>{L('iPhone a iPad')}</button>
+        <button type="button" data-on={os === 'android'} aria-pressed={os === 'android' ? 'true' : 'false'} onClick={() => setOs('android')}>{L('Android')}</button>
+      </div>
+      <ol className="fa-steps">
+        {steps.map((s, i) => <li key={os + i}><span className="fa-step-n" aria-hidden="true">{i + 1}</span><span>{faRich(s, keys)}</span></li>)}
+      </ol>
+      <p className="fa-pw-warn"><Icon name="vault" size={16} stroke={1.8} /><span>{note}</span></p>
+    </SettingsSheet>
+  );
+}
+
 Object.assign(window, {
   loadFaSecurity, saveFaSecurity, loadFaReminders, saveFaReminders,
   faHashPin, faDownload, faReminderIcs,
   SettingsSheet, SecuritySheet, RemindersSheet, IncomeSheet, LockScreen, PinPad, PinDots,
+  PasswordBackupSheet, PasswordRestoreSheet, DataSafetySheet, HomeScreenSheet, faStandalone, faDevicePlatform, faRich,
 });

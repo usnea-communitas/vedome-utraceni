@@ -465,8 +465,17 @@ function reflexSegments(score, max) {
 // ════════════════════════════════════════════════════════════════════
 function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setProfile, resetAll, go, endWorkshop }) {
   const real = profile && !profile.demo;
-  const [sheet, setSheet] = useS2(null); // 'income' | 'security' | 'reminders' | null
+  const [sheet, setSheet] = useS2(null); // 'income' | 'security' | 'reminders' | 'home' | 'safety' | 'pwbackup' | 'pwrestore' | null
   const [, bump] = useS2(0);
+  // a closed sheet hands the focus back to the row that opened it
+  const opener = React.useRef(null);
+  const openSheet = (name, el) => { opener.current = el || document.activeElement; setSheet(name); };
+  const closeSheet = () => {
+    setSheet(null);
+    const el = opener.current;
+    opener.current = null;
+    if (el) setTimeout(() => { try { if (el.isConnected) el.focus(); } catch (e) {} }, 0);
+  };
   const refresh = () => { if (setProfile) setProfile(loadFaProfile()); bump(n => n + 1); };
   const sec = loadFaSecurity();
   const rem = loadFaReminders();
@@ -479,13 +488,21 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
     const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
     setDataMsg(ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.'));
   };
+  // a backup with a password waits here while its password is asked for
+  const [locked, setLocked] = useS2('');
   const onImportFile = (e) => {
     const f = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!f) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const res = faImportData(String(reader.result || ''));
+      const text = String(reader.result || '');
+      if (faBackupKind(text) === 'encrypted') {
+        if (!faCanEncrypt()) { setDataMsg(L('Tento prohlížeč šifrování neumí. Zkus zálohu obnovit v jiném prohlížeči.')); return; }
+        setDataMsg(''); setLocked(text); setSheet('pwrestore');
+        return;
+      }
+      const res = faImportData(text);
       if (res.ok) { setDataMsg(L('Data obnovena. Načítám…')); setTimeout(() => location.reload(), 700); }
       else setDataMsg(res.error === 'shape'
         ? L('Záloha je poškozená nebo upravená. Data zůstala beze změny.')
@@ -493,6 +510,13 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
     };
     reader.onerror = () => setDataMsg(L('Soubor se nepodařilo přečíst.'));
     reader.readAsText(f);
+  };
+  // every expense as a table for Excel, Numbers or LibreOffice
+  const exportCsv = () => {
+    const list = loadFaExpenses();
+    if (!list.length) { setDataMsg(L('Zatím tu nejsou žádné výdaje. Až nějaké zapíšeš, půjdou stáhnout jako tabulka.')); return; }
+    const ok = faDownload('vedome-utraceni-vydaje-' + faTodayIso() + '.csv', faExpensesCsv(list), 'text/csv;charset=utf-8');
+    setDataMsg(ok ? L('Tabulka výdajů se stáhla. Otevřeš ji v Excelu, Numbers nebo LibreOffice.') : L('Tabulku se nepodařilo vytvořit.'));
   };
   // a workshop shows its story, not the participant's lock, reminders or backups
   const workshop = FA_IN_WORKSHOP;
@@ -502,7 +526,10 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
       { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true, open: 'income' },
     ].concat(workshop ? [] : [{ i: 'shield', t: L('Zabezpečení'), d: secLabel, raw: true, open: 'security' }]) },
   ].concat(workshop ? [] : [
-    { h: 'Vědomé utrácení', rows: [ { i: 'bell', t: L('Jemné připomínky'), d: remLabel, raw: true, open: 'reminders' } ] },
+    { h: 'Vědomé utrácení', rows: [
+      { i: 'bell', t: L('Jemné připomínky'), d: remLabel, raw: true, open: 'reminders' },
+      { i: 'phone', t: L('Na plochu telefonu'), d: faStandalone() ? L('Na ploše') : L('Návod'), raw: true, open: 'home' },
+    ] },
   ]);
   return (
     <div className="fa-screen">
@@ -515,8 +542,8 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
               {grp.rows.map((row, ri) => (
                 <div key={ri} className="fa-row" style={{ borderTop: ri ? '1px solid var(--card-line)' : 'none', cursor: row.open ? 'pointer' : 'default' }}
                   role={row.open ? 'button' : undefined} tabIndex={row.open ? 0 : undefined}
-                  onKeyDown={row.open ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheet(row.open); } }) : undefined}
-                  onClick={row.open ? () => setSheet(row.open) : undefined}>
+                  onKeyDown={row.open ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSheet(row.open, e.currentTarget); } }) : undefined}
+                  onClick={row.open ? (e => openSheet(row.open, e.currentTarget)) : undefined}>
                   <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.raw ? row.t : L(row.t)}</div>
@@ -556,6 +583,14 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         </Card>
       </div>
 
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>{L('Soukromí')}</SectionLabel>
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          <DataRow icon="shield" accent="sage" label={L('Jak chráníme tvoje data')}
+            sub={L('Kde tvoje data jsou a co se nikam neposílá')} onClick={e => openSheet('safety', e.currentTarget)} />
+        </Card>
+      </div>
+
       {workshop ? (
       <div style={{ marginTop: 18 }}>
         <SectionLabel>{L('Workshop')}</SectionLabel>
@@ -572,8 +607,13 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         <Card pad={0} style={{ overflow: 'hidden' }}>
           <DataRow icon="leaf" accent="moss" label={L('Zálohovat data do souboru')}
             sub={L('Data jsou jen v tomto prohlížeči. Záloha je pojistka i cesta na jiné zařízení.')} onClick={exportBackup} />
+          <DataRow icon="key" accent="sage" label={L('Zálohovat s heslem')}
+            sub={L('Zašifrovaná záloha, třeba do e-mailu nebo na sdílený disk')} onClick={e => openSheet('pwbackup', e.currentTarget)} border />
           <DataRow icon="sprout" accent="honey" label={L('Obnovit ze zálohy')}
-            sub={L('Nahradí současná data obsahem souboru')} onClick={() => fileRef.current && fileRef.current.click()} border />
+            sub={L('Nahradí současná data obsahem souboru')} border
+            onClick={e => { opener.current = e.currentTarget; if (fileRef.current) fileRef.current.click(); }} />
+          <DataRow icon="table" accent="moss" label={L('Výdaje do tabulky')}
+            sub={L('Soubor CSV pro Excel, Numbers nebo LibreOffice')} onClick={exportCsv} border />
           {real && (
             <div style={{ borderTop: '1px solid var(--card-line)' }}>
               <DangerRow label={L('Smazat všechna data')} confirmLabel={L('Opravdu smazat? Nejde vrátit')} onConfirm={resetAll} />
@@ -595,9 +635,13 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
         <div className="fa-footer-sub" style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-faint)', marginTop: 4, letterSpacing: 0.3 }}>{faLabel(L('Lesní klid'), L('Kouzelnický'))} · {Lf('verze {v}', { v: FA_VERSION })}</div>
       </div>
 
-      <IncomeSheet open={sheet === 'income'} onClose={() => setSheet(null)} onChanged={refresh} demo={!real} />
-      <SecuritySheet open={sheet === 'security'} onClose={() => setSheet(null)} onChanged={refresh} />
-      <RemindersSheet open={sheet === 'reminders'} onClose={() => setSheet(null)} onChanged={refresh} />
+      <IncomeSheet open={sheet === 'income'} onClose={closeSheet} onChanged={refresh} demo={!real} />
+      <SecuritySheet open={sheet === 'security'} onClose={closeSheet} onChanged={refresh} />
+      <RemindersSheet open={sheet === 'reminders'} onClose={closeSheet} onChanged={refresh} />
+      <HomeScreenSheet open={sheet === 'home'} onClose={closeSheet} />
+      <DataSafetySheet open={sheet === 'safety'} onClose={closeSheet} />
+      <PasswordBackupSheet open={sheet === 'pwbackup'} onClose={closeSheet} />
+      <PasswordRestoreSheet open={sheet === 'pwrestore'} text={locked} onClose={() => { setLocked(''); closeSheet(); }} />
     </div>
   );
 }
