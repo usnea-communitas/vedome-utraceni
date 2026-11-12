@@ -46,3 +46,4 @@ A calm money plan in one understandable frame (50/30/20), with data that stays i
 
 1. Calm: a money plan should soothe, not stress.
 2. Privacy: personal finances stay with the user.
+3. Honest: every tip names its source and the day it was checked; the app is a learning aid, not financial advice, and says so.

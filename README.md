@@ -27,7 +27,7 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project bui
 - **Plan vs. actual.** Expenses never raise the plan; the overview and the reflection show how much of each category's plan the month has used, and goal deposits count as put aside for *Future me*.
 - **Expenses in seconds.** A floating button opens a bottom sheet with curated and repeated suggestions; expenses are recorded per day and month, and the overview recalculates immediately. A deleted expense can be brought back with *Undo*.
 - **A goal tree, not a progress bar.** Every savings goal is a branch; foliage grows with each deposit, completed goals get a sparkle crown, and the whole tree sways gently.
-- **Tips and a compounding simulator.** Short, kind tips (the 24-hour rule, pay your future self first, name your goals…) and an interactive compound-interest calculator for monthly contributions.
+- **Tips with sources and a compounding simulator.** Short, kind tips (the 24-hour rule, pay your future self first, name your goals…), each with the source of its fact and the day it was last checked: mostly the Czech Ministry of Finance's measurements of financial literacy. An interactive compound-interest calculator for monthly contributions can also show the result in today's money, at 2 % inflation a year (the Czech National Bank's target). The app is a learning aid, not financial advice, and says so on the Tips screen and under the reflection's tip.
 - **Monthly reflection.** A few gentle questions about how money felt this month, kept privately in the app.
 - **Workshop mode.** A link or QR code (`?workshop=1&lang=cs`) opens the app for a financial-literacy workshop. Each participant picks one of three made-up stories of young people (a student with a part-time job, a first paycheck, moving in together) and works through five short tasks in the ordinary app: split the income, find the leak, set a goal, an unexpected expense, looking back. The workshop keeps its own data under `fa.workshop.*`, so a participant's own plan in the same browser is never read or changed; it works offline after the first load, and *End and delete* removes it. A page for the facilitator has the link, a QR code per language, a 45-minute timing and questions to discuss, and links to the [facilitator kit](docs/workshop/README.md): lesson plans for 90 and 45 minutes, printable worksheets, slides, a questionnaire and the points of the Czech Financial Literacy Standard the lesson covers, in Czech and English, as PDF. The stories and tasks are in all five languages; Czech and English are the reviewed ones.
 - **Two moods.** A *Forest Calm* daytime theme and a *Wizard* night-academy theme, each with an ambient background and tuned motion; reduced motion is respected.
@@ -87,6 +87,7 @@ npm ci
 npm run compile          # rebuilds app.js and vendor/ from the .jsx sources
 npm test                 # unit, translation and build checks
 npm run test:e2e         # Chromium smoke test (first run: npx playwright install chromium)
+npm run sources:check    # opens every source the tips name (needs the network)
 npx serve .              # or any static server; then open the printed URL
 ```
 

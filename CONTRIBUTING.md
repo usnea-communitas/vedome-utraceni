@@ -35,6 +35,7 @@ Before opening a pull request:
 3. If you changed any text, check at least English and Czech. Every dictionary entry needs all five languages; `npm test` fails otherwise.
 4. Commit `index.html` and `sw.js` too if `npm run compile` changed them (it stamps the new `app.js?v=<hash>`). Bump the `v3` prefix of `CACHE` in `sw.js` only when you change the service worker itself.
 5. Keep privacy intact: no network calls with user data, no analytics, no accounts.
+6. A new or changed tip needs a source: add it to `FA_SOURCES` in `fa-core.jsx` with the day you read it, prefer Czech public sources, and run `npm run sources:check`. A monthly workflow opens every source and writes the result into one issue labelled `source-check`.
 
 After a merge, Vercel deploys `main` and a workflow checks the live site (`npm run test:production`); there is nothing to run for it yourself.
 
