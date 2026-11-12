@@ -245,6 +245,15 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
     owl: <g {...p}><path d="M5.5 10 a6.5 6.5 0 0 1 13 0 v2.5 a6.5 6.5 0 0 1-13 0 Z"/><circle cx="9.3" cy="10.5" r="1.5"/><circle cx="14.7" cy="10.5" r="1.5"/><path d="M12 12.4 l-1.1 1.6 h2.2 z"/><path d="M6 6.4 L8.6 8.4 M18 6.4 L15.4 8.4"/><path d="M9.5 17.6 l1.2 1.8 M14.5 17.6 l-1.2 1.8"/></g>,
     wand: <g {...p}><path d="M4 20 L16 8"/><path d="M18 5.4 h2 M19 4.4 v2"/><path d="M20.4 9.4 h1.4 M21.1 8.7 v1.4"/></g>,
     key: <g {...p}><circle cx="7.5" cy="8" r="3.5"/><path d="M10 10.5 L19 19.5 M16 16.5 l2-2 M18.5 19 l1.5-1.5"/></g>,
+    // table — expenses as a spreadsheet (CSV)
+    table: <g {...p}><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 9.6 h17 M3.5 14.3 h17 M9.5 9.6 V19"/></g>,
+    // phone — the app on a phone's home screen
+    phone: <g {...p}><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.6"/><path d="M10.6 18.2 h2.8"/><path d="M9.6 9.6 l2.4-2.4 2.4 2.4 M12 7.2 v6"/></g>,
+    // the phone's own buttons, drawn the way they look there: share (iOS), add to home screen (iOS), menu (iOS ⋯, Android ⋮)
+    share: <g {...p}><path d="M8.6 9 H7.2 A1.7 1.7 0 0 0 5.5 10.7 V19 a1.7 1.7 0 0 0 1.7 1.7 h9.6 a1.7 1.7 0 0 0 1.7-1.7 v-8.3 A1.7 1.7 0 0 0 16.8 9 h-1.4"/><path d="M12 14.4 V3.4 M8.8 6.4 L12 3.2 15.2 6.4"/></g>,
+    addsquare: <g {...p}><rect x="4" y="4" width="16" height="16" rx="3.6"/><path d="M12 8.4 v7.2 M8.4 12 h7.2"/></g>,
+    dotsh: <g fill={color} stroke="none"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></g>,
+    dotsv: <g fill={color} stroke="none"><circle cx="12" cy="6" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18" r="1.7"/></g>,
   };
   const resolved = (FA_THEME === 'wizard' && WIZ_ICON[name]) ? WIZ_ICON[name] : name;
   return (

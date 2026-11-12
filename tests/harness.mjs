@@ -46,7 +46,8 @@ function compiled() {
 // a fresh app context; `storage` seeds localStorage (values are stored as given),
 // `search` is the query of the address the app opens with (e.g. '?workshop=1')
 export function loadApp(storage = {}, { search } = {}) {
-  const context = { React: ReactStub, localStorage: memoryStorage(storage), navigator: {}, console, Intl, Date, Math, JSON };
+  // Web Crypto and the text codecs, as a browser has them (backups with a password)
+  const context = { React: ReactStub, localStorage: memoryStorage(storage), navigator: {}, console, Intl, Date, Math, JSON, crypto: globalThis.crypto, TextEncoder, TextDecoder, btoa, atob };
   if (search != null) {
     context.location = { search, pathname: '/', hash: '' };
     context.history = { state: null, replaceState() {} };

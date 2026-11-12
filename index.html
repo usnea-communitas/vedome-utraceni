@@ -1199,6 +1199,88 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 }
 .fa-inc-input:focus { border-color: var(--brand); background: var(--card); }
 
+/* ════════ data you can trust: password backup, privacy, home screen ════════ */
+/* the sheet takes the focus only so screen readers announce it */
+.fa-sheet:focus { outline: none; }
+.fa-sheet-lead { display: flex; align-items: flex-start; gap: 12px; margin: 0 0 4px; }
+.fa-sheet-lead p { margin: 2px 0 0; font-family: var(--sans); font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+.fa-pwform { display: flex; flex-direction: column; gap: 12px; padding-bottom: 6px; }
+.fa-pw .fa-sheet-label { display: block; }
+.fa-pw-box { position: relative; }
+.fa-pw-input {
+  width: 100%; box-sizing: border-box; border: 1px solid var(--card-line); border-radius: 14px;
+  background: var(--cream); padding: 12px 84px 12px 14px; outline: none;
+  font-family: var(--sans); font-size: 16px; color: var(--ink); caret-color: var(--brand);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.fa-pw-input:focus { border-color: var(--brand); background: var(--card); }
+.fa-pw-input[aria-invalid="true"] { border-color: var(--clay); }
+.fa-pw-input::selection { background: var(--brand-soft); color: var(--ink); }
+.fa-pw-eye {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  min-width: 68px; min-height: 34px; padding: 0 10px; border-radius: 10px; cursor: pointer;
+  border: 0; background: transparent; color: color-mix(in oklab, var(--brand), #000 30%);
+  font-family: var(--sans); font-size: 12.5px; font-weight: 700;
+}
+.fa-pw-eye:hover { background: var(--brand-soft); }
+.fa-pw-help { margin: -4px 2px 0; font-family: var(--sans); font-size: 12px; line-height: 1.45; color: var(--ink-soft); }
+.fa-pw-warn {
+  display: flex; align-items: flex-start; gap: 10px; margin: 0;
+  padding: 11px 13px; border-radius: 14px; background: var(--honey-soft);
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.5; color: var(--ink);
+}
+.fa-pw-warn svg { flex-shrink: 0; margin-top: 1px; color: var(--honey-deep); }
+.fa-pw-msg { margin: 0; font-family: var(--sans); font-size: 13px; line-height: 1.45; font-weight: 600; }
+.fa-pw-msg.is-err { color: var(--clay); }
+.fa-pw-msg.is-ok { color: color-mix(in oklab, var(--brand), #000 32%); }
+.fa-pwform .fa-cta-solid { margin-top: 2px; }
+
+/* the path the numbers take: this browser → files you save → our server (nothing) */
+.fa-safe-lead { margin: 0 2px 16px; font-family: var(--serif); font-size: 17px; font-style: italic; line-height: 1.45; color: var(--ink-soft); }
+.fa-safe-path { list-style: none; margin: 0 0 22px; padding: 0; }
+.fa-safe-stop { position: relative; display: flex; align-items: flex-start; gap: 13px; padding-bottom: 18px; }
+.fa-safe-stop:last-child { padding-bottom: 0; }
+.fa-safe-stop::before {
+  content: ""; position: absolute; left: 19px; top: 44px; bottom: 4px; width: 2px; border-radius: 2px;
+  background: color-mix(in oklab, var(--brand), transparent 70%);
+}
+.fa-safe-stop:last-child::before { display: none; }
+.fa-safe-stop.to-none::before { background: none; border-left: 2px dotted color-mix(in oklab, var(--ink-faint), transparent 45%); width: 0; }
+.fa-safe-node {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-soft); color: color-mix(in oklab, var(--brand), #000 30%);
+}
+.fa-safe-stop.is-none .fa-safe-node { background: transparent; border: 1.5px dashed var(--ink-faint); }
+.fa-safe-body { flex: 1; min-width: 0; padding-top: 1px; }
+.fa-safe-title { display: block; font-family: var(--sans); font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.fa-safe-text { display: block; margin-top: 2px; font-family: var(--sans); font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.fa-safe-h { margin: 0 2px 8px; font-family: var(--sans); font-size: 11.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-faint); }
+.fa-safe-facts { margin: 0; border: 1px solid var(--card-line); border-radius: 18px; background: var(--cream); }
+.fa-safe-facts > div { padding: 11px 14px; }
+.fa-safe-facts > div + div { border-top: 1px solid var(--card-line); }
+.fa-safe-facts dt { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.fa-safe-facts dd { margin: 2px 0 0; font-family: var(--sans); font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+.fa-safe-foot { margin: 12px 4px 4px; font-family: var(--sans); font-size: 12px; line-height: 1.45; color: var(--ink-faint); }
+
+/* adding the app to the home screen: steps with the phone's own buttons drawn in */
+.fa-os { margin: 14px 0 2px; }
+.fa-steps { list-style: none; margin: 14px 0 16px; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+.fa-steps li { display: flex; align-items: flex-start; gap: 12px; font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--ink); }
+.fa-step-n {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; margin-top: -1px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-soft); color: color-mix(in oklab, var(--brand), #000 35%);
+  font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.fa-key {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 25px; height: 23px; margin: 0 2px; vertical-align: -6px; box-sizing: border-box;
+  border-radius: 7px; border: 1px solid var(--card-line); background: var(--card); color: var(--ink);
+  box-shadow: 0 1px 2px rgba(40,52,30,0.12);
+}
+.fa-root[data-theme="wizard"] .fa-key { box-shadow: 0 1px 2px rgba(60,40,10,0.18); }
+
 /* error page (FaErrorBoundary): shown instead of a blank screen if rendering fails */
 .fa-crash { display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 24px 16px; font-family: var(--sans); }
 .fa-crash-card {
@@ -1253,7 +1335,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=a5f530cf87"></script>
+  <script src="app.js?v=fac2167674"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>

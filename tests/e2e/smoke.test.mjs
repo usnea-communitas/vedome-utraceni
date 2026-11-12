@@ -465,3 +465,175 @@ test('the welcome screen comes first: blurred backdrop after the load, the serif
   assert.ok(fonts.includes('newsreader-normal-latin-v2.woff2'), fonts.join(', '));
   await context.close();
 });
+
+// ── data you can trust: a backup with a password, the expenses table, privacy, home screen ──
+const storageOf = page => page.evaluate(() => Object.fromEntries(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+const seedOnce = (page, items) => page.addInitScript(items => {
+  if (sessionStorage.getItem('seeded')) return;
+  for (const [k, v] of Object.entries(items)) localStorage.setItem(k, v);
+  sessionStorage.setItem('seeded', '1');
+}, items);
+const activeText = page => page.evaluate(() => (document.activeElement.getAttribute('aria-label') || document.activeElement.textContent || '').trim());
+// a closed sheet hands the focus back to the row that opened it (right after it closes)
+const focusReturnsTo = async (page, start) => {
+  await page.waitForFunction(start => (document.activeElement.textContent || '').trim().startsWith(start), start, { timeout: 2000 })
+    .catch(async () => assert.fail(`focus is on "${(await activeText(page)).slice(0, 60)}", not on "${start}"`));
+};
+
+test('a backup with a password goes to another browser and back; a wrong password changes nothing', async () => {
+  const { context, page, problems } = await phone();
+  await seedOnce(page, {
+    'fa.profile': JSON.stringify({ name: 'Jana', income: 32000 }),
+    'fa.plan.income': JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]),
+    'fa.goals': JSON.stringify([{ id: 1, name: 'Kolo pro Žofii', target: 15000, saved: 500 }]),
+    'fa.expenses': JSON.stringify([{ name: 'Kávička', amount: 95, cat: 'radost', ts: 1, day: today() }]),
+    'fa.lang': 'en',
+  });
+  await page.goto(base);
+  await page.locator('.fa-nav .fa-tab').nth(5).click();
+  const row = page.getByRole('button', { name: /^Back up with a password/ });
+  await row.click();
+  const sheet = page.getByRole('dialog', { name: 'Backup with a password' });
+  const password = sheet.getByLabel('Password', { exact: true });
+  const again = sheet.getByLabel('Password again');
+  const download = sheet.getByRole('button', { name: 'Download the password backup' });
+  // too short, then two different passwords: said plainly, nothing downloads
+  await password.fill('kratke');
+  await download.click();
+  assert.equal(await sheet.getByRole('alert').innerText(), 'The password needs at least 8 characters.');
+  await password.fill('jarní louka 2026');
+  await again.fill('jarní louka 2025');
+  await download.click();
+  assert.equal(await sheet.getByRole('alert').innerText(), 'The passwords don’t match.');
+  await again.fill('jarní louka 2026');
+  const [file] = await Promise.all([page.waitForEvent('download'), download.click()]);
+  assert.match(file.suggestedFilename(), /^vedome-utraceni-zaloha-s-heslem-\d{4}-\d{2}-\d{2}\.json$/);
+  const text = await readFile(await file.path(), 'utf8');
+  assert.ok(JSON.parse(text).encrypted, 'encrypted');
+  for (const secret of ['Jana', 'Žofii', 'Kávička']) assert.ok(!text.includes(secret), secret);
+  await sheet.getByRole('status').waitFor();
+  assert.equal(await password.inputValue(), '');
+  // Escape closes the sheet and the focus goes back to the row that opened it
+  await page.keyboard.press('Escape');
+  await sheet.waitFor({ state: 'detached' });
+  await focusReturnsTo(page, 'Back up with a password');
+  assert.deepEqual(problems, []);
+  await context.close();
+
+  // another browser with someone else's data
+  const other = await phone();
+  await seedOnce(other.page, {
+    'fa.profile': JSON.stringify({ name: 'Petr', income: 41000 }),
+    'fa.plan.income': JSON.stringify([{ name: 'Hlavní příjem', amount: 41000 }]),
+    'fa.lang': 'en',
+  });
+  await other.page.goto(base);
+  await other.page.locator('.fa-nav .fa-tab').nth(5).click();
+  const before = await storageOf(other.page);
+  const [chooser] = await Promise.all([other.page.waitForEvent('filechooser'), other.page.getByRole('button', { name: /^Restore from backup/ }).click()]);
+  await chooser.setFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(text) });
+  const restore = other.page.getByRole('dialog', { name: 'Restore from backup' });
+  const field = restore.getByLabel('Backup password');
+  await field.fill('jarní louka 2025');
+  await restore.getByRole('button', { name: 'Restore data' }).click();
+  assert.equal(await restore.getByRole('alert').innerText(), 'Wrong password. Your data has not changed.');
+  assert.deepEqual(await storageOf(other.page), before);
+  await field.fill('jarní louka 2026');
+  await Promise.all([other.page.waitForEvent('load'), restore.getByRole('button', { name: 'Restore data' }).click()]);
+  const restored = await storageOf(other.page);
+  assert.equal(JSON.parse(restored['fa.profile']).name, 'Jana');
+  assert.equal(JSON.parse(restored['fa.goals'])[0].name, 'Kolo pro Žofii');
+  assert.deepEqual(other.problems, []);
+  await other.context.close();
+});
+
+test('expenses download as a table that keeps Czech letters; with none, it says so', async () => {
+  const { context, page, problems } = await phone();
+  await seedOnce(page, {
+    'fa.profile': JSON.stringify({ name: 'Jana', income: 32000 }),
+    'fa.plan.income': JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]),
+    'fa.expenses': JSON.stringify([
+      { name: 'Kávička u Žofie', amount: 95, cat: 'radost', ts: 2, day: '2026-10-25' },
+      { name: 'Nájem; zálohy', amount: 12000, cat: 'nutne', ts: 1, day: '2026-10-01' },
+    ]),
+    'fa.lang': 'cs',
+  });
+  await page.goto(base);
+  await page.locator('.fa-nav .fa-tab').nth(5).click();
+  const row = page.getByRole('button', { name: /^Výdaje do tabulky/ });
+  const [file] = await Promise.all([page.waitForEvent('download'), row.click()]);
+  assert.match(file.suggestedFilename(), /^vedome-utraceni-vydaje-\d{4}-\d{2}-\d{2}\.csv$/);
+  const bytes = await readFile(await file.path());
+  assert.deepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf]);
+  assert.deepEqual(bytes.toString('utf8').slice(1).split('\r\n'), [
+    'Datum;Název;Kategorie;Částka (Kč)',
+    '2026-10-01;"Nájem; zálohy";Potřebné;12000',
+    '2026-10-25;Kávička u Žofie;Radost;95',
+    '',
+  ]);
+  await page.getByText('Tabulka výdajů se stáhla.', { exact: false }).waitFor();
+  await page.evaluate(() => localStorage.removeItem('fa.expenses'));
+  let downloads = 0;
+  page.on('download', () => { downloads++; });
+  await row.click();
+  await page.getByText('Zatím tu nejsou žádné výdaje.', { exact: false }).waitFor();
+  assert.equal(downloads, 0);
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
+const TRUST = {
+  en: { safety: 'How we protect your data', home: 'Add to home screen', more: 'More options', chrome: 'Open the app in Chrome.', android: 'Android', ios: 'iPhone and iPad' },
+  cs: { safety: 'Jak chráníme tvoje data', home: 'Na plochu telefonu', more: 'Další volby', chrome: 'Otevři aplikaci v Chromu.', android: 'Android', ios: 'iPhone a iPad' },
+};
+for (const lang of ['en', 'cs']) {
+  test(`privacy and home-screen sheets fit 360 px and work from the keyboard (${lang})`, async () => {
+    const { context, page, problems } = await phone(360);
+    const t = TRUST[lang];
+    await seedOnce(page, {
+      'fa.profile': JSON.stringify({ name: 'Jana', income: 32000 }),
+      'fa.plan.income': JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]),
+      'fa.lang': lang,
+    });
+    await page.goto(base);
+    await page.locator('.fa-nav .fa-tab').nth(5).click();
+    const fits = () => page.evaluate(() => {
+      const sheet = document.querySelector('.fa-sheet').getBoundingClientRect();
+      return sheet.width > 0 && [...document.querySelectorAll('.fa-sheet *')]
+        .every(el => { const r = el.getBoundingClientRect(); return !r.width || (r.left >= sheet.left - 0.5 && r.right <= sheet.right + 0.5); });
+    });
+
+    // how we protect your data: opened with Enter, headings in order, closed with Escape
+    await page.getByRole('button', { name: new RegExp('^' + t.safety) }).focus();
+    await page.keyboard.press('Enter');
+    const safety = page.getByRole('dialog', { name: t.safety });
+    await safety.waitFor();
+    await page.waitForFunction(() => document.querySelector('.fa-sheet').contains(document.activeElement));
+    assert.equal(await safety.locator('.fa-safe-stop').count(), 3);
+    assert.equal(await safety.locator('dt').count(), 6);
+    assertOutline(await outline(page), 'privacy sheet');
+    assert.ok(await fits(), 'privacy sheet fits');
+    await page.keyboard.press('Escape');
+    await safety.waitFor({ state: 'detached' });
+    await focusReturnsTo(page, t.safety);
+
+    // the home screen guide: the phone's buttons drawn in, iPhone first, Android one tap away
+    await page.getByRole('button', { name: new RegExp('^' + t.home) }).focus();
+    await page.keyboard.press('Enter');
+    const home = page.getByRole('dialog', { name: t.home });
+    await home.waitFor();
+    assert.equal(await home.getByRole('button', { name: t.ios }).getAttribute('aria-pressed'), 'true');
+    assert.equal(await home.locator('.fa-steps li').count(), 3);
+    assert.ok(await home.locator('.fa-key svg').count() >= 3);
+    assert.equal(await home.getByRole('img', { name: t.more }).count(), 1);
+    assert.ok(await fits(), 'home sheet fits (iPhone)');
+    await home.getByRole('button', { name: t.android }).click();
+    assert.equal(await home.locator('.fa-steps li').first().innerText(), '1\n' + t.chrome);
+    assert.ok(await fits(), 'home sheet fits (Android)');
+    await page.keyboard.press('Escape');
+    await home.waitFor({ state: 'detached' });
+    await focusReturnsTo(page, t.home);
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
