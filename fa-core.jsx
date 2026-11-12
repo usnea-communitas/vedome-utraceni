@@ -88,6 +88,12 @@ function faExpenseDay(e) {
   return faMonthKey(d) + '-' + faPad2(d.getDate());
 }
 function faExpenseMonth(e) { return faExpenseDay(e).slice(0, 7); }
+// a whole date in running text: "12. listopadu 2026", "November 12, 2026"
+function faFullDate(iso) {
+  const p = String(iso).split('-').map(Number);
+  const f = faDateFormat({ day: 'numeric', month: 'long', year: 'numeric' });
+  return f ? f.format(new Date(p[0], p[1] - 1, p[2])) : p[2] + '. ' + p[1] + '. ' + p[0];
+}
 function faDayLabel(iso) {
   const p = String(iso).split('-').map(Number);
   const f = faDateFormat({ day: 'numeric', month: 'numeric' });
@@ -152,16 +158,73 @@ const APP = {
       { q: 'Co dobrého se tento měsíc povedlo pro mé „budoucí já"?', icon: 'sprout', accent: 'honey' },
     ],
   },
+  // every tip names where its fact comes from (FA_SOURCES below); a new or changed
+  // fact needs a source and the day it was checked, and `npm run sources:check` opens them
   tipy: [
-    { t: 'Pravidlo 24 hodin', d: 'U věcí nad 1 000 Kč počkej den. Touha často sama opadne.', icon: 'leaf', accent: 'moss',
-      factTitle: 'Zajímavost', fact: 'Odložený nákup zruší skoro každý druhý člověk. Po dni „spaní“ už novou věc mozek tolik nechce.' },
-    { t: 'Zaplať nejdřív budoucí já', d: 'Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí".', icon: 'sprout', accent: 'honey',
-      factTitle: 'Malé číslo, velký les', fact: '500 Kč měsíčně při 6 % výnosu je za 30 let přes půl milionu. Složený úrok je tichá zahradnice.' },
-    { t: 'Radost není luxus', d: 'Drobné potěšení plánuj naschvál — vina jen kazí požitek.', icon: 'blossom', accent: 'blush',
-      factTitle: 'Zážitky > věci', fact: 'Výzkumy štěstí říkají: peníze za zážitky těší déle než za věci. Vzpomínka neztratí lesk.' },
-    { t: 'Pojmenuj své cíle', d: 'Spoření s názvem („Toskánsko“) přežije pokušení líp než „rezerva“.', icon: 'mountain', accent: 'sage',
-      factTitle: 'Síla jména', fact: 'Pojmenovaný cíl máš výrazně větší šanci dotáhnout — mozek ho pak brání jako svůj.' },
+    { t: 'Pravidlo 24 hodin', d: 'U věcí nad 1\u00a0000 Kč počkej den. Za den poznáš, jestli je chceš, nebo potřebuješ.', icon: 'leaf', accent: 'moss',
+      factTitle: 'Zajímavost', fact: 'Než něco koupí, zváží polovina Čechů, jestli si to může dovolit. V roce 2015 to byly tři čtvrtiny.',
+      src: ['mfAttitudes2020'] },
+    { t: 'Zaplať nejdřív budoucí já', d: 'Hned po výplatě odlož 20\u00a0% stranou, než se peníze „rozkutálí".', icon: 'sprout', accent: 'honey',
+      factTitle: 'Na autopilota', fact: 'Trvalý příkaz si nastavuje 70\u00a0% domácností. Nastav ho na den výplaty a budoucí já dostane své jako první.',
+      src: ['mfReserves2020'] },
+    { t: 'Radost není luxus', d: 'Na drobné radosti pamatuj v plánu. Když na ně máš vyhrazeno, užiješ si je bez výčitek.', icon: 'blossom', accent: 'blush',
+      factTitle: 'Zážitky > věci', fact: 'Radost z koupeného zážitku časem spíš roste, radost z nové věci rychle vyprchá.',
+      src: ['cornell2010'] },
+    { t: 'Pojmenuj své cíle', d: 'Dej spoření jméno a částku, třeba „Toskánsko, 30\u00a0000 Kč“. S jasným cílem víš, proč odkládáš.', icon: 'mountain', accent: 'sage',
+      factTitle: 'Síla jména', fact: 'Finanční cíl si stanovuje 41\u00a0% Čechů. Z nich 69\u00a0% kvůli němu začalo spořit a 64\u00a0% si udělalo plán.',
+      src: ['mfReserves2020'] },
   ],
+};
+
+// ── Where the tips come from ────────────────────────────────────────────
+// A source has a name (as its publisher titles it), an address and the day we last
+// read it and checked that it still says what the app says. Czech public sources
+// come first; a finding that only exists abroad cites the institution that
+// published it. scripts/check-sources.mjs opens every address once a month.
+const FA_SOURCES = {
+  mfAttitudes2020: {
+    name: 'Ministerstvo financí ČR: Měření finanční gramotnosti 2020 – postoje k financím a chování',
+    url: 'https://financnigramotnost.gov.cz/cs/pro-odborniky/mereni-urovne-financni-gramotnosti/2020/postoje-k-financim-a-chovani-3272',
+    checked: '2026-11-12',
+  },
+  mfReserves2020: {
+    name: 'Ministerstvo financí ČR: Měření finanční gramotnosti 2020 – domácí rozpočet a finanční rezervy',
+    url: 'https://financnigramotnost.gov.cz/cs/pro-odborniky/mereni-urovne-financni-gramotnosti/2020/domaci-rozpocet-a-financni-rezervy-3227',
+    checked: '2026-11-12',
+  },
+  mfBudget: {
+    name: 'Ministerstvo financí ČR: Rozpočet (rodinné finance)',
+    url: 'https://financnigramotnost.gov.cz/cs/rodinne-finance/rozpocet',
+    checked: '2026-11-12',
+  },
+  cornell2010: {
+    name: 'Cornell University: Glee from buying objects wanes, while joy of buying experiences keeps growing (2010)',
+    url: 'https://news.cornell.edu/stories/2010/03/study-shows-experiences-are-better-possessions',
+    checked: '2026-11-12',
+  },
+  damodaran: {
+    name: 'A. Damodaran, NYU Stern: Historical Returns on Stocks, Bonds and Bills (1928–2025)',
+    url: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
+    checked: '2026-11-12',
+  },
+  cnbTarget: {
+    name: 'Česká národní banka: Inflační cíl',
+    url: 'https://www.cnb.cz/cs/menova-politika/inflacni-cil/',
+    checked: '2026-11-12',
+  },
+  csu2022: {
+    name: 'Český statistický úřad: Indexy spotřebitelských cen – inflace – prosinec 2022',
+    url: 'https://csu.gov.cz/rychle-informace/indexy-spotrebitelskych-cen-inflace-prosinec-2022',
+    checked: '2026-11-12',
+  },
+};
+// the simulator's "in today's money": the Czech National Bank's inflation target
+const FA_INFLATION = 0.02;
+// the sources behind the parts of the Tips screen that are not tips
+const FA_SECTION_SOURCES = {
+  invest: ['damodaran'],
+  inflation: ['cnbTarget', 'csu2022'],
+  categories: ['mfBudget'],
 };
 
 // ── Accent color resolver (reads CSS vars so Tweaks can re-tint) ────────
@@ -254,6 +317,8 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
     addsquare: <g {...p}><rect x="4" y="4" width="16" height="16" rx="3.6"/><path d="M12 8.4 v7.2 M8.4 12 h7.2"/></g>,
     dotsh: <g fill={color} stroke="none"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></g>,
     dotsv: <g fill={color} stroke="none"><circle cx="12" cy="6" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18" r="1.7"/></g>,
+    // a link that opens another site
+    extlink: <g {...p}><path d="M13.5 5.5 H18.5 V10.5 M18.5 5.5 L11 13"/><path d="M16.5 13.5 V17 a1.5 1.5 0 0 1-1.5 1.5 H7 A1.5 1.5 0 0 1 5.5 17 V9 A1.5 1.5 0 0 1 7 7.5 h3.5"/></g>,
   };
   const resolved = (FA_THEME === 'wizard' && WIZ_ICON[name]) ? WIZ_ICON[name] : name;
   return (
@@ -266,5 +331,6 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
 Object.assign(window, {
   FA_VERSION, fmt, kc, faParseAmount, faAmount, APP, accentVar, accentSoft, accentText, Icon, ACCENTS, setFaTheme, faLabel,
   FA_MONTHS, faMonthKey, faCurrentMonth, faTodayIso, faMonthFromLabel, faParseMonth, faMonthParts,
-  faMonthLabel, faMonthName, faMonthInText, faExpenseDay, faExpenseMonth, faDayLabel,
+  faMonthLabel, faMonthName, faMonthInText, faExpenseDay, faExpenseMonth, faDayLabel, faFullDate,
+  FA_SOURCES, FA_SECTION_SOURCES, FA_INFLATION,
 });

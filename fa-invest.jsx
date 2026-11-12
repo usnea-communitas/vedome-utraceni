@@ -16,16 +16,28 @@ function faInvestProjection(monthly, years, rate) {
   }
   return pts;
 }
+// the same projection in today's money: each year's value divided by the price level
+// that `inflation` a year builds up by then (deposits and gains alike)
+function faInTodaysMoney(pts, inflation) {
+  return pts.map(p => {
+    const level = Math.pow(1 + inflation, p.y);
+    return { y: p.y, fv: p.fv / level, contributed: p.contributed / level };
+  });
+}
 
 function InvestSim() {
   const [monthly, setMonthly] = useInvState(500);
   const [years, setYears] = useInvState(20);
   const [rateKey, setRateKey] = useInvState('avg');
+  const [today, setToday] = useInvState(false);   // values in today's money (inflation)
   const RATES = { cons: 0.06, avg: 0.08, opt: 0.10 };
   const r = RATES[rateKey];
 
   // year-by-year projection (monthly deposits, monthly compounding)
-  const data = useInvMemo(() => faInvestProjection(monthly, years, r), [monthly, years, r]);
+  const data = useInvMemo(() => {
+    const pts = faInvestProjection(monthly, years, r);
+    return today ? faInTodaysMoney(pts, FA_INFLATION) : pts;
+  }, [monthly, years, r, today]);
 
   const final = data[data.length - 1];
   const contributed = final.contributed;
@@ -75,8 +87,10 @@ function InvestSim() {
     <Card pad={18} style={{ marginTop: 6 }}>
       {/* headline result */}
       <div>
-        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 4 }}>{Lf('Za {y} let můžeš mít naspořeno', { y: years })}</div>
-        <div style={{ fontFamily: 'var(--title)', fontSize: 36, fontWeight: 600, color: 'var(--ink)', lineHeight: 1, letterSpacing: -0.4, whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-soft)', marginBottom: 4 }}>
+          {Lf('Za {y} let můžeš mít naspořeno', { y: years })}{today && <span className="fa-today-tag"> · {L('v dnešních penězích')}</span>}
+        </div>
+        <div className="fa-invest-total" style={{ fontFamily: 'var(--title)', fontSize: 36, fontWeight: 600, color: 'var(--ink)', lineHeight: 1, letterSpacing: -0.4, whiteSpace: 'nowrap' }}>
           {fmt(Math.round(final.fv))}<span style={{ fontFamily: 'var(--serif)', fontSize: 19, fontWeight: 600, color: 'var(--ink-soft)' }}>&nbsp;Kč</span>
         </div>
         <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--brand)', fontWeight: 600, marginTop: 6, whiteSpace: 'nowrap' }}>
@@ -161,6 +175,22 @@ function InvestSim() {
             ))}
           </div>
         </div>
+        <div className="fa-inflation">
+          <div className="fa-inflation-text">
+            <span id="fa-inflation-label" className="fa-inflation-label">{L('Ukázat v dnešních penězích')}</span>
+            <span id="fa-inflation-sub" className="fa-inflation-sub">{L('Počítá s inflací 2\u00a0% ročně.')}</span>
+          </div>
+          <button type="button" role="switch" className="fa-switch" data-on={today} aria-checked={today ? 'true' : 'false'}
+            aria-labelledby="fa-inflation-label" aria-describedby="fa-inflation-sub" onClick={() => setToday(v => !v)}>
+            <span className="fa-switch-knob" />
+          </button>
+        </div>
+        {today && (
+          <div className="fa-inflation-note">
+            <p>{L('Inflace 2\u00a0% ročně odpovídá cíli České národní banky. Skutečná inflace kolísá: v roce 2022 byla 15,1\u00a0%.')}</p>
+            <SourceLine ids={FA_SECTION_SOURCES.inflation} />
+          </div>
+        )}
       </div>
 
       {/* educational caption — rendered above the simulator via prop */}
@@ -194,4 +224,4 @@ function Slider({ label, value, min, max, step, v, set }) {
   );
 }
 
-Object.assign(window, { InvestSim, faInvestProjection });
+Object.assign(window, { InvestSim, faInvestProjection, faInTodaysMoney });

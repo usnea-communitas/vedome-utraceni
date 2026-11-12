@@ -754,6 +754,43 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 .fa-invest-note p { font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
 .fa-invest-note strong { color: var(--ink); font-weight: 600; }
 
+/* where a tip or a number comes from: linked source names and the day they were checked */
+.fa-src { margin: 8px 0 0; font-family: var(--sans); font-size: 11.5px; line-height: 1.55; color: var(--ink-soft); }
+.fa-src-label { font-weight: 600; }
+.fa-src a {
+  color: color-mix(in oklab, var(--brand), #000 32%); border-radius: 3px; overflow-wrap: anywhere;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px;
+  text-decoration-color: color-mix(in oklab, var(--brand), transparent 45%);
+}
+.fa-src a:hover { text-decoration-color: currentColor; }
+.fa-src a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.fa-src a svg { display: inline-block; vertical-align: -1px; margin-left: 3px; }
+.fa-src-date, .fa-src-tail { white-space: nowrap; }
+/* under a tip card: a flap tucked beneath the card, on the card's own paper in every scene */
+.fa-tip { display: flex; flex-direction: column; }
+.fa-tip > .fa-flip { position: relative; z-index: 1; }
+.fa-src-flap {
+  position: relative; margin: -12px 14px 0; padding: 18px 13px 9px;
+  background: var(--card); border: 1px solid var(--card-line); border-top: 0;
+  border-radius: 0 0 16px 16px; box-shadow: 0 6px 14px rgba(40,52,30,0.07);
+}
+.fa-src-pill { margin: 12px 4px 0; padding: 9px 13px; background: var(--card); border: 1px solid var(--card-line); border-radius: 16px; }
+.fa-root[data-theme="wizard"] .fa-src-flap { box-shadow: 0 6px 16px rgba(6,9,22,0.3); }
+.fa-note.fa-disclaimer { margin: 24px 0 0; font-size: 12.5px; line-height: 1.5; }
+.fa-invest-note .fa-advice-note { margin: 8px 0 0; font-size: 11.5px; }
+.fa-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* the simulator in today's money */
+.fa-inflation { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; border-top: 1px solid var(--card-line); }
+.fa-inflation-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fa-inflation-label { font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.fa-inflation-sub { font-family: var(--sans); font-size: 12px; line-height: 1.4; color: var(--ink-soft); }
+.fa-inflation-note { margin-top: -4px; padding: 11px 13px; border-radius: 14px; background: var(--cream); }
+.fa-inflation-note p { margin: 0; font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
+.fa-inflation-note .fa-src { margin-top: 6px; font-size: 11.5px; }
+.fa-today-tag { font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .fa-switch, .fa-switch-knob { transition: none; } }
+
 /* mood selector */
 .fa-mood {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px;
@@ -1335,7 +1372,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=fac2167674"></script>
+  <script src="app.js?v=2f12e7ceba"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>

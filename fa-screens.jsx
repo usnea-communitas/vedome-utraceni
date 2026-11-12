@@ -245,7 +245,7 @@ function GrowthScene({ pct }) {
 const CAT_EXPLAIN = {
   nutne: 'Pevný základ života. Patří sem nájem, energie, jídlo, doprava — výdaje, které se opakují a drží tě v bezpečí. Cíl 50 % příjmu je zdravá hranice: když je nutné výrazně vyšší, je čas hledat, kde uvolnit tlak.',
   budouci: 'Tvoje budoucí svoboda. Spoření, rezerva a investice, které dnes odkládáš pro sebe zítra. I 20 % dělá s časem a složeným úročením zázraky — důležitější než kolik je, že to děláš pravidelně.',
-  radost: 'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost — utrácení bez viny tě udrží u rozpočtu mnohem déle než odříkání.',
+  radost: 'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost: když má v plánu své místo, užiješ si ji bez výčitek.',
 };
 
 function Tipy() {
@@ -256,9 +256,12 @@ function Tipy() {
         <SectionLabel>{faLabel(L('Síla složeného úročení'), L('Kouzlo složeného úročení'))}</SectionLabel>
         <div className="fa-invest-note" style={{ marginTop: 0, marginBottom: 12 }}>
           <Icon name="bulb" size={15} stroke={1.7} />
+          <div>
           <p style={{ margin: 0 }}>
-            {L('Složené úročení znamená, že výnosy samy vydělávají další výnosy. Index S&P\u00a0500 historicky vynesl s reinvesticí dividend zhruba 7–10\u00a0% ročně. Graf je zjednodušená ilustrace — minulé výnosy nezaručují budoucí a nejde o investiční doporučení.')}
+            {L('Složené úročení znamená, že výnosy samy vydělávají další výnosy. Americký index S&P\u00a0500 vynesl s reinvesticí dividend v letech 1928–2025 průměrně asi 10\u00a0% ročně, před započtením inflace. Graf je zjednodušená ilustrace: minulé výnosy nezaručují budoucí a nejde o investiční doporučení.')}
           </p>
+          <SourceLine ids={FA_SECTION_SOURCES.invest} />
+          </div>
         </div>
         <InvestSim />
       </div>
@@ -288,7 +291,12 @@ function Tipy() {
             </Card>
           ))}
         </div>
+        <SourceLine ids={FA_SECTION_SOURCES.categories} className="fa-src-pill" />
       </div>
+
+      <p className="fa-note fa-disclaimer">
+        {L('Vědomé utrácení je vzdělávací pomůcka, ne finanční poradenství.')} {L('U každého tipu je zdroj a den, kdy jsme ho naposledy ověřili.')}
+      </p>
     </div>
   );
 }
@@ -299,8 +307,9 @@ function TipFlip({ t }) {
   const faceBase = { padding: 18 };
   const toggle = () => setFlipped(f => !f);
   return (
+    <div className="fa-tip">
     <div className="fa-flip" data-flipped={flipped} role="button" tabIndex={0} aria-pressed={flipped}
-      onClick={toggle} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }} style={{ height: 172 }}>
+      onClick={toggle} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }} style={{ height: 180 }}>
       <div className="fa-flip-inner" style={{ transform: `rotateY(${flipped ? 180 : 0}deg)` }}>
         {/* front */}
         <div className="fa-flip-face fa-flip-front" aria-hidden={flipped ? 'true' : undefined} style={{ ...faceBase, justifyContent: 'center', gap: 15, opacity: flipped ? 0 : 1, background: 'var(--card)', border: '1px solid var(--card-line)', boxShadow: 'var(--shadow-card)' }}>
@@ -325,6 +334,8 @@ function TipFlip({ t }) {
           <div className="fa-flip-hint" style={{ color: accentText(t.accent) }}><Icon name="leaf" size={15} stroke={1.8} /> {L('Zpět na tip')}</div>
         </div>
       </div>
+    </div>
+    <SourceLine ids={t.src} className="fa-src-flap" />
     </div>
   );
 }
@@ -442,6 +453,7 @@ function Reflexe({ month }) {
                   <div>
                     <div style={{ fontFamily: 'var(--sans)', fontSize: 11.5, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--brand)', marginBottom: 4 }}>{L('Tip na příští měsíc')}</div>
                     <p style={{ margin: 0 }}>{L(band.tip)}</p>
+                    <p className="fa-advice-note">{L('Vědomé utrácení je vzdělávací pomůcka, ne finanční poradenství.')}</p>
                   </div>
                 </div>
                 <button className="fa-textbtn" style={{ marginTop: 12 }} onClick={() => setAnswers({})}>{L('Vyplnit znovu')}</button>
