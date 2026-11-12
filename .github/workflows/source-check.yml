@@ -1,0 +1,50 @@
+name: Monthly source check
+
+# Once a month this opens every source the Tips screen names and lists the ones
+# that no longer answer or are due to be read again (scripts/check-sources.mjs).
+# The result replaces the text and title of one open issue labelled
+# "source-check"; the first run opens it. Editing an issue sends no
+# notifications, so after that first notice the check stays quiet until someone
+# looks. It changes nothing in the app and never blocks a deployment.
+on:
+  schedule:
+    - cron: '23 5 4 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: source-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: The sources of the tips answer
+    if: github.repository == 'usnea-communitas/vedome-utraceni'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Open every source and look at the check dates
+        run: node scripts/check-sources.mjs --out report.md --title-out title.txt
+      - name: Write the result into the source-check issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create source-check --color c5def5 \
+            --description "Monthly check of the sources the tips name" 2>/dev/null || true
+          number=$(gh issue list --label source-check --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --title "$(cat title.txt)" --body-file report.md
+          else
+            gh issue create --title "$(cat title.txt)" --label source-check --body-file report.md
+          fi
+          cat report.md >> "$GITHUB_STEP_SUMMARY"

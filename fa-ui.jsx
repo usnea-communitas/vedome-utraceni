@@ -164,4 +164,33 @@ function Medallion({ icon, accent = 'moss', size = 42 }) {
   );
 }
 
-Object.assign(window, { Card, Chip, Bar, Donut, SectionLabel, Medallion });
+// ── Where a tip or a number comes from ─────────────────────────────────
+// The names link to the source (in a new tab), followed by the day they were last
+// checked; with several sources, the oldest check counts.
+function SourceLine({ ids, className }) {
+  const list = (ids || []).map(id => FA_SOURCES[id]).filter(Boolean);
+  if (!list.length) return null;
+  const checked = list.map(s => s.checked).sort()[0];
+  return (
+    <p className={'fa-src' + (className ? ' ' + className : '')}>
+      <span className="fa-src-label">{list.length > 1 ? L('Zdroje') : L('Zdroj')}: </span>
+      {list.map((s, i) => {
+        // the last word keeps the arrow with it, so the arrow never starts a line alone
+        const words = s.name.split(' ');
+        const last = words.pop();
+        return (
+          <React.Fragment key={s.url}>
+            {i > 0 && '; '}
+            <a href={s.url} target="_blank" rel="noopener noreferrer">
+              {words.length ? words.join(' ') + ' ' : ''}<span className="fa-src-tail">{last}<Icon name="extlink" size={12} stroke={2} /></span>
+              <span className="fa-sr"> ({L('otevře se v nové kartě')})</span>
+            </a>
+          </React.Fragment>
+        );
+      })}
+      <span className="fa-src-date"> · {Lf('ověřeno {d}', { d: faFullDate(checked) })}</span>
+    </p>
+  );
+}
+
+Object.assign(window, { Card, Chip, Bar, Donut, SectionLabel, Medallion, SourceLine });

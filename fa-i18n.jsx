@@ -230,11 +230,6 @@ const S = {
       pl: 'Twoja przyszła wolność: oszczędności, rezerwa i inwestycje, które dziś odkładasz dla siebie z jutra. Nawet 20% z czasem i procentem składanym czyni cuda — ważniejsza jest regularność niż kwota.',
       uk: 'Твоя майбутня свобода: заощадження, резерв та інвестиції, які ти сьогодні відкладаєш для себе завтрашнього. Навіть 20% з часом і складним відсотком творять дива — регулярність важливіша за суму.',
       es: 'Tu libertad futura: ahorro, una reserva e inversiones que apartas hoy para tu yo de mañana. Incluso un 20% hace maravillas con el tiempo y el interés compuesto — la constancia importa más que la cantidad.' },
-  'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost — utrácení bez viny tě udrží u rozpočtu mnohem déle než odříkání.':
-    { en: 'Your joy today: cafés, trips, hobbies and little things that make life nicer. Planning joy on purpose is a skill — guilt-free spending keeps you on budget far longer than self-denial.',
-      pl: 'Twoja dzisiejsza radość: kawiarnie, wycieczki, hobby i drobiazgi, które umilają życie. Świadome planowanie przyjemności to umiejętność — wydawanie bez poczucia winy utrzyma cię w budżecie dłużej niż wyrzeczenia.',
-      uk: 'Твоя сьогоднішня радість: кав\u2019ярні, поїздки, хобі й дрібнички, що роблять життя приємнішим. Свідомо планувати радість — це вміння; витрати без провини втримають тебе в бюджеті значно довше, ніж самозречення.',
-      es: 'Tu alegría de hoy: cafés, viajes, aficiones y pequeños gustos que hacen la vida más bonita. Planear la alegría a propósito es una habilidad — gastar sin culpa te mantiene en el presupuesto mucho más que la privación.' },
   'Proč na tom záleží': { en: 'Why it matters', pl: 'Dlaczego to ważne', uk: 'Чому це важливо', es: 'Por qué importa' },
   'z příjmu': { en: 'of income', pl: 'dochodu', uk: 'доходу', es: 'del ingreso' },
   // category descriptions (short)
@@ -337,11 +332,6 @@ const S = {
   'Otoč pro zajímavost': { en: 'Flip for a fact', pl: 'Obróć po ciekawostkę', uk: 'Переверни для цікавинки', es: 'Gira para un dato' },
   'Zpět na tip': { en: 'Back to tip', pl: 'Wróć do porady', uk: 'Назад до поради', es: 'Volver al consejo' },
   'Pravidlo 24 hodin': { en: 'The 24-hour rule', pl: 'Zasada 24 godzin', uk: 'Правило 24 годин', es: 'La regla de 24 horas' },
-  'U věcí nad 1\u00a0000 Kč počkej den. Touha často sama opadne.':
-    { en: 'For things over 1,000 Kč, wait a day. The urge often fades on its own.',
-      pl: 'Przy rzeczach powyżej 1000 Kč poczekaj dzień. Pragnienie często samo mija.',
-      uk: 'Для речей дорожче 1000 Kč зачекай день. Бажання часто згасає саме.',
-      es: 'Para cosas de más de 1000 Kč, espera un día. El impulso suele desaparecer.' },
   'Zaplať nejdřív budoucí já': { en: 'Pay your future self first', pl: 'Najpierw zapłać przyszłemu sobie', uk: 'Спершу заплати майбутньому собі', es: 'Págate primero a tu yo futuro' },
   'Hned po výplatě odlož 20\u00a0% stranou, než se peníze „rozkutálí".':
     { en: 'Right after payday, set aside 20% before the money "rolls away".',
@@ -349,41 +339,10 @@ const S = {
       uk: 'Одразу після зарплати відклади 20%, поки гроші не «розкотилися».',
       es: 'Justo tras cobrar, aparta el 20% antes de que el dinero "se escurra".' },
   'Radost není luxus': { en: 'Joy is not a luxury', pl: 'Radość to nie luksus', uk: 'Радість — не розкіш', es: 'La alegría no es un lujo' },
-  'Drobné potěšení plánuj naschvál — vina jen kazí požitek.':
-    { en: 'Plan small pleasures on purpose — guilt only spoils the joy.',
-      pl: 'Małe przyjemności planuj celowo — poczucie winy psuje radość.',
-      uk: 'Маленькі радощі плануй навмисно — провина лише псує задоволення.',
-      es: 'Planea pequeños placeres a propósito — la culpa solo arruina el gusto.' },
   'Pojmenuj své cíle': { en: 'Name your goals', pl: 'Nazwij swoje cele', uk: 'Назви свої цілі', es: 'Nombra tus metas' },
-  'Spoření s názvem („Toskánsko") přežije pokušení líp než „rezerva".':
-    { en: 'Savings with a name ("Tuscany") beat temptation better than "reserve".',
-      pl: 'Oszczędności z nazwą („Toskania") opierają się pokusie lepiej niż „rezerwa".',
-      uk: 'Заощадження з назвою («Тоскана») долають спокусу краще, ніж «резерв».',
-      es: 'Un ahorro con nombre ("Toscana") resiste la tentación mejor que "reserva".' },
   'Věděla jsi?': { en: 'Did you know?', pl: 'Czy wiesz?', uk: 'Чи знала ти?', es: '¿Sabías que?' },
-  'Odložený nákup zruší skoro každý druhý člověk. Po dni „spaní" už novou věc mozek tolik nechce.':
-    { en: 'Almost every other person cancels a postponed purchase. After a night, the brain wants it far less.',
-      pl: 'Prawie co druga osoba rezygnuje z odłożonego zakupu. Po przespanej nocy mózg już go tak nie chce.',
-      uk: 'Майже кожен другий скасовує відкладену покупку. Після ночі мозок хоче її значно менше.',
-      es: 'Casi una de cada dos personas cancela una compra aplazada. Tras dormirlo, el cerebro la desea mucho menos.' },
-  'Malé číslo, velký les': { en: 'Small number, big forest', pl: 'Mała liczba, wielki las', uk: 'Мале число, великий ліс', es: 'Número pequeño, gran bosque' },
-  '500 Kč měsíčně při 6\u00a0% výnosu je za 30 let přes půl milionu. Složený úrok je tichá zahradnice.':
-    { en: '500 Kč a month at 6% is over half a million in 30 years. Compound interest is a quiet gardener.',
-      pl: '500 Kč miesięcznie przy 6% to ponad pół miliona po 30 latach. Procent składany to cichy ogrodnik.',
-      uk: '500 Kč на місяць під 6% — це понад пів мільйона за 30 років. Складний відсоток — тихий садівник.',
-      es: '500 Kč al mes al 6% son más de medio millón en 30 años. El interés compuesto es un jardinero silencioso.' },
   'Zážitky > věci': { en: 'Experiences > things', pl: 'Przeżycia > rzeczy', uk: 'Враження > речі', es: 'Experiencias > cosas' },
-  'Výzkumy štěstí říkají: peníze za zážitky těší déle než za věci. Vzpomínka neztratí lesk.':
-    { en: 'Happiness research says: money spent on experiences delights longer than on things. A memory keeps its shine.',
-      pl: 'Badania szczęścia mówią: pieniądze na przeżycia cieszą dłużej niż na rzeczy. Wspomnienie nie traci blasku.',
-      uk: 'Дослідження щастя кажуть: гроші на враження тішать довше, ніж на речі. Спогад не втрачає блиску.',
-      es: 'La ciencia de la felicidad dice: el dinero en experiencias alegra más que en cosas. Un recuerdo no pierde su brillo.' },
   'Síla jména': { en: 'The power of a name', pl: 'Siła nazwy', uk: 'Сила імені', es: 'El poder de un nombre' },
-  'Pojmenovaný cíl máš výrazně větší šanci dotáhnout — mozek ho pak brání jako svůj.':
-    { en: 'A named goal is far likelier to be reached — the brain then defends it as its own.',
-      pl: 'Nazwany cel masz znacznie większą szansę osiągnąć — mózg broni go jak własnego.',
-      uk: 'Названу ціль значно більше шансів досягти — мозок боронить її як свою.',
-      es: 'Una meta con nombre tiene mucha más probabilidad de lograrse — el cerebro la defiende como suya.' },
 
   // ── InvestSim ──
   'Síla složeného úročení': { en: 'The power of compounding', pl: 'Siła procentu składanego', uk: 'Сила складного відсотка', es: 'El poder del interés compuesto' },
@@ -401,11 +360,6 @@ const S = {
   'Opatrný': { en: 'Cautious', pl: 'Ostrożny', uk: 'Обережний', es: 'Cauto' },
   'Průměr': { en: 'Average', pl: 'Średni', uk: 'Середній', es: 'Promedio' },
   'Odvážný': { en: 'Bold', pl: 'Odważny', uk: 'Сміливий', es: 'Audaz' },
-  'Složené úročení znamená, že výnosy samy vydělávají další výnosy. Index S&P\u00a0500 historicky vynesl s reinvesticí dividend zhruba 7–10\u00a0% ročně. Graf je zjednodušená ilustrace — minulé výnosy nezaručují budoucí a nejde o investiční doporučení.':
-    { en: 'Compounding means returns earn further returns. The S&P\u00a0500 has historically returned roughly 7–10% a year with dividends reinvested. The chart is a simplified illustration — past returns don\u2019t guarantee future ones and this is not investment advice.',
-      pl: 'Procent składany oznacza, że zyski same zarabiają kolejne zyski. Indeks S&P\u00a0500 historycznie dawał ok. 7–10% rocznie przy reinwestycji dywidend. Wykres to uproszczona ilustracja — przeszłe wyniki nie gwarantują przyszłych i nie jest to porada inwestycyjna.',
-      uk: 'Складний відсоток означає, що дохід сам заробляє новий дохід. Індекс S&P\u00a0500 історично давав близько 7–10% на рік із реінвестуванням дивідендів. Графік — спрощена ілюстрація: минулі результати не гарантують майбутніх і це не інвестиційна порада.',
-      es: 'El interés compuesto significa que las ganancias generan más ganancias. El S&P\u00a0500 ha rendido históricamente un 7–10% anual reinvirtiendo dividendos. El gráfico es una ilustración simplificada — rendimientos pasados no garantizan futuros y esto no es asesoramiento de inversión.' },
 
   // ── Reflexe ──
   'Jak ti bylo s penězi?': { en: 'How did money feel?', pl: 'Jak było ci z pieniędzmi?', uk: 'Як тобі було з грошима?', es: '¿Cómo te fue con el dinero?' },
@@ -721,6 +675,27 @@ const S = {
   'Vyber Nainstalovat aplikaci nebo Přidat na plochu a potvrď.': { en: 'Choose Install app or Add to Home screen and confirm.', pl: 'Wybierz Zainstaluj aplikację albo Dodaj do ekranu głównego i potwierdź.', uk: 'Вибери Установити застосунок або Додати на головний екран і підтвердь.', es: 'Elige Instalar aplicación o Añadir a pantalla de inicio y confirma.' },
   'Na iPhonu a iPadu má aplikace na ploše vlastní úložiště, oddělené od Safari. Než ji začneš používat, ulož si v Safari zálohu a v aplikaci na ploše ji obnov (Více → Data).': { en: 'On iPhone and iPad the home-screen app keeps its own storage, separate from Safari. Before you start using it, save a backup in Safari and restore it in the home-screen app (More → Data).', pl: 'Na iPhonie i iPadzie aplikacja na ekranie początkowym ma własną pamięć, oddzieloną od Safari. Zanim zaczniesz z niej korzystać, zapisz kopię w Safari i przywróć ją w aplikacji (Więcej → Dane).', uk: 'На iPhone та iPad застосунок на початковому екрані має власне сховище, окреме від Safari. Перш ніж почнеш ним користуватися, збережи резервну копію в Safari й віднови її в застосунку (Більше → Дані).', es: 'En iPhone y iPad, la app de la pantalla de inicio tiene su propio almacenamiento, separado de Safari. Antes de usarla, guarda una copia en Safari y restáurala en la app (Más → Datos).' },
   'Kdyby v aplikaci na ploše chyběla data, ulož si v prohlížeči zálohu a v aplikaci ji obnov (Více → Data).': { en: 'If the home-screen app is missing your data, save a backup in the browser and restore it in the app (More → Data).', pl: 'Jeśli w aplikacji na ekranie głównym zabraknie danych, zapisz kopię w przeglądarce i przywróć ją w aplikacji (Więcej → Dane).', uk: 'Якщо в застосунку на головному екрані бракуватиме даних, збережи резервну копію в браузері й віднови її в застосунку (Більше → Дані).', es: 'Si a la app de la pantalla de inicio le faltan datos, guarda una copia en el navegador y restáurala en la app (Más → Datos).' },
+  // ── batch 2026-11: tips with sources (V-06): facts, sources, today's money, a learning aid ──
+  'U věcí nad 1\u00a0000 Kč počkej den. Za den poznáš, jestli je chceš, nebo potřebuješ.': { en: 'For things over 1,000 Kč, wait a day. A day tells you whether you want them or need them.', pl: 'Przy rzeczach powyżej 1\u00a0000 Kč poczekaj dzień. Po dniu poznasz, czy ich chcesz, czy potrzebujesz.', uk: 'Для речей дорожче 1\u00a0000 Kč зачекай день. За день зрозумієш, чи ти їх хочеш, чи вони тобі потрібні.', es: 'Para cosas de más de 1\u00a0000 Kč, espera un día. En un día sabrás si las quieres o las necesitas.' },
+  'Než něco koupí, zváží polovina Čechů, jestli si to může dovolit. V roce 2015 to byly tři čtvrtiny.': { en: 'Half of Czechs consider whether they can afford something before they buy it. In 2015 it was three in four.', pl: 'Połowa Czechów przed zakupem zastanawia się, czy ich na to stać. W 2015 roku były to trzy czwarte.', uk: 'Половина чехів перед покупкою зважує, чи може собі її дозволити. У 2015 році це були три чверті.', es: 'La mitad de los checos piensa si puede permitírselo antes de comprar algo. En 2015 eran tres de cada cuatro.' },
+  'Na autopilota': { en: 'On autopilot', pl: 'Na autopilocie', uk: 'На автопілоті', es: 'En piloto automático' },
+  'Trvalý příkaz si nastavuje 70\u00a0% domácností. Nastav ho na den výplaty a budoucí já dostane své jako první.': { en: '70\u00a0% of households use standing orders. Set one for payday and your future self gets paid first.', pl: '70\u00a0% gospodarstw domowych ustawia zlecenia stałe. Ustaw je na dzień wypłaty, a przyszły ja dostanie swoje jako pierwszy.', uk: '70\u00a0% домогосподарств налаштовують постійні платіжні доручення. Признач одне на день зарплати, і майбутній я отримає своє першим.', es: 'El 70\u00a0% de los hogares usa órdenes permanentes. Programa una para el día de cobro y tu yo futuro cobrará primero.' },
+  'Na drobné radosti pamatuj v plánu. Když na ně máš vyhrazeno, užiješ si je bez výčitek.': { en: 'Make room for small joys in your plan. When they have money set aside, you can enjoy them without guilt.', pl: 'Zrób w planie miejsce na drobne przyjemności. Gdy masz na nie odłożone, nacieszysz się nimi bez wyrzutów sumienia.', uk: 'Залиш у плані місце для дрібних радощів. Коли на них є відкладене, насолодишся ними без докорів сумління.', es: 'Deja sitio en tu plan para pequeños placeres. Si tienen su dinero apartado, los disfrutarás sin culpa.' },
+  'Radost z koupeného zážitku časem spíš roste, radost z nové věci rychle vyprchá.': { en: 'Joy from a bought experience tends to grow over time; joy from a new thing fades quickly.', pl: 'Radość z kupionego przeżycia z czasem raczej rośnie, radość z nowej rzeczy szybko mija.', uk: 'Радість від купленого враження з часом радше зростає, а радість від нової речі швидко минає.', es: 'La alegría de una experiencia comprada suele crecer con el tiempo; la de una cosa nueva se esfuma pronto.' },
+  'Dej spoření jméno a částku, třeba „Toskánsko, 30\u00a0000 Kč“. S jasným cílem víš, proč odkládáš.': { en: 'Give your savings a name and an amount, like “Tuscany, 30,000 Kč”. With a clear goal you know why you are setting money aside.', pl: 'Nadaj oszczędnościom nazwę i kwotę, np. „Toskania, 30\u00a0000 Kč”. Z jasnym celem wiesz, po co odkładasz.', uk: 'Дай заощадженням назву й суму, наприклад «Тоскана, 30\u00a0000 Kč». З чіткою ціллю знаєш, навіщо відкладаєш.', es: 'Ponle a tu ahorro un nombre y una cantidad, como «Toscana, 30\u00a0000 Kč». Con una meta clara sabes por qué apartas dinero.' },
+  'Finanční cíl si stanovuje 41\u00a0% Čechů. Z nich 69\u00a0% kvůli němu začalo spořit a 64\u00a0% si udělalo plán.': { en: '41\u00a0% of Czechs set themselves a financial goal. Of those, 69\u00a0% started saving for it and 64\u00a0% made a plan.', pl: '41\u00a0% Czechów wyznacza sobie cel finansowy. Spośród nich 69\u00a0% zaczęło na niego oszczędzać, a 64\u00a0% zrobiło plan.', uk: '41\u00a0% чехів ставлять собі фінансову ціль. З них 69\u00a0% почали на неї заощаджувати, а 64\u00a0% склали план.', es: 'El 41\u00a0% de los checos se fija una meta financiera. De ellos, el 69\u00a0% empezó a ahorrar para ella y el 64\u00a0% hizo un plan.' },
+  'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost: když má v plánu své místo, užiješ si ji bez výčitek.': { en: 'Your joy today: cafés, trips, hobbies and little things that make life nicer. Planning joy on purpose is a skill: when it has its place in the plan, you can enjoy it without guilt.', pl: 'Twoja dzisiejsza radość: kawiarnie, wycieczki, hobby i drobiazgi, które umilają życie. Świadome planowanie przyjemności to umiejętność: gdy ma swoje miejsce w planie, cieszysz się nią bez wyrzutów sumienia.', uk: 'Твоя сьогоднішня радість: кав’ярні, поїздки, хобі й дрібнички, що роблять життя приємнішим. Свідомо планувати радість — це вміння: коли вона має місце в плані, насолоджуєшся нею без докорів сумління.', es: 'Tu alegría de hoy: cafés, viajes, aficiones y detalles que hacen la vida más bonita. Planear la alegría a propósito es una habilidad: cuando tiene su sitio en el plan, la disfrutas sin culpa.' },
+  'Složené úročení znamená, že výnosy samy vydělávají další výnosy. Americký index S&P\u00a0500 vynesl s reinvesticí dividend v letech 1928–2025 průměrně asi 10\u00a0% ročně, před započtením inflace. Graf je zjednodušená ilustrace: minulé výnosy nezaručují budoucí a nejde o investiční doporučení.': { en: 'Compounding means returns earn further returns. With dividends reinvested, the US S&P\u00a0500 index returned about 10\u00a0% a year on average from 1928 to 2025, before inflation. The chart is a simplified illustration: past returns do not guarantee future ones, and this is not investment advice.', pl: 'Procent składany oznacza, że zyski same zarabiają kolejne zyski. Amerykański indeks S&P\u00a0500 przy reinwestycji dywidend dawał w latach 1928–2025 średnio ok. 10\u00a0% rocznie, przed uwzględnieniem inflacji. Wykres to uproszczona ilustracja: przeszłe zyski nie gwarantują przyszłych i nie jest to rekomendacja inwestycyjna.', uk: 'Складний відсоток означає, що дохід сам заробляє новий дохід. Американський індекс S&P\u00a0500 з реінвестуванням дивідендів у 1928–2025 роках давав у середньому близько 10\u00a0% на рік, без урахування інфляції. Графік — спрощена ілюстрація: минулі прибутки не гарантують майбутніх, і це не інвестиційна порада.', es: 'El interés compuesto significa que las ganancias generan más ganancias. Reinvirtiendo dividendos, el índice estadounidense S&P\u00a0500 rindió de media un 10\u00a0% anual entre 1928 y 2025, antes de la inflación. El gráfico es una ilustración simplificada: las rentabilidades pasadas no garantizan las futuras y no es una recomendación de inversión.' },
+  'Ukázat v dnešních penězích': { en: 'Show in today’s money', pl: 'Pokaż w dzisiejszych pieniądzach', uk: 'Показати в сьогоднішніх грошах', es: 'Mostrar en dinero de hoy' },
+  'Počítá s inflací 2\u00a0% ročně.': { en: 'Assumes 2\u00a0% inflation a year.', pl: 'Zakłada inflację 2\u00a0% rocznie.', uk: 'Враховує інфляцію 2\u00a0% на рік.', es: 'Supone una inflación del 2\u00a0% anual.' },
+  'v dnešních penězích': { en: 'in today’s money', pl: 'w dzisiejszych pieniądzach', uk: 'у сьогоднішніх грошах', es: 'en dinero de hoy' },
+  'Inflace 2\u00a0% ročně odpovídá cíli České národní banky. Skutečná inflace kolísá: v roce 2022 byla 15,1\u00a0%.': { en: 'Inflation of 2\u00a0% a year is the Czech National Bank’s target. Actual inflation varies: in 2022 it was 15.1\u00a0%.', pl: 'Inflacja 2\u00a0% rocznie to cel Czeskiego Banku Narodowego. Rzeczywista inflacja się waha: w 2022 roku wyniosła 15,1\u00a0%.', uk: 'Інфляція 2\u00a0% на рік — це ціль Чеського національного банку. Справжня інфляція коливається: у 2022 році вона становила 15,1\u00a0%.', es: 'Una inflación del 2\u00a0% anual es el objetivo del Banco Nacional Checo. La inflación real varía: en 2022 fue del 15,1\u00a0%.' },
+  'Zdroj': { en: 'Source', pl: 'Źródło', uk: 'Джерело', es: 'Fuente' },
+  'Zdroje': { en: 'Sources', pl: 'Źródła', uk: 'Джерела', es: 'Fuentes' },
+  'ověřeno {d}': { en: 'checked {d}', pl: 'sprawdzono {d}', uk: 'перевірено {d}', es: 'comprobado el {d}' },
+  'otevře se v nové kartě': { en: 'opens in a new tab', pl: 'otwiera się w nowej karcie', uk: 'відкриється в новій вкладці', es: 'se abre en una pestaña nueva' },
+  'Vědomé utrácení je vzdělávací pomůcka, ne finanční poradenství.': { en: 'Mindful Spending is a learning aid, not financial advice.', pl: 'Świadome wydawanie to pomoc w nauce, a nie doradztwo finansowe.', uk: 'Усвідомлені витрати — навчальний інструмент, а не фінансова консультація.', es: 'Gasto Consciente es una herramienta para aprender, no asesoramiento financiero.' },
+  'U každého tipu je zdroj a den, kdy jsme ho naposledy ověřili.': { en: 'Every tip names its source and the day we last checked it.', pl: 'Przy każdej poradzie jest źródło i dzień, w którym ostatnio je sprawdziliśmy.', uk: 'Біля кожної поради є джерело й день, коли ми востаннє його перевірили.', es: 'Cada consejo indica su fuente y el día en que la comprobamos por última vez.' },
 };
 
 // Keys are matched exactly first, then with spaces and quotation marks normalised

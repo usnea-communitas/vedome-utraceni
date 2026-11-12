@@ -637,3 +637,71 @@ for (const lang of ['en', 'cs']) {
     await context.close();
   });
 }
+
+// ── tips with sources: every tip names its source, the simulator counts in today's money ──
+const TIPS = {
+  en: { sim: 'Show in today’s money', today: 'in today’s money', advice: 'Mindful Spending is a learning aid, not financial advice.', source: 'Source', checked: 'checked November 12, 2026' },
+  cs: { sim: 'Ukázat v dnešních penězích', today: 'v dnešních penězích', advice: 'Vědomé utrácení je vzdělávací pomůcka, ne finanční poradenství.', source: 'Zdroj', checked: 'ověřeno 12. listopadu 2026' },
+};
+for (const lang of ['en', 'cs']) {
+  test(`every tip shows its source and the simulator counts in today's money, 360 px (${lang})`, async () => {
+    const { context, page, problems } = await phone(360);
+    const t = TIPS[lang];
+    const month = today().slice(0, 7);
+    await seedOnce(page, {
+      'fa.profile': JSON.stringify({ name: 'Jana', income: 32000 }),
+      'fa.plan.income': JSON.stringify([{ name: 'Hlavní příjem', amount: 32000 }]),
+      'fa.reflexe': JSON.stringify({ [month]: { answers: { 0: { s: 2, sel: 2 }, 1: { s: 2, sel: 2 }, 2: { s: 2, sel: 2 }, 3: { s: 2, sel: 2 } } } }),
+      'fa.lang': lang,
+    });
+    await page.goto(base);
+    await page.locator('.fa-nav .fa-tab').nth(3).click();
+
+    // a source under each of the four tips, a link that opens in a new tab and says so
+    const flaps = page.locator('.fa-tip .fa-src');
+    assert.equal(await flaps.count(), 4);
+    for (const flap of await flaps.all()) {
+      assert.ok((await flap.innerText()).startsWith(t.source + ':'), await flap.innerText());
+      assert.ok((await flap.innerText()).includes(t.checked), await flap.innerText());
+      const link = flap.locator('a');
+      assert.match(await link.getAttribute('href'), /^https:\/\//);
+      assert.equal(await link.getAttribute('target'), '_blank');
+      assert.match(await link.getAttribute('rel'), /noopener/);
+    }
+    // the compound-interest note and the categories have theirs too; the screen says what the app is
+    assert.equal(await page.locator('.fa-invest-note .fa-src a').count(), 1);
+    assert.equal(await page.locator('.fa-src-pill a').count(), 1);
+    assert.ok((await page.locator('.fa-disclaimer').innerText()).startsWith(t.advice));
+
+    // a flipped card keeps its source in view
+    await page.locator('.fa-flip').first().click();
+    assert.equal(await page.locator('.fa-flip').first().getAttribute('data-flipped'), 'true');
+    assert.ok(await flaps.first().isVisible());
+
+    // in today's money: the switch, a smaller amount, the note with two sources
+    const headline = page.locator('.fa-invest-total');
+    const amount = async () => Number((await headline.innerText()).replace(/\D/g, ''));
+    const before = await amount();
+    const toggle = page.getByRole('switch', { name: t.sim });
+    assert.equal(await toggle.getAttribute('aria-checked'), 'false');
+    await toggle.click();
+    assert.equal(await toggle.getAttribute('aria-checked'), 'true');
+    const after = await amount();
+    assert.ok(after < before && after > before / 2, `${before} → ${after}`);
+    assert.ok((await page.locator('.fa-today-tag').innerText()).includes(t.today));
+    assert.equal(await page.locator('.fa-inflation-note .fa-src a').count(), 2);
+    await toggle.press('Space');
+    assert.equal(await toggle.getAttribute('aria-checked'), 'false');
+    assert.equal(await amount(), before);
+
+    // nothing sticks out at 360 px, and the headings stay in order
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+    assertOutline(await outline(page), 'tips');
+
+    // the reflection's tip says the same about the app
+    await page.locator('.fa-nav .fa-tab').nth(4).click();
+    assert.equal(await page.locator('.fa-advice-note').innerText(), t.advice);
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
