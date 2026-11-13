@@ -12,7 +12,11 @@ const { useState: useW } = React;
 const FA_SITE = 'https://vedome-utraceni.vercel.app';
 function faWorkshopLink(lang) { return FA_SITE + '/?workshop=1&lang=' + lang; }
 // the demo: the workshop on its first story, in the language chosen on the welcome screen
-function faDemoLink(lang) { return '?workshop=1&demo=1&lang=' + (lang || 'en'); }
+function faDemoLink(lang) {
+  let page = '/';
+  try { page = location.pathname; } catch (e) {}
+  return page + '?workshop=1&demo=1&lang=' + (lang || 'en');
+}
 
 // Three made-up stories of young people; the amounts are illustrative. Names
 // that end up in the data are Czech keys (registered below), so they follow

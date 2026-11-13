@@ -43,8 +43,14 @@ function loadFaLang() {
   try {
     const raw = faStorage.get(FA_LANG_KEY);
     const code = raw == null ? null : String(raw).replace(/^"|"$/g, '');
-    return faIsLang(code) ? code : FA_LANG_DEFAULT;
-  } catch (e) { return FA_LANG_DEFAULT; }
+    if (faIsLang(code)) return code;
+  } catch (e) {}
+  // the Czech address (/cs/) opens in Czech and remembers it, as choosing Czech would
+  if (faOnCzechAddress()) { saveFaLang('cs'); return 'cs'; }
+  return FA_LANG_DEFAULT;
+}
+function faOnCzechAddress() {
+  try { return /^\/cs(\/|$)/.test(location.pathname); } catch (e) { return false; }
 }
 function saveFaLang(c) {
   try { if (faIsLang(c)) faStorage.set(FA_LANG_KEY, c); } catch (e) {}

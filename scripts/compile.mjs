@@ -66,6 +66,41 @@ stamp('index.html', [
   [/src="vendor\/react\.production\.min\.js(\?v=[\w.-]+)?"/, `src="vendor/react.production.min.js?v=${reactVersion}"`],
   [/src="vendor\/react-dom\.production\.min\.js(\?v=[\w.-]+)?"/, `src="vendor/react-dom.production.min.js?v=${reactVersion}"`],
 ]);
+// The Czech address (/cs/): the same app with its head in Czech, so a search or a
+// shared link in Czech shows a Czech title, description and picture. English stays
+// the default at / (decision of 24 October 2026). Generated from index.html, like
+// app.js: never edit cs/index.html by hand. <base href="/"> makes every address in
+// the page and the app (scripts, fonts, the manifest, the worker) the same as at /.
+const SITE = 'https://vedome-utraceni.vercel.app';
+const CS = {
+  title: 'Vědomé utrácení — klidný plán peněz',
+  description: 'Klidný plán peněz podle pravidla 50/30/20: co je potřeba, co tě těší a co posíláš svému budoucímu já. Tvoje data zůstávají v prohlížeči.',
+  share: 'Klidný plán peněz podle pravidla 50/30/20: co je potřeba, co tě těší a co posíláš svému budoucímu já.',
+};
+const attr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+let cs = readFileSync(join(root, 'index.html'), 'utf8');
+for (const [pattern, value] of [
+  [/<html lang="en">/, '<html lang="cs">'],
+  [/<meta charset="utf-8" \/>\n/, '<meta charset="utf-8" />\n<base href="/" />\n'],
+  // the policy allows that one base address, the site's own (/ elsewhere keeps 'none')
+  [/base-uri 'none'/, "base-uri 'self'"],
+  [/<title>[^<]*<\/title>/, `<title>${CS.title}</title>`],
+  [/<meta name="description" content="[^"]*" \/>/, `<meta name="description" content="${attr(CS.description)}" />`],
+  [/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${attr(CS.title)}" />`],
+  [/<meta property="og:description" content="[^"]*" \/>/, `<meta property="og:description" content="${attr(CS.share)}" />`],
+  [/<meta property="og:image" content="[^"]*" \/>/, `<meta property="og:image" content="${SITE}/og-cs.jpg" />`],
+  [/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${SITE}/cs/" />`],
+  [/<meta property="og:locale" content="en_US" \/>\n<meta property="og:locale:alternate" content="cs_CZ" \/>/, '<meta property="og:locale" content="cs_CZ" />\n<meta property="og:locale:alternate" content="en_US" />'],
+  [/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${SITE}/cs/" />`],
+  [/"url":"https:\/\/vedome-utraceni\.vercel\.app\/"/, `"url":"${SITE}/cs/"`],
+  [/("@type":"WebApplication".*?"description":")[^"]*(")/, `$1${CS.description}$2`],
+]) {
+  if (!pattern.test(cs)) throw new Error(`cs/index.html: nothing matches ${pattern}`);
+  cs = cs.replace(pattern, value);
+}
+mkdirSync(join(root, 'cs'), { recursive: true });
+writeFileSync(join(root, 'cs', 'index.html'), cs);
+
 stamp('sw.js', [
   [/const BUILD = '[^']*';/, `const BUILD = '${build}';`],
   [/const REACT = '[^']*';/, `const REACT = '${reactVersion}';`],
