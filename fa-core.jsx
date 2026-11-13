@@ -2,7 +2,7 @@
 // for "Vědomé utrácení" (Conscious Spending) — forest-calm redesign.
 
 // app version, shown in More; keep in step with package.json (a test checks it)
-const FA_VERSION = '2.1.0';
+const FA_VERSION = '2.1.1';
 
 // ── Number / currency formatting ────────────────────────────────────────
 // Whole numbers grouped the way the interface language does it (16,000 ·
