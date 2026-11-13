@@ -39,6 +39,8 @@ Vědomé utrácení (Czech for *mindful spending*) is an open-source project bui
 
 English is the default interface language. The app also speaks **Czech** (the original language of the project), **Polish**, **Ukrainian** and **Spanish**; choose it on the welcome screen or later under *More → Language*. The choice is stored on the device and included in backups. A link can choose it too, which helps in workshops: <https://vedome-utraceni.vercel.app/?lang=cs> (or `en`, `pl`, `uk`, `es`) opens the app in that language and remembers it like a choice.
 
+The Czech address, <https://vedome-utraceni.vercel.app/cs/>, is the same app with a Czech title, description and share picture for search engines and shared links; opened there, the app speaks Czech and remembers it, and both addresses share the browser's storage. `npm run compile` writes `cs/index.html` from `index.html`.
+
 Strings live in [`fa-i18n.jsx`](fa-i18n.jsx): the Czech source text is the dictionary key and `L('…')` / `Lf('…', vars)` return the active language, falling back to Czech. Lookups tolerate the usual typographic differences (non-breaking spaces, „“ vs " quotes). To add a language, add its code to `FA_LANGS` and a translation to every entry; to fix a string, edit the entry and run `npm run compile`.
 
 Numbers, days and months are formatted for the chosen language; amounts are always in Czech crowns (Kč), as the app was designed for Czech households and workshops.

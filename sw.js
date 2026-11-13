@@ -5,13 +5,13 @@
 // compile` stamps the same hash below, so a new app.js also brings a new service
 // worker with its own cache. Fonts are stored with the app and cache first (their
 // files never change); videos are left to the browser (range requests).
-const BUILD = '98652151c6'; // stamped by scripts/compile.mjs
+const BUILD = '5776a42942'; // stamped by scripts/compile.mjs
 const REACT = '18.3.1'; // stamped by scripts/compile.mjs
 const CACHE = 'vedome-utraceni-v3-' + BUILD;
 const CORE = [
   './', './index.html', './app.js?v=' + BUILD,
   './vendor/react.production.min.js?v=' + REACT, './vendor/react-dom.production.min.js?v=' + REACT,
-  './manifest.webmanifest', './icon-192.png', './register-sw.js',
+  './manifest.webmanifest', './icon-192.png', './register-sw.js', './cs/index.html',
 ];
 
 self.addEventListener('install', (event) => {
@@ -42,7 +42,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (/\.(mp4|webm)$/i.test(url.pathname) || req.headers.has('range')) return;
 
-  if (req.mode === 'navigate') { event.respondWith(networkFirst(req, './index.html')); return; }
+  // the Czech address keeps its own page (cs/index.html), everything else the English one
+  if (req.mode === 'navigate') { event.respondWith(networkFirst(req, /^\/cs(\/|$)/.test(url.pathname) ? './cs/index.html' : './index.html')); return; }
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.includes('/fonts/')) {
