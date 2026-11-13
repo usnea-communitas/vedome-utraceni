@@ -120,7 +120,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       body: (
         <div>
           <h1 className="fa-onb-h">{L('Rozděl si příjem')}</h1>
-          <p className="fa-onb-p">{L('Osvědčený základ je 50 / 30 / 20 — uprav si ho podle sebe.')}</p>
+          <p className="fa-onb-p">{L('Začni rozdělením 50 / 30 / 20 a uprav si ho podle sebe.')}</p>
           <div style={{ display: 'flex', gap: 7, margin: '4px 0 16px', flexWrap: 'wrap' }}>
             {OB_PRESETS.map(p => {
               const on = p.r.nutne === r.nutne && p.r.budouci === r.budouci && p.r.radost === r.radost;
@@ -155,7 +155,7 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
       body: (
         <div>
           <h1 className="fa-onb-h">{L('Tvůj první cíl')}</h1>
-          <p className="fa-onb-p">{L('Pojmenovaný cíl se plní snáz. Vyber, na co šetříš — nebo přeskoč a přidej později.')}</p>
+          <p className="fa-onb-p">{L('Vyber, na co šetříš, a sleduj, jak cíl roste — nebo přeskoč a přidej ho později.')}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
             {OB_GOALS.map(g => (
               <button key={g.key} className="fa-onb-goal" data-on={goalKey === g.key} onClick={() => pickGoal(g)}>
