@@ -8,7 +8,7 @@ import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
-import { chromium } from 'playwright';
+import { launchBrowser } from '../harness.mjs';
 import { root } from '../harness.mjs';
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.mp4': 'video/mp4' };
@@ -25,7 +25,7 @@ before(async () => {
   }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   base = `http://127.0.0.1:${server.address().port}/`;
-  browser = await chromium.launch();
+  browser = await launchBrowser();
 });
 after(async () => { await browser?.close(); server?.close(); });
 
@@ -432,6 +432,8 @@ test('the overview legend stays inside its card from 360 to 430 px', async () =>
       localStorage.setItem('fa.lang', 'uk');
     });
     await page.goto(base);
+    // WebKit may draw the first screen a moment after the load event
+    await page.locator('.fa-screen .fa-card').first().waitFor();
     const clipped = await page.evaluate(() => {
       const card = document.querySelector('.fa-screen .fa-card').getBoundingClientRect();
       return [...document.querySelectorAll('.fa-screen .fa-card *')]

@@ -1,0 +1,35 @@
+name: Browsers
+
+# The browser tests again in WebKit (the engine of Safari) and Firefox (S-17).
+# Not a required check yet: it runs beside CI and is read before every merge.
+# WebKit in Playwright is not Safari on an iPhone (deleting data after a week,
+# the home screen and the phone keyboard still need a real iPhone).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Browser tests in ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [webkit, firefox]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: The same tests as in Chromium
+        run: npm run test:e2e
+        env:
+          BROWSER: ${{ matrix.browser }}

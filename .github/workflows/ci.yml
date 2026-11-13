@@ -19,7 +19,7 @@ jobs:
       - name: app.js and its stamps match the .jsx sources
         run: |
           npm run compile
-          git diff --exit-code -- app.js vendor/ index.html sw.js
+          git diff --exit-code -- app.js vendor/ index.html cs/ sw.js
       - name: Bundle parses
         run: node --check app.js
       - name: Manifest and service worker are valid
