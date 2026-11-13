@@ -72,7 +72,7 @@ Plain React 18 with no framework. The JSX modules are precompiled with esbuild i
 | `scripts/workshop-pdf.mjs` | Makes the PDFs of the facilitator kit, `docs/workshop/pdf/`, from the Markdown in `docs/workshop/cs` and `docs/workshop/en`. |
 | `scripts/cut-fonts.py` | Cuts the stored fonts to the weights and letters the app uses, and the welcome heading's own font (`--heading`). |
 | `sw.js`, `manifest.webmanifest` | Offline cache (network first) and PWA manifest. |
-| `tests/` | `node:test` unit, translation and build checks; Playwright smoke tests in `tests/e2e/`; a check of the live site in `tests/production/`. |
+| `tests/` | `node:test` unit, translation and build checks; Playwright tests in `tests/e2e/`, including axe (WCAG 2.1 A and AA) on every screen and sheet in both themes, in English and Czech (`a11y.test.mjs`); a check of the live site in `tests/production/`. |
 | `vercel.json` | Security headers for the Vercel deployment (no build settings). |
 
 `app.js` and `vendor/` are generated and committed; **never edit `app.js` by hand** — change the `.jsx` sources and run `npm run compile`.
@@ -87,7 +87,7 @@ cd vedome-utraceni
 npm ci
 npm run compile          # rebuilds app.js and vendor/ from the .jsx sources
 npm test                 # unit, translation and build checks
-npm run test:e2e         # Chromium smoke test (first run: npx playwright install chromium)
+npm run test:e2e         # Chromium: smoke, workshop, data and accessibility tests (first run: npx playwright install chromium)
 npm run sources:check    # opens every source the tips name (needs the network)
 npx serve .              # or any static server; then open the printed URL
 ```
