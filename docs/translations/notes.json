@@ -1,0 +1,55 @@
+{
+  "about": "The second reading of the translations (package S-19), one record per language: what was changed because it was clearly wrong, and the places a native speaker should decide. `npm run translations:export` puts the questions at the top of <lang>.md and in the first rows of <lang>.csv. Czech keys are written with ordinary spaces.",
+  "pl": {
+    "read": "2026-11-13",
+    "fixed": [
+      { "cs": "Budoucí já", "before": "Przyszły ja", "after": "Przyszłe ja", "why": "The name of the savings part. As a noun, „ja” is neuter (moje ja), and the other texts already decline it so (przyszłego ja, przyszłemu ja)." },
+      { "cs": "Kolik šlo do „Budoucí já\" (spoření a investice)?", "before": "Ile poszło na „Przyszłą mnie\" (oszczędności i inwestycje)?", "after": "Ile poszło na „Przyszłe ja\" (oszczędności i inwestycje)?", "why": "The question quotes the part's name, so it now uses the same name." }
+    ],
+    "check": [
+      { "cs": "Zaplať nejdřív budoucí já", "question": "„przyszłemu sobie” is masculine. The part is called „Przyszłe ja”: would „Najpierw zapłać swojemu przyszłemu ja” sound natural, or is „zapłać najpierw sobie” the phrase people know?" },
+      { "cs": "Jak ses cítila u větších výdajů?", "question": "Where Czech has to choose, the Czech source speaks to a woman (also „Věděla jsi?” and the reflection questions in the first person), and Polish follows it (czułaś, odłożyłam). Does that read naturally, or should these texts be neutral?" },
+      { "cs": "Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí\".", "question": "This text and one other write „20%”; fifteen others write „100 %” with a space, as Czech does. Which is right in Polish, so all can follow it?" },
+      { "cs": "Na iPhonu a iPadu má aplikace na ploše vlastní úložiště, oddělené od Safari. Než ji začneš používat, ulož si v Safari zálohu a v aplikaci na ploše ji obnov (Více → Data).", "question": "The iPhone texts say „ekran początkowy” (Apple's word), the others „ekran główny”. Is that the right split, or should one word be used throughout?" }
+    ]
+  },
+  "uk": {
+    "read": "2026-11-13",
+    "fixed": [
+      { "cs": "Nastaven · klepni pro změnu", "before": "Встановлено · торкніться, щоб змінити", "after": "Встановлено · торкнися, щоб змінити", "why": "The app says ти everywhere else; this PIN text said Ви." },
+      { "cs": "Zadej nový PIN", "before": "Введіть новий PIN", "after": "Введи новий PIN", "why": "ти, as everywhere else." },
+      { "cs": "Zopakuj PIN", "before": "Повторіть PIN", "after": "Повтори PIN", "why": "ти, as everywhere else." },
+      { "cs": "PINy se neshodují, zkus to znovu", "before": "PIN-коди не збігаються, спробуйте ще раз", "after": "PIN-коди не збігаються, спробуй ще раз", "why": "ти, as everywhere else." },
+      { "cs": "Zadej PIN", "before": "Введіть PIN", "after": "Введи PIN", "why": "ти, as everywhere else." },
+      { "cs": "Klepni pro odemknutí", "before": "Торкніться, щоб розблокувати", "after": "Торкнися, щоб розблокувати", "why": "ти, as everywhere else." },
+      { "cs": "Upozornění jsou v prohlížeči zablokovaná — povol je v nastavení.", "before": "Сповіщення заблоковані в браузері — увімкніть їх у налаштуваннях.", "after": "Сповіщення заблоковані в браузері — увімкни їх у налаштуваннях.", "why": "ти, as everywhere else." },
+      { "cs": "Zdroje příjmu přidáš a odebereš v části Plán.", "before": "Джерела доходу додавайте та видаляйте у вкладці План.", "after": "Джерела доходу додаси й видалиш у вкладці План.", "why": "ти, and the future tense of the Czech source." },
+      { "cs": "táhni prstem po grafu", "before": "проведіть пальцем по графіку", "after": "проведи пальцем по графіку", "why": "ти, as everywhere else." },
+      { "cs": "Budoucí já", "before": "Майбутній я", "after": "Майбутнє я", "why": "The name of the savings part. As a noun, „я” is neuter (моє я), as the other texts decline it (майбутнього я)." },
+      { "cs": "Kolik šlo do „Budoucí já\" (spoření a investice)?", "before": "Скільки пішло на «Майбутню себе» (заощадження та інвестиції)?", "after": "Скільки пішло на «Майбутнє я» (заощадження та інвестиції)?", "why": "The question quotes the part's name, so it now uses the same name." },
+      { "cs": "Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí\".", "before": "20%", "after": "20 %", "why": "Written with a space, like the other fifteen percentages." },
+      { "cs": "Zkus jedinou změnu: hned po výplatě odlož 10 % stranou, než cokoli utratíš. V příští reflexi uvidíš, jak to šlo.", "before": "10%", "after": "10 %", "why": "Written with a space, like the other fifteen percentages." }
+    ],
+    "check": [
+      { "cs": "Věděla jsi?", "question": "Where Czech has to choose, the Czech source speaks to a woman (also „Jak ses cítila” and the reflection questions in the first person), and Ukrainian follows it (знала, відклала). Does that read naturally, or should these texts be neutral?" },
+      { "cs": "Workshop", "question": "Would Ukrainian teachers and trainers say „воркшоп”, or rather „майстер-клас” or „семінар”?" },
+      { "cs": "Pro lektora", "question": "Is „ведучий” the usual word for the person leading a workshop, or „фасилітатор” or „тренер”?" },
+      { "cs": "Na iPhonu a iPadu má aplikace na ploše vlastní úložiště, oddělené od Safari. Než ji začneš používat, ulož si v Safari zálohu a v aplikaci na ploše ji obnov (Více → Data).", "question": "The iPhone texts say „початковий екран” (Apple's word), the others „головний екран”. Is that the right split, or should one word be used throughout?" }
+    ]
+  },
+  "es": {
+    "read": "2026-11-13",
+    "fixed": [
+      { "cs": "Vítej zpět", "before": "Bienvenida de nuevo", "after": "Hola de nuevo", "why": "The Czech greeting does not assume a woman. The app's first greeting already avoids it (Te damos la bienvenida…)." },
+      { "cs": "Vítej zpět, {n}", "before": "Bienvenida de nuevo, {n}", "after": "Hola de nuevo, {n}", "why": "As above." },
+      { "cs": "Hned po výplatě odlož 20 % stranou, než se peníze „rozkutálí\".", "before": "20%", "after": "20 %", "why": "Written with a space, like the other fifteen percentages." },
+      { "cs": "Zkus jedinou změnu: hned po výplatě odlož 10 % stranou, než cokoli utratíš. V příští reflexi uvidíš, jak to šlo.", "before": "10%", "after": "10 %", "why": "Written with a space, like the other fifteen percentages." }
+    ],
+    "check": [
+      { "cs": "Potřebné", "question": "Spanish guides to the 50/30/20 rule often say „necesidades, deseos, ahorro”. Are „Esenciales”, „Alegría” and „Mi yo futuro” clear names for the three parts?" },
+      { "cs": "Co z příběhu platí i pro vás?", "question": "The questions for a group use vosotros (Spain). Groups in Latin America would need ustedes. Keep vosotros?" },
+      { "cs": "Klidně — byly promyšlené", "question": "„Tranquila” is feminine, following the Czech question „Jak ses cítila”. Would a neutral answer (for example „Con calma: los había pensado”) read better?" },
+      { "cs": "Smazat", "question": "Deleting one item says „Eliminar”, deleting data or a workshop „Borrar”. Is that the usual split?" }
+    ]
+  }
+}

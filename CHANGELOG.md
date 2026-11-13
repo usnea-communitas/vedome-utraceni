@@ -4,6 +4,7 @@ Notable changes to Vědomé utrácení (Mindful Spending). The version lives in 
 
 ## Unreleased
 
+- **A second reading of the translations** (S-19). Polish, Ukrainian and Spanish were compared with the Czech source: the app's own names, the informal address, the placeholders and the length. Clear mistakes are corrected: nine Ukrainian PIN and chart texts said Ви where the app says ти; the savings part is now *Przyszłe ja* and *Майбутнє я* everywhere (it was also *Przyszły ja*, *Przyszłą mnie*, *Майбутній я* and *Майбутню себе*); Spanish *Bienvenida de nuevo* assumed a woman where the Czech *Vítej zpět* does not (now *Hola de nuevo*); two percentages are written like the other fifteen. Twelve places a native speaker should decide now open each review sheet in [`docs/translations/`](docs/translations/), with what was changed; [`notes.json`](docs/translations/notes.json) records both, and a new [glossary](docs/translations/GLOSSARY.md) lists the app's names in every language and how it speaks.
 - **Tests in the engines of Safari and Firefox** (S-17). The browser tests also run in WebKit and Firefox (`BROWSER=webkit npm run test:e2e`), in a second workflow beside CI. They found one thing: opening the app, even locked by the PIN, wrote the default 50 / 30 / 20 split into the browser's storage; now a split is stored only once it is chosen. One test is skipped in Firefox with its reason (Playwright's offline mode there fails a reload before the service worker can answer). The compile check now also covers the Czech page.
 
 ## 2.1.0 — 2026-11-13

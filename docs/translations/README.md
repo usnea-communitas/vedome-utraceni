@@ -6,6 +6,7 @@ Vědomé utrácení (Mindful Spending) speaks five languages. Czech is the sourc
 
 - The app in your language: <https://vedome-utraceni.vercel.app/?lang=pl> (or `uk`, `es`). Nothing you type leaves your browser.
 - Your file: [`pl.csv`](pl.csv), [`uk.csv`](uk.csv) or [`es.csv`](es.csv) for a spreadsheet, or the same rows to read on GitHub in [`pl.md`](pl.md), [`uk.md`](uk.md), [`es.md`](es.md).
+- The [glossary](GLOSSARY.md): the app's names for its own things in every language, and how it speaks.
 
 ## How to review
 
@@ -15,6 +16,7 @@ Vědomé utrácení (Mindful Spending) speaks five languages. Czech is the sourc
    - `en` – the English text, for reference.
    - `pl` / `uk` / `es` – the translation to check. **This is the column you edit.**
    - `where` – the file and line where the text appears in the code. Empty means it is used through a list or not shown at the moment.
+   - `check` – a question from a second reading, on the first few rows only: places where a native speaker has to decide. Start with them. The top of your `.md` file lists the same questions and what the second reading already changed.
    - `note` – your comment, if a change needs explaining.
 3. Change a translation when it is wrong, sounds unnatural or is too formal. Leave it as it is when it is fine; an empty cell also means "no change".
 4. Keep everything in braces exactly as it is (`{v}`, `{n}`, `{name}` …): the app fills in numbers and names there. Amounts stay in Czech crowns (`Kč`).
@@ -32,3 +34,5 @@ npm run translations:export                         # refreshes these files afte
 ```
 
 The import changes only the reviewed language's strings in `fa-i18n.jsx`; rows whose Czech source no longer exists are skipped and reported. Commit through a pull request as usual.
+
+[`notes.json`](notes.json) records the second reading of each language (package S-19): what it changed and the questions for a native speaker. The export puts the questions first, and it stops when a note names a Czech text the app no longer has. When a native speaker has answered a question, remove it from `notes.json` and export again.
