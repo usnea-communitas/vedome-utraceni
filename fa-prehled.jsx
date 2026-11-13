@@ -18,6 +18,8 @@ function Prehled({ go, ratios, month, setMonth, expenses = [], deleteExpense, pr
         right={<MonthPill month={month} setMonth={setMonth} ratios={ratios} go={go} />}
       />
 
+      <BackupReminder />
+
       {/* ── Spojená přehledová karta: příjem + Lesní koláč ─────── */}
       <Card pad={0} style={{ overflow: 'hidden', marginBottom: 22 }}>
         {/* Lesní koláč peněz — hlavní priorita karty */}
@@ -413,3 +415,45 @@ function SourceBars({ sources, maxA }) {
 }
 
 Object.assign(window, { Prehled, PlanActual, ScreenHeader, GrowthMark, YearGoals, SnakeBar, SourceBars });
+
+// ── a quiet reminder to save a backup (rules: faBackupDue in fa-store.jsx) ──
+// In Safari on an iPhone it also points to the home screen, where the app keeps
+// its data apart from Safari's seven-day clean-up.
+function BackupReminder() {
+  const [due, setDue] = React.useState(() => faBackupReminderNow());
+  const [msg, setMsg] = React.useState('');
+  const [home, setHome] = React.useState(false);
+  const opener = React.useRef(null);
+  if (!due && !msg) return null;
+  const safari = faDevicePlatform() === 'ios' && !faStandalone();
+  const save = () => {
+    const ok = faSaveBackup();
+    setMsg(ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.'));
+    if (ok) setDue(null);
+  };
+  const hide = () => { saveFaBackupReminder({ ...loadFaBackupReminder(), hiddenAt: Date.now() }); setDue(null); };
+  return (
+    <div className="fa-remind-wrap">
+      {due && (
+        <section className="fa-remind" aria-labelledby="fa-remind-t">
+          <Medallion icon="vault" accent="sage" size={36} />
+          <div className="fa-remind-body">
+            <h2 id="fa-remind-t" className="fa-remind-t">{due.never ? L('Zatím nemáš zálohu') : Lf('Naposledy zálohováno před {n} dny', { n: due.days })}</h2>
+            <p className="fa-remind-s">{safari
+              ? L('Safari může data webu smazat, když ho sedm dní neotevřeš. Záloha a aplikace na ploše je ochrání.')
+              : L('Data jsou jen v tomto prohlížeči. Záloha je pojistka i cesta na jiné zařízení.')}</p>
+            <div className="fa-remind-actions">
+              <button type="button" className="fa-ghostbtn" onClick={save}><Icon name="leaf" size={15} stroke={1.9} /> {L('Zálohovat')}</button>
+              {safari && <button type="button" className="fa-textbtn" onClick={e => { opener.current = e.currentTarget; setHome(true); }}>{L('Na plochu telefonu')}</button>}
+            </div>
+          </div>
+          <button type="button" className="fa-remind-x" aria-label={L('Skrýt připomínku zálohy')} onClick={hide}>
+            <Icon name="close" size={16} stroke={2} />
+          </button>
+        </section>
+      )}
+      {msg && <p className="fa-remind-msg" role="status">{msg}</p>}
+      {safari && <HomeScreenSheet open={home} onClose={() => { setHome(false); const el = opener.current; if (el) setTimeout(() => { try { el.isConnected && el.focus(); } catch (e) {} }, 0); }} />}
+    </div>
+  );
+}

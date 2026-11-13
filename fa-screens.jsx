@@ -497,9 +497,12 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
   const fileRef = React.useRef(null);
   const [dataMsg, setDataMsg] = useS2('');
   const exportBackup = () => {
-    const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
+    const ok = faSaveBackup();
     setDataMsg(ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.'));
   };
+  // the quiet reminder on the Overview (faBackupDue in fa-store.jsx)
+  const remindOn = !loadFaBackupReminder().off;
+  const toggleRemind = () => { saveFaBackupReminder({ ...loadFaBackupReminder(), off: remindOn }); bump(n => n + 1); };
   // a backup with a password waits here while its password is asked for
   const [locked, setLocked] = useS2('');
   const onImportFile = (e) => {
@@ -626,6 +629,17 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
             onClick={e => { opener.current = e.currentTarget; if (fileRef.current) fileRef.current.click(); }} />
           <DataRow icon="table" accent="moss" label={L('Výdaje do tabulky')}
             sub={L('Soubor CSV pro Excel, Numbers nebo LibreOffice')} onClick={exportCsv} border />
+          <div className="fa-row fa-remind-switch" style={{ borderTop: '1px solid var(--card-line)' }}>
+            <Medallion icon="vault" accent="sage" size={36} />
+            <div className="fa-inflation-text" style={{ flex: 1 }}>
+              <span id="fa-remind-label" className="fa-inflation-label">{L('Připomínat zálohu')}</span>
+              <span id="fa-remind-sub" className="fa-inflation-sub">{L('Na Přehledu, když záloha chybí nebo je starší než 30 dní')}</span>
+            </div>
+            <button type="button" role="switch" className="fa-switch" data-on={remindOn} aria-checked={remindOn ? 'true' : 'false'}
+              aria-labelledby="fa-remind-label" aria-describedby="fa-remind-sub" onClick={toggleRemind}>
+              <span className="fa-switch-knob" aria-hidden="true" />
+            </button>
+          </div>
           {real && (
             <div style={{ borderTop: '1px solid var(--card-line)' }}>
               <DangerRow label={L('Smazat všechna data')} confirmLabel={L('Opravdu smazat? Nejde vrátit')} onConfirm={resetAll} />

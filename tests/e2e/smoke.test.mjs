@@ -610,7 +610,8 @@ for (const lang of ['en', 'cs']) {
     await safety.waitFor();
     await page.waitForFunction(() => document.querySelector('.fa-sheet').contains(document.activeElement));
     assert.equal(await safety.locator('.fa-safe-stop').count(), 3);
-    assert.equal(await safety.locator('dt').count(), 6);
+    // six facts, Safari's clean-up and whether the browser keeps the data for good
+    assert.equal(await safety.locator('dt').count(), 8);
     assertOutline(await outline(page), 'privacy sheet');
     assert.ok(await fits(), 'privacy sheet fits');
     await page.keyboard.press('Escape');

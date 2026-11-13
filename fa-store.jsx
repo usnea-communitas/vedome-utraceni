@@ -15,7 +15,7 @@ faRegisterDataNames(['Hlavní příjem']);
 const FA_STORE_KEYS = [
   'fa.profile', 'fa.plans', 'fa.plan.income', 'fa.plan.items', 'fa.expenses', 'fa.deposits',
   'fa.goals', 'fa.yearGoals.custom', 'fa.reflexe', 'fa.ratios', 'fa.month',
-  'fa.security', 'fa.reminders', 'fa.plan.v1',
+  'fa.security', 'fa.reminders', 'fa.plan.v1', 'fa.backup.last', 'fa.backup.reminder',
 ];
 
 function faLoad(key, fallback) {
@@ -252,7 +252,8 @@ function faHydrate(ratios, month) {
 // Values are kept as the raw localStorage strings so every key round-trips exactly.
 // Version 2 (monthly plans) adds fa.plans and fa.deposits; a version 1 backup still
 // restores, and its fa.plan.income and fa.plan.items are converted on the next start.
-const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security' && k !== 'fa.plan.v1').concat(['fa.theme', 'fa.lang']);
+// fa.backup.last is left out too: after a restore it is the backup's own date.
+const FA_BACKUP_KEYS = FA_STORE_KEYS.filter(k => k !== 'fa.security' && k !== 'fa.plan.v1' && k !== 'fa.backup.last').concat(['fa.theme', 'fa.lang']);
 
 function faExportData() {
   const data = {};
@@ -283,6 +284,7 @@ const FA_BACKUP_CHECKS = {
   'fa.ratios': v => faIsObj(v) && ['nutne', 'budouci', 'radost'].every(k => faIsNum(v[k]) && v[k] >= 0 && v[k] <= 100),
   'fa.month': v => typeof v === 'string',
   'fa.reminders': faIsObj,
+  'fa.backup.reminder': faIsObj,
 };
 // these two are stored as plain strings, not JSON
 const FA_BACKUP_RAW_CHECKS = {
@@ -306,7 +308,73 @@ function faImportData(text) {
   if (bad) return { ok: false, error: 'shape', key: bad };
   FA_BACKUP_KEYS.forEach(k => { try { faStorage.remove(k); } catch (e) {} });
   keys.forEach(k => { try { faStorage.set(k, obj.data[k]); } catch (e) {} });
+  // the data here is now the backup's, so the backup reminder counts from its date
+  const made = typeof obj.exported === 'string' && !isNaN(Date.parse(obj.exported)) ? obj.exported : new Date().toISOString();
+  faStorage.set('fa.backup.last', made);
   return { ok: true, count: keys.length };
+}
+
+// ── reminding of a backup ───────────────────────────────────────────────
+// A quiet line on the Overview: two days after the first data while there is
+// no backup yet, and 30 days after the last one. Hiding it keeps it away for
+// 14 days; More → Data turns it off. A workshop never shows it.
+const FA_DAY = 24 * 60 * 60 * 1000;
+function faBackupDue({ hasData, since, last, hiddenAt, off, now }) {
+  if (off || !hasData) return null;
+  if (hiddenAt != null && now - hiddenAt < 14 * FA_DAY) return null;
+  if (last == null) return since != null && now - since >= 2 * FA_DAY ? { never: true } : null;
+  const days = Math.floor((now - last) / FA_DAY);
+  return days >= 30 ? { days } : null;
+}
+function loadFaBackupReminder() { const v = faLoad('fa.backup.reminder', {}); return faIsObj(v) ? v : {}; }
+function saveFaBackupReminder(v) { faSave('fa.backup.reminder', v); }
+function faLastBackup() { const t = Date.parse(faStorage.get('fa.backup.last') || ''); return isNaN(t) ? null : t; }
+// whether a backup would keep anything
+function faHasData() {
+  const p = loadFaProfile();
+  if (!p || p.demo) return false;
+  return faPlanMonths(faLoadPlans()).length > 0 || faList(faLoad('fa.expenses', [])).length > 0 || faList(faLoad('fa.goals', [])).length > 0;
+}
+// when the data began: the profile's creation, else the first expense
+function faDataSince() {
+  const p = loadFaProfile();
+  if (p && faIsNum(p.created)) return p.created;
+  const first = faList(faLoad('fa.expenses', [])).map(e => e && e.ts).filter(faIsNum).sort((a, b) => a - b)[0];
+  return first == null ? null : first;
+}
+function faBackupReminderNow(now) {
+  if (FA_IN_WORKSHOP) return null;
+  const r = loadFaBackupReminder();
+  return faBackupDue({
+    hasData: faHasData(), since: faDataSince(), last: faLastBackup(),
+    hiddenAt: faIsNum(r.hiddenAt) ? r.hiddenAt : null, off: !!r.off, now: now == null ? Date.now() : now,
+  });
+}
+function faNoteBackup() { faStorage.set('fa.backup.last', new Date().toISOString()); }
+// downloads a backup and notes the day for the reminder
+function faSaveBackup() {
+  const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
+  if (ok) faNoteBackup();
+  return ok;
+}
+
+// ── keeping the data: persistent storage ────────────────────────────────
+// A browser may clear a site's data when space runs short, unless the site's
+// storage is persistent. Safari and Chromium browsers decide by themselves how
+// the site is used, without a prompt; Firefox asks the person in a prompt, so
+// there the app asks only after a tap (More → How we protect your data).
+function faPersistAsks() { try { return /\bFirefox\//.test(navigator.userAgent || ''); } catch (e) { return false; } }
+async function faPersisted() {
+  try { return navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) { return null; }
+}
+async function faAskPersist() {
+  try { return navigator.storage && navigator.storage.persist ? await navigator.storage.persist() : null; } catch (e) { return null; }
+}
+// asked once there is something to lose, where the browser shows no prompt
+async function faKeepQuietly() {
+  if (FA_IN_WORKSHOP || faPersistAsks() || !faHasData()) return null;
+  const kept = await faPersisted();
+  return kept === false ? faAskPersist() : kept;
 }
 
 // ── backup with a password ──────────────────────────────────────────────
@@ -425,4 +493,6 @@ Object.assign(window, {
   FA_BACKUP_KEYS, faExportData, faImportData, faBackupValueOk,
   FA_BACKUP_ROUNDS, FA_BACKUP_MIN_PASSWORD, faCanEncrypt, faExportEncrypted, faBackupKind, faImportEncrypted,
   faCsvSeparator, faExpensesCsv,
+  faBackupDue, loadFaBackupReminder, saveFaBackupReminder, faLastBackup, faHasData, faDataSince, faBackupReminderNow,
+  faNoteBackup, faSaveBackup, faPersistAsks, faPersisted, faAskPersist, faKeepQuietly,
 });

@@ -17,9 +17,18 @@ function faKey(key) {
   return FA_IN_WORKSHOP && key.startsWith('fa.') ? FA_WORKSHOP_PREFIX + key.slice(3) : key;
 }
 
+// set() says whether the browser kept the value. When it refuses (its storage
+// is full, or blocked in its settings), the app hears 'fa-storage-error' and
+// says so, instead of losing the change without a word (see fa-app.jsx).
 const faStorage = {
   get(key) { try { return localStorage.getItem(faKey(key)); } catch (e) { return null; } },
-  set(key, value) { try { localStorage.setItem(faKey(key), value); } catch (e) {} },
+  set(key, value) {
+    try { localStorage.setItem(faKey(key), value); return true; }
+    catch (e) {
+      try { window.dispatchEvent(new CustomEvent('fa-storage-error', { detail: { key, name: (e && e.name) || 'Error' } })); } catch (x) {}
+      return false;
+    }
+  },
   remove(key) { try { localStorage.removeItem(faKey(key)); } catch (e) {} },
 };
 

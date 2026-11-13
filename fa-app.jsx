@@ -106,6 +106,29 @@ function App() {
       if (conn && conn.removeEventListener) conn.removeEventListener('change', update);
     };
   }, []);
+  // Another tab or window of the app changed the data: show it here too, so a
+  // change made here never writes over it (this tab keeps its expenses in memory).
+  useAE(() => {
+    const onStorage = (ev) => {
+      if (ev.storageArea && ev.storageArea !== window.localStorage) return;
+      if (ev.key != null && !ev.key.startsWith('fa.')) return;
+      setExpenses(loadFaExpenses());
+      setProfile(loadFaProfile());
+      try { const r = JSON.parse(faStorage.get('fa.ratios')); if (r) setRatios(r); } catch (e) {}
+      setPlanVersion(v => v + 1);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+  // once there is something to lose, ask the browser to keep it (silently, where it does not prompt)
+  useAE(() => { if (profile && !profile.demo) faKeepQuietly(); }, [profile, expenses.length > 0]);
+  // the browser refused to store a change: say so instead of losing it silently
+  const [storageErr, setStorageErr] = useA(false);
+  useAE(() => {
+    const onErr = () => setStorageErr(true);
+    window.addEventListener('fa-storage-error', onErr);
+    return () => window.removeEventListener('fa-storage-error', onErr);
+  }, []);
   useAE(() => { try { faStorage.set('fa.theme', theme); } catch (e) {} }, [theme]);
   useAE(() => {
     saveFaLang(lang);
@@ -210,6 +233,7 @@ function App() {
       ) : (
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
         {...(locked ? { inert: '', 'aria-hidden': 'true' } : {})}>
+        {storageErr && <StorageAlert onClose={() => setStorageErr(false)} />}
         {/* scrollable content */}
         <main ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">
@@ -283,17 +307,60 @@ function BottomNav({ items, active, go }) {
   );
 }
 
+// shown when the browser refused to store a change (storage full or blocked)
+function StorageAlert({ onClose }) {
+  const [msg, setMsg] = useA('');
+  return (
+    <div className="fa-alert" role="alert">
+      <Icon name="alert" size={18} stroke={2} />
+      <div className="fa-alert-body">
+        <p>{L('Poslední změnu se nepodařilo uložit: prohlížeč odmítl zápis. Bývá to plným úložištěm nebo zákazem ukládání dat webů v nastavení. Dokud to trvá, změny se neuloží.')}</p>
+        <div className="fa-alert-actions">
+          <button type="button" className="fa-ghostbtn" onClick={() => setMsg(faSaveBackup() ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.'))}>{L('Zálohovat data do souboru')}</button>
+          <button type="button" className="fa-textbtn" onClick={onClose}>{L('Zavřít')}</button>
+        </div>
+        {msg && <p role="status">{msg}</p>}
+      </div>
+    </div>
+  );
+}
+
 // If rendering ever fails (for example on damaged data), show a calm page that
-// can still save the raw data to a file and start over, instead of a blank screen.
+// can still save the raw data to a file, restore a backup or start over,
+// instead of a blank screen.
 class FaErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { error: null, armed: false, msg: '' }; }
+  constructor(props) { super(props); this.state = { error: null, armed: false, msg: '', locked: '', pw: '' }; this.file = React.createRef(); }
   static getDerivedStateFromError(error) { return { error }; }
   componentDidCatch(error, info) { try { console.error('Vědomé utrácení could not render', error, info && info.componentStack); } catch (e) {} }
   render() {
     if (!this.state.error) return this.props.children;
     const save = () => {
-      const ok = faDownload('vedome-utraceni-zaloha-' + faTodayIso() + '.json', faExportData(), 'application/json');
+      const ok = faSaveBackup();
       this.setState({ msg: ok ? L('Záloha se stáhla. Ulož si ji na bezpečné místo.') : L('Zálohu se nepodařilo vytvořit.') });
+    };
+    // a backup replaces the damaged data; one with a password asks for it here
+    const restored = (res) => {
+      if (res.ok) { this.setState({ msg: L('Data obnovena. Načítám…'), locked: '', pw: '' }); setTimeout(() => location.reload(), 700); return; }
+      this.setState({ msg: res.error === 'password' ? L('Heslo nesedí. Data zůstala beze změny.')
+        : res.error === 'shape' ? L('Záloha je poškozená nebo upravená. Data zůstala beze změny.')
+        : L('Tenhle soubor nevypadá jako záloha Vědomého utrácení.') });
+    };
+    const pick = (e) => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = String(reader.result || '');
+        if (faBackupKind(text) === 'encrypted') { this.setState({ locked: text, pw: '', msg: '' }); return; }
+        restored(faImportData(text));
+      };
+      reader.onerror = () => this.setState({ msg: L('Soubor se nepodařilo přečíst.') });
+      reader.readAsText(f);
+    };
+    const unlock = async (e) => {
+      e.preventDefault();
+      restored(await faImportEncrypted(this.state.locked, this.state.pw));
     };
     const reset = () => {
       if (!this.state.armed) { this.setState({ armed: true }); return; }
@@ -306,6 +373,15 @@ class FaErrorBoundary extends React.Component {
           <h1>{L('Něco se pokazilo')}</h1>
           <p>{L('Aplikace se nedokázala zobrazit, nejspíš kvůli poškozeným datům. Data jsou pořád v tomto prohlížeči. Nejdřív si je ulož do souboru, pak můžeš začít znovu.')}</p>
           <button className="fa-cta fa-cta-solid" onClick={save}>{L('Zálohovat data do souboru')}</button>
+          <button className="fa-crash-restore" onClick={() => this.file.current && this.file.current.click()}>{L('Obnovit ze zálohy')}</button>
+          <input ref={this.file} type="file" accept="application/json,.json" hidden onChange={pick} />
+          {this.state.locked && (
+            <form className="fa-crash-pw" onSubmit={unlock}>
+              <label htmlFor="fa-crash-pw">{L('Heslo k záloze')}</label>
+              <input id="fa-crash-pw" type="password" autoComplete="current-password" value={this.state.pw} onChange={e => this.setState({ pw: e.target.value })} />
+              <button type="submit" className="fa-ghostbtn">{L('Obnovit data')}</button>
+            </form>
+          )}
           <button className="fa-crash-reset" onClick={reset}>{this.state.armed ? L('Opravdu smazat? Nejde vrátit') : L('Smazat data a začít znovu')}</button>
           <button className="fa-textbtn" onClick={() => location.reload()}>{L('Zkusit znovu')}</button>
           {this.state.msg && <p role="status">{this.state.msg}</p>}
