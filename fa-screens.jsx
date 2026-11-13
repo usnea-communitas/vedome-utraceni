@@ -179,8 +179,8 @@ function GoalCard({ g, i, real, open, onToggle, onDeposit, onDelete }) {
 // 3-up stat inside a hero card footer
 function HeroStat({ label, value, accent }) {
   return (
-    <div style={{ flex: 1, textAlign: 'center', padding: '0 6px', minWidth: 0 }}>
-      <div style={{ fontFamily: 'var(--sans)', fontSize: 10.5, letterSpacing: 0.3, color: 'var(--ink-soft)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+    <div style={{ flex: 1, textAlign: 'center', padding: '0 6px', minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <div style={{ fontFamily: 'var(--sans)', fontSize: 'clamp(10px, 3.2vw, 10.5px)', letterSpacing: 0.1, lineHeight: 1.25, color: 'var(--ink-soft)', marginBottom: 3 }}>{label}</div>
       <div style={{ fontFamily: 'var(--serif)', fontSize: 16, color: accent === 'honey' ? 'var(--honey-deep)' : 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap' }}>{value}</div>
     </div>
   );
@@ -537,7 +537,7 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
   const workshop = FA_IN_WORKSHOP;
   const groups = [
     { h: 'Účet', rows: [
-      { i: 'sprout', t: APP.user || L('Bez jména'), d: workshop ? L('Příběh z workshopu') : L('Osobní profil'), raw: true },
+      { i: 'sprout', t: APP.user || L('Bez jména'), d: workshop ? L('Příběh z workshopu') : L('Osobní profil'), raw: true, own: true },
       { i: 'sun', t: L('Měsíční příjem'), d: kc(APP.income), raw: true, open: 'income' },
     ].concat(workshop ? [] : [{ i: 'shield', t: L('Zabezpečení'), d: secLabel, raw: true, open: 'security' }]) },
   ].concat(workshop ? [] : [
@@ -561,7 +561,8 @@ function Vice({ lang, setLang, theme, setTheme, ratios, setRatios, profile, setP
                   onClick={row.open ? (e => openSheet(row.open, e.currentTarget)) : undefined}>
                   <Medallion icon={row.i === 'bell' ? 'alert' : row.i} accent={['moss','honey','blush','sage'][ri % 4]} size={36} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.raw ? row.t : L(row.t)}</div>
+                    {/* the app's words wrap; the person's own name keeps one line */}
+                    <div style={{ fontFamily: 'var(--sans)', fontSize: 15, color: 'var(--ink)', fontWeight: 500, lineHeight: 1.3, ...(row.own ? { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } : { overflowWrap: 'break-word' }) }}>{row.raw ? row.t : L(row.t)}</div>
                   </div>
                   <span style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-soft)', whiteSpace: 'nowrap', flexShrink: 0 }}>{row.raw ? row.d : L(row.d)}</span>
                   {row.open && <Icon name="chevron" size={16} stroke={1.8} color="var(--ink-faint)" />}

@@ -756,6 +756,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   border: 1px dashed var(--card-line);
 }
 .fa-invest-note svg { color: var(--brand); flex-shrink: 0; margin-top: 1px; }
+/* the text beside the bulb takes the rest of the row and may get narrower than its longest line (Safari, Firefox) */
+.fa-invest-note > div { flex: 1; min-width: 0; }
 .fa-invest-note p { font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
 .fa-invest-note strong { color: var(--ink); font-weight: 600; }
 
@@ -959,7 +961,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   padding: 7px 5px; box-shadow: var(--shadow-nav);
 }
 .fa-tab {
-  flex: 1; min-width: 0; border: none; background: none; cursor: pointer;
+  flex: 1 1 0; min-width: max-content; border: none; background: none; cursor: pointer;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 4px 1px 3px; color: var(--ink-faint);
   transition: color .25s ease, transform .18s ease;
@@ -1109,7 +1111,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
   padding: 10px 4px; border-radius: 14px; cursor: pointer;
   border: 1px solid var(--card-line); background: var(--cream); color: var(--ink-soft);
-  font-family: var(--sans); font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  font-family: var(--sans); font-size: 11.5px; font-weight: 600; line-height: 1.2;
+  min-width: 0; text-align: center; overflow-wrap: break-word;
   transition: all .2s ease; -webkit-tap-highlight-color: transparent;
 }
 .fa-catpick button[data-on="true"] { background: var(--cp-soft); color: var(--ink); border-color: var(--cp); }
@@ -1173,7 +1176,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 .fa-cat-left {
   font-style: normal; font-family: var(--sans);
   font-size: 9.5px; font-weight: 600; letter-spacing: 0.1px;
-  color: var(--ink-faint); white-space: nowrap;
+  color: var(--ink-faint);
 }
 .fa-catpick button[data-on="true"] .fa-cat-left { color: var(--ink-soft); }
 .fa-cat-left[data-neg="true"] { color: var(--clay); }
@@ -1432,7 +1435,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=5ec9c3f221"></script>
+  <script src="app.js?v=1c5ac1027a"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>
