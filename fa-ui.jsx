@@ -188,7 +188,8 @@ function SourceLine({ ids, className }) {
           </React.Fragment>
         );
       })}
-      <span className="fa-src-date"> · {Lf('ověřeno {d}', { d: faFullDate(checked) })}</span>
+      {/* the space before the date stays outside it, so the date can move to the next line whole */}
+      {' '}<span className="fa-src-date">· {Lf('ověřeno {d}', { d: faFullDate(checked) })}</span>
     </p>
   );
 }

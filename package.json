@@ -21,6 +21,7 @@
     "compile": "node scripts/compile.mjs",
     "test": "node --test tests/unit/*.test.mjs",
     "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "test:layout": "node --test tests/e2e/layout.test.mjs",
     "test:production": "node --test tests/production/*.test.mjs",
     "sources:check": "node scripts/check-sources.mjs --strict",
     "translations:export": "node scripts/translations.mjs export",

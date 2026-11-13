@@ -225,12 +225,12 @@ function Stat({ label, value, accent }) {
 
 function ScreenHeader({ eyebrow, title, right }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', margin: '4px 4px 18px' }}>
-      <div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '10px 12px', margin: '4px 4px 18px' }}>
+      <div style={{ minWidth: 0 }}>
         <div className="fa-eyebrow" style={{ fontFamily: 'var(--sans)', fontSize: 11, fontWeight: 600, letterSpacing: 1.8, textTransform: 'uppercase', color: 'var(--ink-faint)', marginBottom: 3 }}>{eyebrow}</div>
-        <h1 className="fa-title" style={{ fontFamily: 'var(--title)', fontSize: 33, fontWeight: 600, color: 'var(--ink)', margin: 0, letterSpacing: -0.4 }}>{title}</h1>
+        <h1 className="fa-title" style={{ fontFamily: 'var(--title)', fontSize: 'clamp(27px, 8.6vw, 33px)', fontWeight: 600, color: 'var(--ink)', margin: 0, letterSpacing: -0.4, overflowWrap: 'break-word' }}>{title}</h1>
       </div>
-      {right}
+      {right && <div style={{ marginLeft: 'auto' }}>{right}</div>}
     </div>
   );
 }
