@@ -1349,6 +1349,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
 .fa-alert-body p { margin: 0; font-size: 12.5px; line-height: 1.45; }
 .fa-alert-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 8px; }
 
+/* the demo (DemoBar in fa-workshop.jsx): made-up data, and the way out */
+.fa-demo {
+  position: relative; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  margin: 10px 12px 0; padding: 8px 8px 8px 14px; border-radius: 18px;
+  background: color-mix(in oklab, var(--brand), var(--card) 86%); border: 1px solid color-mix(in oklab, var(--brand), transparent 62%);
+  color: var(--ink); font-family: var(--sans);
+}
+.fa-demo-text { flex: 1 1 170px; min-width: 0; margin: 0; font-size: 12.5px; line-height: 1.45; }
+.fa-demo-text strong { font-weight: 700; margin-right: 3px; }
+.fa-demo-end { flex: 0 0 auto; min-height: 40px; }
+/* the welcome screen's quiet way into the demo */
+.fa-onb-demo { display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; padding: 0 10px; align-self: center; text-decoration: none; }
+
 /* "How we protect your data": the request where the browser asks in a prompt */
 .fa-persist-ask { margin-top: 4px; padding-left: 0; }
 
@@ -1414,7 +1427,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brand); out
   <!-- app.js is generated from the .jsx files by `npm run compile` -->
   <script src="vendor/react.production.min.js?v=18.3.1"></script>
   <script src="vendor/react-dom.production.min.js?v=18.3.1"></script>
-  <script src="app.js?v=c23b976798"></script>
+  <script src="app.js?v=98652151c6"></script>
   <script src="register-sw.js"></script>
 </body>
 </html>

@@ -49,7 +49,8 @@ function faFrameScale() {
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [screen, setScreen] = useA(FA_IN_WORKSHOP ? 'workshop' : 'prehled');
+  // a workshop opens on its tasks; the demo, on the Overview of its story
+  const [screen, setScreen] = useA(FA_IN_WORKSHOP && !FA_DEMO ? 'workshop' : 'prehled');
   // English by default; a chosen language is kept in localStorage ('fa.lang') and restored on load
   const [lang, setLang] = useA(loadFaLang);
   const [entered, setEntered] = useA(false);
@@ -61,7 +62,12 @@ function App() {
   // and then the app again without it (that moved the page and the largest paint)
   const [bare, setBare] = useA(faIsBare);
   const [frameScale, setFrameScale] = useA(faFrameScale);
-  const [profile, setProfile] = useA(() => { faMigrateYearGoals(); faMigratePlan(); return loadFaProfile(); });
+  const [profile, setProfile] = useA(() => {
+    faMigrateYearGoals(); faMigratePlan();
+    // the demo starts its story at once (only into the workshop's own data)
+    if (FA_DEMO && !loadFaProfile()) faStartWorkshop(FA_WORKSHOP_STORIES[0].id);
+    return loadFaProfile();
+  });
   const [locked, setLocked] = useA(() => !!(loadFaProfile() && loadFaSecurity()));
   const [theme, setTheme] = useA(() => { try { return faStorage.get('fa.theme') || TWEAK_DEFAULTS.theme; } catch (e) { return TWEAK_DEFAULTS.theme; } });
   const [ratios, setRatios] = useA(() => { try { return JSON.parse(faStorage.get('fa.ratios')) || { nutne: 50, budouci: 20, radost: 30 }; } catch (e) { return { nutne: 50, budouci: 20, radost: 30 }; } });
@@ -234,6 +240,7 @@ function App() {
       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 1 }}
         {...(locked ? { inert: '', 'aria-hidden': 'true' } : {})}>
         {storageErr && <StorageAlert onClose={() => setStorageErr(false)} />}
+        {FA_DEMO && <DemoBar onEnd={endWorkshop} />}
         {/* scrollable content */}
         <main ref={scrollRef} className="fa-scroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           <div className="fa-content">

@@ -12,6 +12,11 @@ const FA_IN_WORKSHOP = (() => {
   try { return new URLSearchParams(location.search).get('workshop') === '1'; } catch (e) { return false; }
 })();
 
+// the demo ("Explore a demo" on the welcome screen) is a workshop that opens on its first story
+const FA_DEMO = FA_IN_WORKSHOP && (() => {
+  try { return new URLSearchParams(location.search).get('demo') === '1'; } catch (e) { return false; }
+})();
+
 // the stored key for one of the app's keys ('fa.…')
 function faKey(key) {
   return FA_IN_WORKSHOP && key.startsWith('fa.') ? FA_WORKSHOP_PREFIX + key.slice(3) : key;
@@ -48,4 +53,4 @@ function faClearWorkshop() {
   faWorkshopKeys().forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
 }
 
-Object.assign(window, { FA_IN_WORKSHOP, FA_WORKSHOP_PREFIX, faKey, faStorage, faWorkshopKeys, faClearWorkshop });
+Object.assign(window, { FA_IN_WORKSHOP, FA_DEMO, FA_WORKSHOP_PREFIX, faKey, faStorage, faWorkshopKeys, faClearWorkshop });
