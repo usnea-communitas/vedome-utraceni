@@ -447,6 +447,7 @@ function PasswordBackupSheet({ open, onClose }) {
     try {
       const text = await faExportEncrypted(pw);
       if (!faDownload('vedome-utraceni-zaloha-s-heslem-' + faTodayIso() + '.json', text, 'application/json')) throw new Error('download');
+      faNoteBackup();
       setPw(''); setAgain(''); setDone(true);
     } catch (x) { setErr('fail'); }
     setBusy(false);
@@ -529,6 +530,31 @@ function PasswordRestoreSheet({ open, text, onClose }) {
 }
 
 // ── Jak chráníme tvoje data: where the numbers live, and where they never go ──
+// whether the browser promised to keep the data, and the request where it asks in a prompt
+function PersistFact() {
+  const [kept, setKept] = useSt(undefined);
+  const [asked, setAsked] = useSt(false);
+  useStE(() => { let live = true; faPersisted().then(v => { if (live) setKept(v); }); return () => { live = false; }; }, []);
+  const ask = async () => { setAsked(true); const v = await faAskPersist(); setKept(v == null ? kept : v); };
+  const asks = faPersistAsks();
+  const text = kept === undefined ? ''
+    : kept === true ? L('Prohlížeč slíbil, že data tohoto webu bez tebe nesmaže.')
+    : kept === null ? L('Tento prohlížeč neříká, jestli data drží natrvalo. Dělej si zálohy.')
+    : asked ? L('Prohlížeč žádost nepřijal. Data může smazat, když mu dojde místo, proto si dělej zálohy.')
+    : asks ? L('Prohlížeč může data smazat, když mu dojde místo. Můžeš ho požádat, ať je nechá.')
+    : L('Prohlížeč může data smazat, když mu dojde místo. Aplikace ho požádala, ať je nechá; rozhoduje se podle toho, jak web používáš.');
+  return (
+    <div>
+      <dt>{L('Trvalé uložení')}</dt>
+      <dd aria-live="polite">{text}
+        {kept === false && asks && !asked && (
+          <><br /><button type="button" className="fa-textbtn fa-persist-ask" onClick={ask}>{L('Požádat prohlížeč')}</button></>
+        )}
+      </dd>
+    </div>
+  );
+}
+
 function DataSafetySheet({ open, onClose }) {
   const stops = [
     { icon: 'home', title: L('V tomto prohlížeči'), text: L('Plán, výdaje, cíle, reflexe a nastavení. Nic z toho se samo nikam neposílá.') },
@@ -541,6 +567,7 @@ function DataSafetySheet({ open, onClose }) {
     [L('Záloha s heslem'), L('Šifruje se přímo v prohlížeči (AES-256). Heslo nikde neukládáme, takže bez něj zálohu neotevře nikdo, ani my.')],
     [L('Jiné zařízení'), L('Data se mezi zařízeními samy nepřenášejí. Udělej zálohu a na druhém zařízení ji obnov.')],
     [L('Smazání'), L('Více → Data → Smazat všechna data vymaže vše v tomto prohlížeči. Data zmizí i se smazáním dat webů v nastavení prohlížeče, proto si dělej zálohy.')],
+    [L('Safari'), L('Safari na iPhonu, iPadu i Macu může smazat data webu, který sedm dní používání Safari neotevřeš. Aplikace přidaná na plochu má vlastní počítadlo. Záloha zůstane, i když data zmizí.')],
     [L('Workshop'), L('Pracuje s vymyšlenými příběhy uloženými zvlášť. Tvoje vlastní data nečte ani nemění.')],
   ];
   return (
@@ -560,7 +587,10 @@ function DataSafetySheet({ open, onClose }) {
       <h3 className="fa-safe-h">{L('Dobré vědět')}</h3>
       <dl className="fa-safe-facts">
         {facts.map(([term, text], i) => (
-          <div key={i}><dt>{term}</dt><dd>{text}</dd></div>
+          <React.Fragment key={i}>
+            <div><dt>{term}</dt><dd>{text}</dd></div>
+            {i === 4 && open && !FA_IN_WORKSHOP && <PersistFact />}
+          </React.Fragment>
         ))}
       </dl>
       <p className="fa-safe-foot">{L('Kód aplikace je otevřený (licence MIT), takže to může kdokoli ověřit.')}</p>

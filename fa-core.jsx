@@ -318,6 +318,7 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style = {
     dotsh: <g fill={color} stroke="none"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></g>,
     dotsv: <g fill={color} stroke="none"><circle cx="12" cy="6" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18" r="1.7"/></g>,
     // a link that opens another site
+    close: <g {...p}><path d="M7 7 L17 17 M17 7 L7 17"/></g>,
     extlink: <g {...p}><path d="M13.5 5.5 H18.5 V10.5 M18.5 5.5 L11 13"/><path d="M16.5 13.5 V17 a1.5 1.5 0 0 1-1.5 1.5 H7 A1.5 1.5 0 0 1 5.5 17 V9 A1.5 1.5 0 0 1 7 7.5 h3.5"/></g>,
   };
   const resolved = (FA_THEME === 'wizard' && WIZ_ICON[name]) ? WIZ_ICON[name] : name;

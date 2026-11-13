@@ -11,6 +11,17 @@ A backup can be encrypted in the browser before it is saved, with the Web Crypto
 - The plain backup and the CSV table of expenses are readable files, as the app's privacy page says. In the table, a text that starts like a formula (`=`, `+`, `-`, `@`) gets an apostrophe in front, so a spreadsheet shows it as text.
 - Neither format contains the PIN.
 
+## Data that does not disappear
+
+The data live only in the browser's storage, so the app works against losing them quietly:
+
+- Once there is something to keep, it asks the browser for persistent storage (`navigator.storage.persist()`). Safari and Chromium browsers decide by themselves, without a prompt; Firefox shows a prompt, so there the app asks only after a tap on *More → How we protect your data*, which also says whether the browser has promised to keep the data. A workshop on a shared device never asks.
+- Safari with its default tracking prevention deletes the data a script stored for a site that has not been used for seven days of using Safari; a web app added to the home screen counts its days separately. The privacy page says so, and in Safari on an iPhone the backup reminder also points to the home screen.
+- A quiet line on the Overview reminds of a backup two days after the first data and 30 days after the last backup; it can be hidden for 14 days or turned off under *More → Data*. The date of the last backup is not part of a backup; a restored backup counts from its own date.
+- When the browser refuses to store a change (storage full, or site data blocked in its settings), the app says so and offers a backup instead of losing the change without a word.
+- Another open tab of the app sees a change at once (the `storage` event), so neither tab writes over the other.
+- If damaged data stop the app from rendering, a calm page offers to save the raw data to a file, restore a backup (with its password, if it has one) or start over.
+
 ## Reporting a vulnerability
 
 Please do **not** open a public issue for a security problem.
