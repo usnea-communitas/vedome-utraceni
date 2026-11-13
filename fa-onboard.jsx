@@ -237,6 +237,10 @@ function Onboarding({ onFinish, defaultRatios, initialTheme, lang, setLang }) {
             {L('Přeskočit — přidám později')}
           </button>
         )}
+        {step === 0 && !FA_IN_WORKSHOP && (
+          // a filled-in app to look around in, on made-up data kept apart from the visitor's own
+          <a className="fa-textbtn fa-onb-demo" href={faDemoLink(lang)}>{L('Prohlédnout si ukázku')}</a>
+        )}
       </div>
     </main>
   );

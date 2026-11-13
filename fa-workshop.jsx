@@ -11,6 +11,8 @@ const { useState: useW } = React;
 // (scripts/workshop-qr.mjs).
 const FA_SITE = 'https://vedome-utraceni.vercel.app';
 function faWorkshopLink(lang) { return FA_SITE + '/?workshop=1&lang=' + lang; }
+// the demo: the workshop on its first story, in the language chosen on the welcome screen
+function faDemoLink(lang) { return '?workshop=1&demo=1&lang=' + (lang || 'en'); }
 
 // Three made-up stories of young people; the amounts are illustrative. Names
 // that end up in the data are Czech keys (registered below), so they follow
@@ -190,6 +192,16 @@ function WorkshopWelcome({ lang, setLang, onStart }) {
         <button className="fa-textbtn" style={{ marginTop: 12, alignSelf: 'center' }} onClick={() => setGuide(true)}>{L('Pro lektora')}</button>
       </div>
     </main>
+  );
+}
+
+// ── the demo: made-up data, and the way back to the participant's own app ──
+function DemoBar({ onEnd }) {
+  return (
+    <div className="fa-demo">
+      <p className="fa-demo-text"><strong>{L('Ukázka')}</strong> {L('Data jsou smyšlená a zůstávají odděleně od tvých.')}</p>
+      <button type="button" className="fa-ghostbtn fa-demo-end" onClick={onEnd}>{L('Ukončit ukázku')}</button>
+    </div>
   );
 }
 
@@ -373,6 +385,6 @@ function WorkshopGuideScreen({ go }) { return <WorkshopGuide onBack={() => go('w
 
 Object.assign(window, {
   FA_SITE, FA_WORKSHOP_STORIES, FA_WORKSHOP_TASKS, FA_WORKSHOP_TIMING, FA_WORKSHOP_QUESTIONS, FA_WORKSHOP_KIT,
-  faWorkshopLink, faWorkshopKit, faWorkshopStory, faStoryIncome, loadFaTasks, saveFaTasks, faStartWorkshop,
-  WorkshopWelcome, Workshop, WorkshopGuide, WorkshopGuideScreen,
+  faWorkshopLink, faDemoLink, faWorkshopKit, faWorkshopStory, faStoryIncome, loadFaTasks, saveFaTasks, faStartWorkshop,
+  WorkshopWelcome, Workshop, WorkshopGuide, WorkshopGuideScreen, DemoBar,
 });

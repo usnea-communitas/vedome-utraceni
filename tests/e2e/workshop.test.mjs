@@ -152,6 +152,63 @@ for (const lang of ['en', 'cs']) {
   });
 }
 
+// the demo: the welcome screen's quiet link opens a workshop story on the Overview
+const DEMO = {
+  en: { lang: 'English', link: 'Explore a demo', offer: 'Put 50 / 30 / 20 into the plan', end: 'End the demo', welcome: 'Welcome to Mindful Spending', overview: 'Overview' },
+  cs: { lang: 'Čeština', link: 'Prohlédnout si ukázku', offer: 'Zapsat 50 / 30 / 20 do plánu', end: 'Ukončit ukázku', welcome: 'Vítej ve Vědomém utrácení', overview: 'Přehled' },
+};
+const sideways = page => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+
+for (const lang of ['en', 'cs']) {
+  test(`the demo is two taps from the welcome screen to a filled Overview and ends where it began, 360 px (${lang})`, async () => {
+    const T = DEMO[lang];
+    const { context, page, problems } = await phone(360, { bypassCSP: true });
+    await page.goto(base);
+    await page.getByRole('button', { name: T.lang }).click();
+    const before = await storage(page);
+    // tap 1: the quiet link under Start
+    await page.getByRole('link', { name: T.link }).click();
+    await page.locator('.fa-demo').waitFor();
+    assert.equal(await page.locator('h1').innerText(), T.overview);
+    assert.equal(await page.locator('.fa-lock').count(), 0);
+    // tap 2: the story's income into the plan, and the Overview is filled
+    await page.getByRole('button', { name: T.offer }).click();
+    await page.getByRole('button', { name: T.offer }).waitFor({ state: 'detached' });
+    const during = await storage(page);
+    const plan = Object.values(JSON.parse(during['fa.workshop.plans']))[0];
+    assert.ok(plan.items.nutne.length && plan.items.budouci.length && plan.items.radost.length, 'the plan is filled');
+    assert.ok(JSON.parse(during['fa.workshop.expenses']).length > 0, 'with the story\'s spending');
+    assert.equal(await sideways(page), 0);
+    assertOutline(await outline(page), 'demo');
+    assert.deepEqual(await axeViolations(page), [], 'demo');
+    assert.deepEqual(without(during, 'fa.workshop.'), before, 'the own data did not change during the demo');
+    // the end: back to the welcome screen, nothing of the demo left
+    await Promise.all([page.waitForURL(base), page.getByRole('button', { name: T.end }).click()]);
+    // (the title may keep its last two words together with a no-break space)
+    assert.equal((await page.locator('h1').innerText()).replace(/\s/g, ' '), T.welcome);
+    assert.deepEqual(await storage(page), before, 'the own data is exactly as before');
+    assert.deepEqual(problems, []);
+    await context.close();
+  });
+}
+
+test('a demo link on a device with data never unlocks or changes that data', async () => {
+  const { context, page, problems } = await phone(390);
+  await page.addInitScript(seedOwnData);
+  await page.goto(base);
+  await page.locator('.fa-lock').waitFor();
+  const own = await storage(page);
+  await page.goto(base + '?workshop=1&demo=1&lang=en');
+  await page.locator('.fa-demo').waitFor();
+  assert.equal(await page.locator('h1').innerText(), 'Overview');
+  assert.deepEqual(without(await storage(page), 'fa.workshop.'), own);
+  await Promise.all([page.waitForURL(base), page.getByRole('button', { name: 'End the demo' }).click()]);
+  await page.locator('.fa-lock').waitFor();
+  assert.deepEqual(await storage(page), own, 'the own data is exactly as before');
+  assert.deepEqual(problems, []);
+  await context.close();
+});
+
 test('a workshop opened on a device without data starts the same way and ends on the welcome screen', async () => {
   const { context, page, problems } = await phone(360);
   await page.goto(base + '?workshop=1&lang=en');
