@@ -8,7 +8,7 @@ import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { extname, join, normalize } from 'node:path';
-import { chromium } from 'playwright';
+import { launchBrowser } from '../harness.mjs';
 import { root } from '../harness.mjs';
 
 const require = createRequire(import.meta.url);
@@ -27,7 +27,7 @@ before(async () => {
   }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   base = `http://127.0.0.1:${server.address().port}/`;
-  browser = await chromium.launch();
+  browser = await launchBrowser();
 });
 after(async () => { await browser?.close(); server?.close(); });
 

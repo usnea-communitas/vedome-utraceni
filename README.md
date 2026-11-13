@@ -90,6 +90,7 @@ npm ci
 npm run compile          # rebuilds app.js and vendor/ from the .jsx sources
 npm test                 # unit, translation and build checks
 npm run test:e2e         # Chromium: smoke, workshop, data and accessibility tests (first run: npx playwright install chromium)
+BROWSER=webkit npm run test:e2e   # the same in WebKit (the engine of Safari) or Firefox (BROWSER=firefox); first: npx playwright install webkit firefox
 npm run sources:check    # opens every source the tips name (needs the network)
 npx serve .              # or any static server; then open the printed URL
 ```

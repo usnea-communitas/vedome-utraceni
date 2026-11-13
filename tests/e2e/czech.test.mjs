@@ -7,7 +7,7 @@ import http from 'node:http';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
-import { chromium } from 'playwright';
+import { launchBrowser } from '../harness.mjs';
 import { root } from '../harness.mjs';
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.woff2': 'font/woff2' };
@@ -27,7 +27,7 @@ before(async () => {
   }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   base = `http://127.0.0.1:${server.address().port}/`;
-  browser = await chromium.launch();
+  browser = await launchBrowser();
 });
 after(async () => { await browser?.close(); server?.close(); });
 

@@ -2,6 +2,10 @@
 
 Notable changes to Vědomé utrácení (Mindful Spending). The version lives in `package.json` and in `FA_VERSION` (`fa-core.jsx`), is shown under More, and a test keeps the two in step. Each version is also a [GitHub release](https://github.com/usnea-communitas/vedome-utraceni/releases).
 
+## Unreleased
+
+- **Tests in the engines of Safari and Firefox** (S-17). The browser tests also run in WebKit and Firefox (`BROWSER=webkit npm run test:e2e`), in a second workflow beside CI. They found one thing: opening the app, even locked by the PIN, wrote the default 50 / 30 / 20 split into the browser's storage; now a split is stored only once it is chosen. One test is skipped in Firefox with its reason (Playwright's offline mode there fails a reload before the service worker can answer). The compile check now also covers the Czech page.
+
 ## 2.1.0 — 2026-11-13
 
 The fourth round, all of it inside the app: data that does not disappear without a word (a backup reminder, a backup with a password, the browser asked to keep the data, two tabs that keep each other's changes), a demo for a facilitator who sees the app for the first time, a Czech address with a Czech share picture, tips with sources and accessibility checked on every screen.

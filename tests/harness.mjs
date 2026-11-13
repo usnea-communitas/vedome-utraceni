@@ -64,3 +64,20 @@ export const inApp = (app, expr) => vm.runInContext(expr, app);
 
 // values created in the vm belong to another realm; compare them as plain JSON
 export const plain = v => JSON.parse(JSON.stringify(v));
+
+// The browser engine of the end-to-end tests: Chromium by default, WebKit (the
+// engine of Safari) or Firefox with BROWSER=webkit or BROWSER=firefox (S-17).
+// Firefox has no mobile emulation, so its pages drop isMobile and keep the rest.
+export const ENGINE = process.env.BROWSER || 'chromium';
+export async function launchBrowser() {
+  const playwright = await import('playwright');
+  const browser = await playwright[ENGINE].launch();
+  if (ENGINE === 'firefox') {
+    const newContext = browser.newContext.bind(browser);
+    browser.newContext = ({ isMobile, ...options } = {}) => newContext(options);
+  }
+  return browser;
+}
+// a test that rests on something an engine (or its emulation in Playwright) lacks:
+// skipped there, with the reason, and run everywhere else
+export const skipIn = (engines, reason) => (engines.includes(ENGINE) ? { skip: `${ENGINE}: ${reason}` } : {});

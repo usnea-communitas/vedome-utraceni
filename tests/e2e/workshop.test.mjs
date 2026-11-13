@@ -8,7 +8,7 @@ import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { extname, join, normalize } from 'node:path';
-import { chromium } from 'playwright';
+import { launchBrowser, skipIn } from '../harness.mjs';
 import { root } from '../harness.mjs';
 
 const require = createRequire(import.meta.url);
@@ -26,7 +26,7 @@ before(async () => {
   }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   base = `http://127.0.0.1:${server.address().port}/`;
-  browser = await chromium.launch();
+  browser = await launchBrowser();
 });
 after(async () => { await browser?.close(); server?.close(); });
 
@@ -225,7 +225,9 @@ test('a workshop opened on a device without data starts the same way and ends on
   await context.close();
 });
 
-test('after the first load the workshop opens without a connection', async () => {
+test('after the first load the workshop opens without a connection',
+  skipIn(['firefox'], "Playwright's offline mode in Firefox fails a reload before the service worker can answer; Chromium and WebKit cover it"),
+  async () => {
   const { context, page } = await phone();
   await page.goto(base + '?workshop=1&lang=cs');
   // the app registers its service worker on https only; this test server is http

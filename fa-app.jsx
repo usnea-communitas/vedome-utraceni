@@ -140,7 +140,19 @@ function App() {
     saveFaLang(lang);
     try { document.documentElement.lang = lang; } catch (e) {}
   }, [lang]);
-  useAE(() => { try { faStorage.set('fa.ratios', JSON.stringify(ratios)); } catch (e) {} }, [ratios]);
+  // a split is stored once it is chosen or changed; opening the app (even locked by the
+  // PIN) writes nothing, so the defaults never land in storage on their own
+  const ratiosLoaded = useAR(true);
+  useAE(() => {
+    const first = ratiosLoaded.current;
+    ratiosLoaded.current = false;
+    try {
+      const stored = faStorage.get('fa.ratios');
+      if (first && stored == null) return;
+      const value = JSON.stringify(ratios);
+      if (stored !== value) faStorage.set('fa.ratios', value);
+    } catch (e) {}
+  }, [ratios]);
   useAE(() => {
     const check = () => {
       setBare(faIsBare());
