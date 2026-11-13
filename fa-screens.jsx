@@ -243,9 +243,9 @@ function GrowthScene({ pct }) {
 // ════════════════════════════════════════════════════════════════════
 // deeper category explanations (Tipy) — keyed by category key
 const CAT_EXPLAIN = {
-  nutne: 'Pevný základ života. Patří sem nájem, energie, jídlo, doprava — výdaje, které se opakují a drží tě v bezpečí. Cíl 50 % příjmu je zdravá hranice: když je nutné výrazně vyšší, je čas hledat, kde uvolnit tlak.',
-  budouci: 'Tvoje budoucí svoboda. Spoření, rezerva a investice, které dnes odkládáš pro sebe zítra. I 20 % dělá s časem a složeným úročením zázraky — důležitější než kolik je, že to děláš pravidelně.',
-  radost: 'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Plánovat radost naschvál je dovednost: když má v plánu své místo, užiješ si ji bez výčitek.',
+  nutne: 'Pevný základ života. Patří sem nájem, energie, jídlo, doprava — výdaje, které se opakují a drží tě v bezpečí. Pravidlo 50 / 30 / 20 jim dává polovinu příjmu; když potřebují výrazně víc, podívej se, kde uvolnit tlak.',
+  budouci: 'Tvoje budoucí svoboda. Spoření, rezerva a investice, které dnes odkládáš pro sebe zítra. Díky složenému úročení může s časem růst i malá částka — jak, ukáže simulátor.',
+  radost: 'Tvoje dnešní radost. Kavárny, výlety, koníčky a drobnosti, co ti dělají život hezčí. Když má radost v plánu své místo, víš, kolik si na ni můžeš dovolit.',
 };
 
 function Tipy() {
@@ -268,7 +268,7 @@ function Tipy() {
 
       <div style={{ marginTop: 22 }}>
         <SectionLabel>{L('Laskavé rady')}</SectionLabel>
-        <p className="fa-lede" style={{ marginTop: 0, marginBottom: 10 }}>{L('Malé návyky, které dělají velký klid. Klepni na kartu a otoč ji — čeká tě malá zajímavost.')}</p>
+        <p className="fa-lede" style={{ marginTop: 0, marginBottom: 10 }}>{L('Malé návyky s penězi. Klepni na kartu a otoč ji — čeká tě malá zajímavost.')}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {APP.tipy.map((t, i) => <TipFlip key={i} t={t} />)}
         </div>
@@ -371,8 +371,8 @@ const REFLEX_QUIZ = [
 ];
 
 const REFLEX_RESULT = {
-  tense:   { key: 'tense',  label: 'Stísněně',   accent: 'clay',  tip: 'Zkus jedinou změnu: hned po výplatě odlož 10 % stranou, než cokoli utratíš. Malý automatický krok ti vrátí pocit kontroly — a příští reflexe bude lehčí.' },
-  balance: { key: 'balance', label: 'V rovnováze', accent: 'honey', tip: 'Máš pevný základ. Tento měsíc zkus pojmenovat jeden konkrétní cíl a posílat na něj pravidelnou částku. Z rovnováhy se tak pomalu stane radost.' },
+  tense:   { key: 'tense',  label: 'Stísněně',   accent: 'clay',  tip: 'Zkus jedinou změnu: hned po výplatě odlož 10 % stranou, než cokoli utratíš. V příští reflexi uvidíš, jak to šlo.' },
+  balance: { key: 'balance', label: 'V rovnováze', accent: 'honey', tip: 'Máš pevný základ. Tento měsíc zkus pojmenovat jeden konkrétní cíl a posílat na něj pravidelnou částku. V příští reflexi uvidíš, kam se cíl posunul.' },
   joy:     { key: 'joy',    label: 'S radostí',  accent: 'moss',  tip: 'Krásná práce. Udrž si to: zautomatizuj spoření a dopřej si bez výčitek jednu naplánovanou radost. Můžeš zvážit i mírné zvýšení investic.' },
 };
 function reflexBand(score, max) {
